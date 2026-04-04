@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -370,18 +368,13 @@
     };
     
     let editAvatar=null, tempEditAvatar=null;
-
-    
-
     function enableEditMode(){
         const container=document.getElementById("profileCard");
         container.innerHTML=`<div><h2>✏️ Редактирование профиля</h2><input type="text" id="editNick" placeholder="Новый ник" value="${escapeHtml(currentUser.nick)}"><input type="email" id="editEmail" placeholder="Новая почта" value="${escapeHtml(currentUser.email)}"><div class="upload-area" id="editAvatarUploadArea">📸 Новый аватар<input type="file" id="editAvatarFile" accept="image/*" style="display:none"></div><div style="display:flex;gap:10px;margin-top:20px"><button id="saveProfileChangesBtn">💾 Сохранить</button><button id="cancelEditBtn" class="secondary">❌ Отмена</button></div><div id="editCodeZone" style="display:none;margin-top:15px"><input type="text" id="editCodeInput" placeholder="Код подтверждения"><button id="confirmEditEmailBtn">✅ Подтвердить</button></div></div>`;
-        const editArea=document.getElementById("editAvatarUploadArea"), editInput=document.getElementById("editAvatarFile");
-        if(editArea&&editInput){ editArea.onclick=()=>editInput.click(); editInput.onchange=async(e)=>{ if(e.target.files[0]&&e.target.files[0].size<=5*1024*1024){ editAvatar=await fileToBase64(e.target.files[0]); editArea.style.background="#eef2ff"; } }; }
-        document.getElementById("saveProfileChangesBtn").onclick=async()=>{ const nn=document.getElementById("editNick").value.trim(), ne=document.getElementById("editEmail").value.trim(); if(nn!==currentUser.nick&&!isNickFree(nn,currentUser.id)){ alert("Ник занят"); return; } if(ne!==currentUser.email){ const cd=generateCode(); pendingCode={email:ne,code:cd,newNick:nn,newAvatar:editAvatar}; await sendRealEmail(ne,cd,"смены почты"); document.getElementById("editCodeZone").style.display="block"; document.getElementById("confirmEditEmailBtn").onclick=()=>{ if(document.getElementById("editCodeInput").value.trim()===pendingCode.code){ if(pendingCode.newNick) currentUser.nick=pendingCode.newNick; currentUser.email=pendingCode.email; if(pendingCode.newAvatar) currentUser.avatar=pendingCode.newAvatar; else if(editAvatar) currentUser.avatar=editAvatar; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage(); alert("✅ Профиль обновлён"); } else alert("❌ Неверный код"); }; } else { if(editAvatar) currentUser.avatar=editAvatar; currentUser.nick=nn; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage(); alert("✅ Профиль обновлён"); } };
+        setupFileUpload('editAvatarUploadArea','editAvatarFile',async f=>{if(f.size<=5*1024*1024) editAvatar=await fileToBase64(f);});
+        document.getElementById("saveProfileChangesBtn").onclick=async()=>{const nn=document.getElementById("editNick").value.trim(), ne=document.getElementById("editEmail").value.trim(); if(nn!==currentUser.nick && !isNickFree(nn,currentUser.id)){alert("Ник занят");return;} if(ne!==currentUser.email){const cd=generateCode(); pendingCode={email:ne,code:cd,newNick:nn,newAvatar:editAvatar}; await sendRealEmail(ne,cd,"смены почты"); document.getElementById("editCodeZone").style.display="block"; document.getElementById("confirmEditEmailBtn").onclick=()=>{if(document.getElementById("editCodeInput").value===pendingCode.code){currentUser.nick=pendingCode.newNick||currentUser.nick; currentUser.email=pendingCode.email; if(pendingCode.newAvatar)currentUser.avatar=pendingCode.newAvatar; else if(editAvatar)currentUser.avatar=editAvatar; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage(); alert("✅ Профиль обновлён");}};}else{if(editAvatar)currentUser.avatar=editAvatar; currentUser.nick=nn; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage();}};
         document.getElementById("cancelEditBtn").onclick=()=>renderProfilePage();
     }
- 
     function enablePasswordMode(){
         const container=document.getElementById("profileCard");
         container.innerHTML=`<div><h2>🔑 Смена пароля</h2><div class="password-wrapper"><input type="password" id="oldPassword" placeholder="Текущий пароль"><button class="toggle-password" onclick="togglePassword('oldPassword')">👁️</button></div><div class="password-wrapper"><input type="password" id="newPasswordProfile" placeholder="Новый пароль"><button class="toggle-password" onclick="togglePassword('newPasswordProfile')">👁️</button></div><div class="password-wrapper"><input type="password" id="newPasswordProfile2" placeholder="Повторите"><button class="toggle-password" onclick="togglePassword('newPasswordProfile2')">👁️</button></div><div style="display:flex;gap:10px;margin-top:20px"><button id="savePasswordBtn">💾 Сохранить</button><button id="cancelPasswordBtn" class="secondary">❌ Отмена</button></div></div>`;
