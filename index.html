@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MAS — социальная сеть с группами</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .app { max-width: 1400px; margin: 0 auto; background: rgba(255,255,255,0.95); border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); overflow: hidden; }
+        .navbar { background: rgba(255,255,255,0.98); padding: 16px 32px; border-bottom: 1px solid rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .logo { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .nav-btn { background: transparent; border: none; padding: 10px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #4a5568; }
+        .nav-btn:hover { background: #f7fafc; transform: translateY(-2px); }
+        .nav-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .page { display: none; padding: 32px; animation: fadeIn 0.4s ease; }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.05); }
+        input, textarea, select { width: 100%; padding: 14px 18px; border-radius: 16px; border: 2px solid #e2e8f0; font-size: 1rem; margin-top: 8px; margin-bottom: 20px; background: #fafbfc; }
+        input:focus, textarea:focus { outline: none; border-color: #667eea; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 28px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        button:hover { transform: translateY(-2px); }
+        button.secondary { background: #f1f5f9; color: #4a5568; }
+        button.danger { background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); }
+        button.small { padding: 6px 12px; font-size: 0.8rem; }
+        .upload-area { border: 2px dashed #cbd5e0; border-radius: 20px; padding: 30px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; }
+        .upload-area:hover { border-color: #667eea; background: #f1f5f9; }
+        .post { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #edf2f7; position: relative; cursor: pointer; transition: all 0.2s; }
+        .post:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .post-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; cursor: pointer; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 3px solid #667eea; cursor: pointer; }
+        .avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #667eea; }
+        .avatar-medium { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .post-media { max-width: 100%; border-radius: 20px; margin: 16px 0; max-height: 500px; object-fit: cover; }
+        .reactions { display: flex; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #edf2f7; flex-wrap: wrap; }
+        .reaction-btn { background: #f8fafc; padding: 8px 20px; border-radius: 40px; font-size: 0.9rem; cursor: pointer; }
+        .comments-section { margin-top: 16px; padding-top: 16px; }
+        .comment { background: #f8fafc; padding: 12px; border-radius: 16px; margin-top: 10px; position: relative; }
+        .delete-comment { position: absolute; right: 10px; top: 10px; background: none; color: #e53e3e; font-size: 12px; padding: 4px 8px; cursor: pointer; }
+        .friend-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+        .friend-chip { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+        .chats-container { display: flex; gap: 24px; min-height: 600px; }
+        .chats-list { width: 340px; background: white; border-radius: 24px; overflow-y: auto; max-height: 70vh; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; border-bottom: 1px solid #edf2f7; }
+        .chat-item:hover { background: #f8fafc; }
+        .chat-item.active { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 4px solid #667eea; }
+        .chat-info { flex: 1; }
+        .chat-name { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .chat-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; background: #e2e8f0; color: #4a5568; }
+        .chat-badge.group { background: #667eea20; color: #667eea; }
+        .chat-last-msg { font-size: 0.75rem; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .online-status { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 8px; }
+        .online { background: #38a169; box-shadow: 0 0 5px #38a169; }
+        .offline { background: #a0aec0; }
+        .chat-window { flex: 1; background: white; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { padding: 20px; border-bottom: 1px solid #edf2f7; display: flex; align-items: center; gap: 12px; background: #fafbfc; flex-wrap: wrap; cursor: pointer; }
+        .chat-header:hover { background: #f1f5f9; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; max-height: 500px; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 70%; padding: 10px 16px; border-radius: 20px; position: relative; }
+        .message.sent { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message.received { background: #f1f5f9; color: #1a202c; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message-media { max-width: 200px; max-height: 200px; border-radius: 12px; margin-top: 8px; cursor: pointer; }
+        .delete-message { position: absolute; bottom: 2px; right: 8px; background: none; border: none; font-size: 12px; cursor: pointer; opacity: 0.5; color: #e53e3e; }
+        .delete-message:hover { opacity: 1; }
+        .chat-input-area { padding: 20px; border-top: 1px solid #edf2f7; display: flex; gap: 12px; flex-wrap: wrap; }
+        .chat-input-area input { flex: 1; margin: 0; }
+        .password-wrapper { position: relative; }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; background: none; border: none; font-size: 1.2rem; padding: 0; color: #718096; }
+        .error { color: #e53e3e; font-size: 0.85rem; margin-top: -12px; margin-bottom: 16px; }
+        .success { color: #38a169; }
+        .delete-post { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; }
+        .delete-post:hover { background: #e53e3e; }
+        .deleted-user { opacity: 0.6; filter: grayscale(0.5); }
+        .group-member-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .group-member { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #edf2f7; }
+        .group-create-card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 20px; }
+        .member-select { max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; margin-bottom: 20px; }
+        .member-checkbox { display: flex; align-items: center; gap: 12px; padding: 8px; cursor: pointer; }
+        .member-checkbox:hover { background: #f8fafc; }
+        .profile-header { text-align: center; margin-bottom: 24px; }
+        .profile-stats { display: flex; justify-content: center; gap: 32px; margin: 20px 0; }
+        .profile-stat { text-align: center; }
+        .profile-stat-value { font-size: 1.5rem; font-weight: 700; color: #667eea; }
+        .profile-stat-label { font-size: 0.85rem; color: #718096; }
+        @media (max-width: 768px) { .page { padding: 20px; } .chats-container { flex-direction: column; } .chats-list { width: 100%; max-height: 300px; } .message { max-width: 85%; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="navbar">
+        <div class="logo">✨ MAS</div>
+        <div class="nav-buttons" id="navGuest">
+            <button class="nav-btn" data-page="login">Вход</button>
+            <button class="nav-btn" data-page="register">Регистрация</button>
+        </div>
+        <div class="nav-buttons" id="navUser" style="display: none;">
+            <button class="nav-btn" data-page="feed">📰 Лента</button>
+            <button class="nav-btn" data-page="myfeed">📝 Мои посты</button>
+            <button class="nav-btn" data-page="chats">💬 Чаты</button>
+            <button class="nav-btn" data-page="people">👥 Люди</button>
+            <button class="nav-btn" data-page="createpost">➕ Пост</button>
+            <button class="nav-btn" data-page="profile">👤 Профиль</button>
+            <button class="nav-btn" id="logoutBtn">🚪 Выйти</button>
+        </div>
+    </div>
+
+    <div id="loginPage" class="page"><div class="card"><h2>🔐 Вход</h2><input type="email" id="loginEmail" placeholder="Почта"><div class="password-wrapper"><input type="password" id="loginPassword" placeholder="Пароль"><button class="toggle-password" onclick="togglePassword('loginPassword')">👁️</button></div><button id="loginBtn">🚀 Войти</button><button id="forgotPasswordBtn" class="secondary" style="margin-top:10px">🔑 Забыли пароль?</button><div id="loginMessage"></div></div></div>
+    <div id="registerPage" class="page"><div class="card"><h2>📝 Регистрация</h2><input type="text" id="regNick" placeholder="Никнейм"><input type="email" id="regEmail" placeholder="Почта"><div class="password-wrapper"><input type="password" id="regPassword" placeholder="Пароль"><button class="toggle-password" onclick="togglePassword('regPassword')">👁️</button></div><div class="password-wrapper"><input type="password" id="regPassword2" placeholder="Повторите"><button class="toggle-password" onclick="togglePassword('regPassword2')">👁️</button></div><div class="upload-area" id="avatarUploadArea">📸 Аватарка<input type="file" id="avatarFile" accept="image/*" style="display:none"></div><button id="registerBtn">📝 Зарегистрироваться</button><div id="regMessage"></div></div></div>
+    <div id="resetPasswordPage" class="page"><div class="card"><h2>🔑 Восстановление</h2><input type="email" id="resetEmail" placeholder="Почта"><button id="sendResetCodeBtn">📧 Отправить код</button><div id="resetCodeSection" style="display:none"><input type="text" id="resetCode" placeholder="Код"><div class="password-wrapper"><input type="password" id="newPassword" placeholder="Новый пароль"><button class="toggle-password" onclick="togglePassword('newPassword')">👁️</button></div><div class="password-wrapper"><input type="password" id="newPassword2" placeholder="Повторите"><button class="toggle-password" onclick="togglePassword('newPassword2')">👁️</button></div><button id="confirmResetBtn">✅ Сменить</button></div><div id="resetMessage"></div></div></div>
+    <div id="profilePage" class="page"><div class="card" id="profileCard"></div></div>
+    <div id="feedPage" class="page"><h2>📰 Лента</h2><div id="feedContainer"></div></div>
+    <div id="myfeedPage" class="page"><h2>📝 Мои посты</h2><div id="myfeedContainer"></div></div>
+    <div id="chatsPage" class="page"><h2>💬 Чаты <button id="createGroupInChatsBtn" class="secondary small">➕ Создать группу</button></h2><div class="chats-container"><div class="chats-list" id="chatsList"></div><div class="chat-window" id="chatWindow"><div class="empty-chat" style="padding:40px;text-align:center">Выберите чат</div></div></div></div>
+    <div id="peoplePage" class="page"><h2>🔍 Поиск</h2><input type="text" id="searchPeople" placeholder="Никнейм"><button id="searchBtn">Найти</button><div id="searchResults"></div></div>
+    <div id="createpostPage" class="page"><div class="card"><h2>✨ Новый пост</h2><textarea id="postText" rows="4" placeholder="Что нового?"></textarea><div class="upload-area" id="mediaUploadArea">🎬 Медиа<input type="file" id="mediaFile" accept="image/*,video/*,audio/*" style="display:none"></div><div id="mediaPreview"></div><button id="publishPostBtn">🚀 Опубликовать</button><div id="postResult"></div></div></div>
+</div>
+
+<script>
+    emailjs.init({ publicKey: "CjPr-t5mi98KKo5B_" });
+    async function sendRealEmail(email, code, purpose) {
+        try { await emailjs.send("service_zwbdl7l", "template_lu2zmqs", { to_email: email, code, purpose, site_name: "MAS", year: 2025 }); return true; } 
+        catch(e) { alert(`Код: ${code}`); return false; }
+    }
+    function fileToBase64(file) { return new Promise(r=>{const a=new FileReader(); a.onload=()=>r(a.result); a.readAsDataURL(file);}); }
+    function setupFileUpload(areaId, inputId, cb) {
+        const a=document.getElementById(areaId), i=document.getElementById(inputId); if(!a) return;
+        a.onclick=()=>i.click(); a.ondragover=e=>{e.preventDefault(); a.classList.add('drag-over');}; a.ondragleave=()=>a.classList.remove('drag-over');
+        a.ondrop=async e=>{e.preventDefault(); a.classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(f) cb(f);};
+        i.onchange=async e=>{if(e.target.files[0]) cb(e.target.files[0]);};
+    }
+    function togglePassword(id){const i=document.getElementById(id); i.type=i.type==='password'?'text':'password';}
+    
+    let currentUser=null, pendingCode=null, currentChat=null, viewingProfile=null, lastActivity={};
+    
+    function loadDB(){
+        if(!localStorage.getItem("mas_users")) localStorage.setItem("mas_users", JSON.stringify([]));
+        if(!localStorage.getItem("mas_posts")) localStorage.setItem("mas_posts", JSON.stringify([]));
+        if(!localStorage.getItem("mas_messages")) localStorage.setItem("mas_messages", JSON.stringify([]));
+        if(!localStorage.getItem("mas_renames")) localStorage.setItem("mas_renames", JSON.stringify({}));
+        if(!localStorage.getItem("mas_groups")) localStorage.setItem("mas_groups", JSON.stringify([]));
+        if(!localStorage.getItem("mas_deleted_users")) localStorage.setItem("mas_deleted_users", JSON.stringify([]));
+        if(!localStorage.getItem("mas_last_activity")) localStorage.setItem("mas_last_activity", JSON.stringify({}));
+    }
+    function getUsers(){ return JSON.parse(localStorage.getItem("mas_users")); }
+    function saveUsers(u){ localStorage.setItem("mas_users", JSON.stringify(u)); }
+    function getPosts(){ return JSON.parse(localStorage.getItem("mas_posts")); }
+    function savePosts(p){ localStorage.setItem("mas_posts", JSON.stringify(p)); }
+    function getMessages(){ return JSON.parse(localStorage.getItem("mas_messages")); }
+    function saveMessages(m){ localStorage.setItem("mas_messages", JSON.stringify(m)); }
+    function getRenames(){ return JSON.parse(localStorage.getItem("mas_renames")); }
+    function saveRenames(r){ localStorage.setItem("mas_renames", JSON.stringify(r)); }
+    function getGroups(){ return JSON.parse(localStorage.getItem("mas_groups")); }
+    function saveGroups(g){ localStorage.setItem("mas_groups", JSON.stringify(g)); }
+    function getDeletedUsers(){ return JSON.parse(localStorage.getItem("mas_deleted_users")); }
+    function saveDeletedUsers(d){ localStorage.setItem("mas_deleted_users", JSON.stringify(d)); }
+    function getLastActivityStore(){ return JSON.parse(localStorage.getItem("mas_last_activity")||"{}"); }
+    function saveLastActivity(la){ localStorage.setItem("mas_last_activity", JSON.stringify(la)); }
+    
+    function isNickFree(nick, excludeId=null){ return !getUsers().some(u=>u.nick===nick && u.id!==excludeId); }
+    function generateCode(){ return Math.floor(100000+Math.random()*900000).toString(); }
+    function escapeHtml(t){ if(!t) return ''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+    
+    function updateLastActivity(){ if(currentUser){ let la=getLastActivityStore(); la[currentUser.id]=Date.now(); saveLastActivity(la); } }
+    function getLastActivity(userId){ const la=getLastActivityStore(); return la[userId]||0; }
+    function isOnline(userId){ const last=getLastActivity(userId); return (Date.now()-last)<5*60*1000; }
+    function getLastSeen(userId){ const last=getLastActivity(userId); if(!last) return "не был(а)"; const diff=Date.now()-last; if(diff<60000) return "только что"; if(diff<3600000) return `${Math.floor(diff/60000)} мин назад`; if(diff<86400000) return `${Math.floor(diff/3600000)} ч назад`; return `${Math.floor(diff/86400000)} д назад`; }
+    
+    function scheduleAccountDeletion(userId){
+        let deleted=getDeletedUsers();
+        if(!deleted.find(d=>d.userId===userId)){ deleted.push({userId, deletedAt: Date.now()}); saveDeletedUsers(deleted); }
+        setTimeout(()=>{
+            let stillDeleted=getDeletedUsers();
+            if(stillDeleted.find(d=>d.userId===userId)){
+                let users=getUsers().filter(u=>u.id!==userId);
+                let posts=getPosts().filter(p=>p.userId!==userId);
+                let messages=getMessages().filter(m=>m.from!==userId && m.to!==userId);
+                let groups=getGroups();
+                groups.forEach(g=>{ g.members=g.members.filter(m=>m!==userId); g.admins=g.admins.filter(a=>a!==userId); });
+                saveUsers(users); savePosts(posts); saveMessages(messages); saveGroups(groups);
+                saveDeletedUsers(stillDeleted.filter(d=>d.userId!==userId));
+            }
+        }, 24*60*60*1000);
+    }
+    
+    function isUserDeleted(userId){ return getDeletedUsers().some(d=>d.userId===userId); }
+    function getUserDisplay(userId){
+        if(isUserDeleted(userId)) return {nick:"[Аккаунт удалён]", avatar:"https://via.placeholder.com/55/cccccc/ffffff?text=DEL", deleted:true};
+        const u=getUsers().find(u=>u.id===userId);
+        return u ? {nick:u.nick, avatar:u.avatar, deleted:false, isPublic:u.isPublic, following:u.following||[], followers:u.followers||[]} : {nick:"[Удалён]", avatar:"https://via.placeholder.com/55/cccccc/ffffff?text=DEL", deleted:true};
+    }
+    function getDisplayNameForUser(viewerId, targetId){
+        if(isUserDeleted(targetId)) return "[Аккаунт удалён]";
+        const r=getRenames(); return r[viewerId]?.[targetId] || getUsers().find(u=>u.id===targetId)?.nick || "Пользователь";
+    }
+    
+    function createGroup(name, avatar, description, membersIds, creatorId){
+        const groups=getGroups();
+        groups.push({id:Date.now().toString(), name, avatar:avatar||`https://ui-avatars.com/api/?background=667eea&color=fff&size=128&name=${encodeURIComponent(name)}`, description:description||"", creator:creatorId, admins:[creatorId], members:[creatorId, ...membersIds.filter(id=>id!==creatorId)], messages:[], createdAt:new Date().toISOString()});
+        saveGroups(groups);
+    }
+    function isGroupAdmin(groupId, userId){ const g=getGroups().find(g=>g.id===groupId); return g?.admins.includes(userId); }
+    function addMemberToGroup(groupId, userId){ const g=getGroups().find(g=>g.id===groupId); if(g && !g.members.includes(userId)){ g.members.push(userId); saveGroups(getGroups()); } }
+    function removeMemberFromGroup(groupId, userId){ const g=getGroups().find(g=>g.id===groupId); if(g){ g.members=g.members.filter(m=>m!==userId); g.admins=g.admins.filter(a=>a!==userId); saveGroups(getGroups()); } }
+    function sendGroupMessage(groupId, userId, text, mediaBase64, mediaType){ const g=getGroups().find(g=>g.id===groupId); if(g && g.members.includes(userId)){ g.messages.push({id:Date.now(), from:userId, text, mediaUrl:mediaBase64, mediaType, timestamp:new Date().toISOString()}); saveGroups(getGroups()); return true; } return false; }
+    function deleteGroupMessage(groupId, messageId, userId){ const g=getGroups().find(g=>g.id===groupId); if(g && (g.admins.includes(userId) || g.messages.find(m=>m.id===messageId)?.from===userId)){ g.messages=g.messages.filter(m=>m.id!==messageId); saveGroups(getGroups()); } }
+    
+    function sendMessage(toId, text, mediaBase64, mediaType, isGroup=false){
+        if(!text.trim() && !mediaBase64) return false;
+        if(isGroup){
+            return sendGroupMessage(toId, currentUser.id, text, mediaBase64, mediaType);
+        } else {
+            const messages=getMessages();
+            messages.push({id:Date.now(), from:currentUser.id, to:toId, text, mediaUrl:mediaBase64, mediaType, timestamp:new Date().toISOString(), read:false});
+            saveMessages(messages);
+            return true;
+        }
+    }
+    function deleteMessage(messageId, chatId, isGroup=false){
+        if(isGroup){ deleteGroupMessage(chatId, messageId, currentUser.id); }
+        else {
+            let messages=getMessages();
+            const msg=messages.find(m=>m.id===messageId);
+            if(msg && msg.from===currentUser.id){ messages=messages.filter(m=>m.id!==messageId); saveMessages(messages); }
+        }
+    }
+    
+    function getChats(){
+        const messages=getMessages(), users=getUsers(), groups=getGroups();
+        const chats=[];
+        users.forEach(u=>{ if(u.id!==currentUser.id && !isUserDeleted(u.id)) chats.push({id:u.id, type:"user", name:getDisplayNameForUser(currentUser.id, u.id), avatar:u.avatar, user:u}); });
+        groups.forEach(g=>{ if(g.members.includes(currentUser.id)) chats.push({id:g.id, type:"group", name:g.name, avatar:g.avatar, group:g}); });
+        chats.forEach(c=>{
+            let msgs=c.type==="group"?c.group.messages:messages.filter(m=>(m.from===c.id && m.to===currentUser.id)||(m.from===currentUser.id && m.to===c.id));
+            c.lastMsg=msgs.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp))[0];
+            let unread=0;
+            if(c.type!=="group") unread=messages.filter(m=>m.to===currentUser.id && m.from===c.id && !m.read).length;
+            c.unread=unread;
+        });
+        return chats.sort((a,b)=>{ if(!a.lastMsg) return 1; if(!b.lastMsg) return -1; return new Date(b.lastMsg.timestamp)-new Date(a.lastMsg.timestamp); });
+    }
+    
+    function renderChatsList(){
+        const chats=getChats();
+        const cont=document.getElementById("chatsList");
+        cont.innerHTML=chats.map(c=>`<div class="chat-item ${currentChat?.id===c.id?'active':''}" onclick="selectChat('${c.id}','${c.type}')"><img src="${c.avatar}" class="avatar-medium"><div class="chat-info"><div class="chat-name">${escapeHtml(c.name)}${c.type==="group"?`<span class="chat-badge group">👥</span>`:``}<span class="online-status ${c.type==="user"&&isOnline(c.id)?'online':'offline'}"></span></div><div class="chat-last-msg">${c.lastMsg?((c.lastMsg.from===currentUser.id?'Вы: ':'')+(c.lastMsg.text||'Медиа')):'Нет сообщений'}</div></div>${c.unread>0?`<div style="background:#667eea;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;">${c.unread}</div>`:''}</div>`).join("");
+        if(chats.length===0) cont.innerHTML="<div style='padding:20px;text-align:center;color:#a0aec0'>😢 Нет чатов<br><button onclick='openGroupCreate()' class='secondary small'>➕ Создать группу</button></div>";
+    }
+    
+    window.openGroupCreate=()=>{
+        const users=getUsers().filter(u=>u.id!==currentUser.id && !isUserDeleted(u.id));
+        const modalHtml=`<div class="card" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;max-width:500px;width:90%;max-height:80vh;overflow-y:auto"><h3>👥 Создать группу</h3><input type="text" id="newGroupName" placeholder="Название группы*"><textarea id="newGroupDesc" placeholder="Описание (необязательно)" rows="2"></textarea><div class="upload-area" id="groupCreateAvatarArea" style="padding:15px">📸 Аватар (опционально)<input type="file" id="groupCreateAvatarFile" accept="image/*" style="display:none"></div><div class="member-select"><div style="font-weight:600;margin-bottom:10px">➕ Добавить участников:</div>${users.map(u=>`<label class="member-checkbox"><input type="checkbox" value="${u.id}"> <img src="${u.avatar}" class="avatar-medium" style="width:30px;height:30px"> ${escapeHtml(u.nick)}</label>`).join('')}</div><div style="display:flex;gap:10px"><button id="confirmGroupCreateBtn">✅ Создать</button><button onclick="this.closest('.card').remove()" class="secondary">❌</button></div></div>`;
+        const overlay=document.createElement('div'); overlay.style.position='fixed'; overlay.style.top=0; overlay.style.left=0; overlay.style.right=0; overlay.style.bottom=0; overlay.style.background='rgba(0,0,0,0.5)'; overlay.style.zIndex=999; overlay.onclick=(e)=>{if(e.target===overlay) overlay.remove();};
+        overlay.innerHTML=modalHtml; document.body.appendChild(overlay);
+        let groupAvatar=null;
+        const area=document.getElementById("groupCreateAvatarArea"), input=document.getElementById("groupCreateAvatarFile");
+        if(area && input){
+            area.onclick=()=>input.click();
+            input.onchange=async e=>{if(e.target.files[0] && e.target.files[0].size<=5*1024*1024) groupAvatar=await fileToBase64(e.target.files[0]);};
+        }
+        document.getElementById("confirmGroupCreateBtn").onclick=()=>{
+            const name=document.getElementById("newGroupName").value.trim();
+            if(!name){ alert("Введите название"); return; }
+            const desc=document.getElementById("newGroupDesc").value;
+            const selected=Array.from(document.querySelectorAll('.member-checkbox input:checked')).map(cb=>cb.value);
+            createGroup(name, groupAvatar, desc, selected, currentUser.id);
+            overlay.remove();
+            renderChatsList();
+            alert("✅ Группа создана!");
+        };
+    };
+    
+    window.viewProfile=(id, type)=>{
+        if(type==="user"){
+            const user=getUsers().find(u=>u.id===id);
+            if(!user || isUserDeleted(id)){ alert("Пользователь не найден"); return; }
+            viewingProfile={id, type:"user", data:user};
+            renderProfilePage();
+        }else if(type==="group"){
+            const group=getGroups().find(g=>g.id===id);
+            if(!group){ alert("Группа не найдена"); return; }
+            viewingProfile={id, type:"group", data:group};
+            renderProfilePage();
+        }
+        showPage("profilePage");
+    };
+    
+    window.selectChat=async(id,type)=>{
+        currentChat={id,type};
+        renderChatsList();
+        let msgs=[], chatInfo={};
+        if(type==="group"){
+            const g=getGroups().find(g=>g.id===id);
+            if(!g){ document.getElementById("chatWindow").innerHTML="<div class='empty-chat'>Группа не найдена</div>"; return; }
+            msgs=g.messages;
+            chatInfo={name:g.name, avatar:g.avatar, isAdmin:g.admins.includes(currentUser.id), members:g.members, description:g.description};
+        } else {
+            const u=getUsers().find(u=>u.id===id);
+            if(!u || isUserDeleted(id)){ document.getElementById("chatWindow").innerHTML="<div class='empty-chat'>Пользователь удалён</div>"; return; }
+            let allMsgs=getMessages().filter(m=>(m.from===id && m.to===currentUser.id)||(m.from===currentUser.id && m.to===id)).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+            allMsgs.forEach(m=>{ if(m.to===currentUser.id && m.from===id && !m.read) m.read=true; });
+            saveMessages(getMessages());
+            msgs=allMsgs;
+            chatInfo={name:getDisplayNameForUser(currentUser.id, id), avatar:u.avatar, userId:id, isOnline:isOnline(id), lastSeen:getLastSeen(id)};
+        }
+        const win=document.getElementById("chatWindow");
+        win.innerHTML=`<div class="chat-header" onclick="viewProfile('${id}','${type}')"><img src="${chatInfo.avatar}" class="avatar-medium"><div><div style="font-weight:600">${escapeHtml(chatInfo.name)}</div><div style="font-size:0.75rem;color:#718096">${type==="user"?`${chatInfo.isOnline?'🟢 В сети':`🟡 ${chatInfo.lastSeen}`}`:`${chatInfo.isAdmin?'👑 Админ':'👤 Участник'} ${chatInfo.description?` • ${escapeHtml(chatInfo.description.substring(0,30))}`:''}`}</div></div>${type==="group"&&chatInfo.isAdmin?`<button onclick="showGroupManage('${id}')" class="secondary small" style="margin-left:auto">⚙️ Управление</button>`:''}</div><div class="chat-messages" id="chatMessages">${msgs.map(m=>{const sender=type==="group"?getUserDisplay(m.from):(m.from===currentUser.id?currentUser:getUserDisplay(m.from)); return `<div class="message ${m.from===currentUser.id?'sent':'received'}"><div class="message-text">${type==="group"?`<b>${escapeHtml(sender.nick)}</b><br>`:''}${escapeHtml(m.text||'')}</div>${m.mediaUrl?(m.mediaType==='image'?`<img src="${m.mediaUrl}" class="message-media" onclick="window.open(this.src)">`:(m.mediaType==='video'?`<video src="${m.mediaUrl}" controls class="message-media"></video>`:`<audio controls src="${m.mediaUrl}" style="width:100%"></audio>`)):''}<div class="message-time">${new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>${m.from===currentUser.id?`<button class="delete-message" onclick="deleteChatMessage(${m.id},'${id}','${type}')">✕</button>`:''}</div>`;}).join('')}</div><div class="chat-input-area"><input type="text" id="messageInput" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendToCurrent()"><button onclick="sendToCurrent()">📤</button><button onclick="sendMediaInChat()" class="secondary">📎</button></div>`;
+        const mc=document.getElementById("chatMessages"); if(mc) mc.scrollTop=mc.scrollHeight;
+    };
+    
+    let chatMedia=null, chatMediaType=null;
+    window.sendMediaInChat=()=>{const i=document.createElement('input'); i.type='file'; i.accept='image/*,video/*,audio/*'; i.onchange=async e=>{if(e.target.files[0]){const f=e.target.files[0]; if(f.size>20*1024*1024){alert(">20MB");return;} chatMedia=await fileToBase64(f); chatMediaType=f.type.startsWith('image/')?'image':f.type.startsWith('video/')?'video':'audio'; sendToCurrent(true);}}; i.click();};
+    window.sendToCurrent=async(withMedia=false)=>{if(!currentChat) return; const inp=document.getElementById("messageInput"); const text=withMedia?"":inp?.value.trim()||""; if(!text&&!chatMedia) return; if(sendMessage(currentChat.id, text, withMedia?chatMedia:null, withMedia?chatMediaType:null, currentChat.type==="group")){ if(inp) inp.value=""; chatMedia=null; selectChat(currentChat.id,currentChat.type); renderChatsList();}};
+    window.deleteChatMessage=(msgId,chatId,type)=>{if(confirm("Удалить сообщение?")){deleteMessage(msgId,chatId,type==="group"); selectChat(chatId,type); renderChatsList();}};
+    window.showGroupManage=(groupId)=>{const g=getGroups().find(g=>g.id===groupId); if(!g) return; const newName=prompt("Новое название группы",g.name); if(newName){g.name=newName; saveGroups(getGroups()); selectChat(groupId,"group");} alert("👥 Управление группой");};
+    
+    function deletePost(postId){if(confirm("Удалить пост?")){savePosts(getPosts().filter(p=>p.id!==postId));renderAllFeeds();}}
+    function canViewPosts(ownerId){if(ownerId===currentUser.id) return true; const o=getUsers().find(u=>u.id===ownerId); if(!o || isUserDeleted(ownerId)) return false; if(o.isPublic) return true; return o.followers?.includes(currentUser.id);}
+    function renderPostHtml(p,showDelete, isViewingOther=false){const a=getUserDisplay(p.userId); return `<div class="post" onclick="${isViewingOther?'':'viewProfile(\''+p.userId+'\',\'user\')'}"><div class="post-header" onclick="event.stopPropagation();viewProfile('${p.userId}','user')"><img src="${a.avatar}" class="avatar"><div><b>${escapeHtml(a.nick)}</b><br><small>${new Date(p.createdAt).toLocaleString()}</small></div></div><div>${escapeHtml(p.text)}</div>${p.mediaUrl?(p.mediaType==='image'?`<img src="${p.mediaUrl}" class="post-media">`:(p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="post-media"></video>`:`<audio controls src="${p.mediaUrl}" style="width:100%"></audio>`)):''}<div class="reactions" onclick="event.stopPropagation()"><button class="reaction-btn" onclick="reactPost(${p.id},'like')">👍 ${p.likes?.length||0}</button><button class="reaction-btn" onclick="reactPost(${p.id},'dislike')">👎 ${p.dislikes?.length||0}</button><button class="reaction-btn" onclick="commentPost(${p.id})">💬 ${p.comments?.length||0}</button></div><div class="comments-section" onclick="event.stopPropagation()">${(p.comments||[]).map((c,i)=>`<div class="comment"><b>${escapeHtml(c.nick)}</b>: ${escapeHtml(c.text)}${(c.userId===currentUser.id||p.userId===currentUser.id)?`<button class="delete-comment" onclick="deleteComment(${p.id},${i})">✕</button>`:''}</div>`).join('')}</div>${showDelete?`<button class="delete-post" onclick="event.stopPropagation();deletePost(${p.id})">✕</button>`:''}</div>`;}
+    window.reactPost=(pid,type)=>{let p=getPosts().find(p=>p.id===pid); if(!p) return; if(type==='like'){if(!p.likes.includes(currentUser.id)) p.likes.push(currentUser.id); p.dislikes=p.dislikes.filter(d=>d!==currentUser.id);}else{if(!p.dislikes.includes(currentUser.id)) p.dislikes.push(currentUser.id); p.likes=p.likes.filter(l=>l!==currentUser.id);} savePosts(getPosts()); renderAllFeeds(); if(viewingProfile && viewingProfile.type==="user") renderProfilePage();};
+    window.commentPost=(pid)=>{const c=prompt("💬 Комментарий:"); if(!c) return; let p=getPosts().find(p=>p.id===pid); if(!p) return; p.comments.push({userId:currentUser.id, nick:currentUser.nick, text:c, date:new Date()}); savePosts(getPosts()); renderAllFeeds(); if(viewingProfile && viewingProfile.type==="user") renderProfilePage();};
+    window.deleteComment=(pid,idx)=>{if(confirm("Удалить комментарий?")){let p=getPosts().find(p=>p.id===pid); p.comments.splice(idx,1); savePosts(getPosts()); renderAllFeeds(); if(viewingProfile && viewingProfile.type==="user") renderProfilePage();}};
+    function renderFeed(cid,filter){const posts=getPosts(); let f=filter==="my"?posts.filter(p=>p.userId===currentUser.id):posts.filter(p=>currentUser.following?.includes(p.userId)&&canViewPosts(p.userId)); f.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); const cont=document.getElementById(cid); cont.innerHTML=f.map(p=>renderPostHtml(p,filter==="my",false)).join(""); if(cont.innerHTML==="") cont.innerHTML="<div class='card'>😢 Нет постов</div>";}
+    function renderAllFeeds(){if(currentUser){renderFeed("feedContainer","friends");renderFeed("myfeedContainer","my");}}
+    
+    function renderProfilePage(){
+        const container=document.getElementById("profileCard");
+        if(!viewingProfile || viewingProfile.id===currentUser?.id){
+            viewingProfile=null;
+            if(!currentUser){ container.innerHTML=""; return; }
+            container.innerHTML=renderUserProfileHtml(currentUser, true);
+            document.getElementById("editProfileBtn")?.addEventListener("click",()=>enableEditMode());
+            document.getElementById("changePasswordBtn")?.addEventListener("click",()=>enablePasswordMode());
+            document.getElementById("deleteAccountBtn")?.addEventListener("click",()=>{if(confirm("Удалить аккаунт?")) scheduleAccountDeletion(currentUser.id);});
+            document.getElementById("togglePrivacyBtn")?.addEventListener("click",()=>{currentUser.isPublic=!currentUser.isPublic; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage();});
+        }else if(viewingProfile.type==="user"){
+            const user=viewingProfile.data;
+            container.innerHTML=renderUserProfileHtml(user, false);
+        }else if(viewingProfile.type==="group"){
+            const group=viewingProfile.data;
+            container.innerHTML=renderGroupProfileHtml(group);
+        }
+    }
+    
+    function renderUserProfileHtml(user, isOwn){
+        const isFollow=currentUser?.following?.includes(user.id);
+        const followers=getUsers().filter(u=>u.following?.includes(user.id)).length;
+        const friends=getUsers().filter(u=>u.following?.includes(user.id) && user.following?.includes(u.id)).length;
+        const posts=getPosts().filter(p=>p.userId===user.id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+        return `<div><div class="profile-header"><img src="${user.avatar}" class="avatar-large"><h2>${escapeHtml(user.nick)}</h2><p style="color:#718096">${user.email}</p><div style="margin:10px 0"><span class="online-status ${isOnline(user.id)?'online':'offline'}"></span> ${isOnline(user.id)?'В сети':`Был(а) ${getLastSeen(user.id)}`}</div><div><span class="privacy-badge ${user.isPublic?'privacy-public':'privacy-private'}">${user.isPublic?'🌍 Публичный':'🔒 Закрытый'}</span></div>${!isOwn?`<div style="margin-top:15px"><button onclick="followUserFromProfile('${user.id}')" id="profileFollowBtn" class="secondary">${isFollow?'Отписаться':'Подписаться'}</button><button onclick="selectChat('${user.id}','user');showPage('chatsPage');" class="secondary">💬 Написать</button></div>`:`<div style="margin-top:15px"><button id="togglePrivacyBtn" class="secondary">${user.isPublic?'🔒 Сделать закрытым':'🌍 Сделать публичным'}</button><button id="editProfileBtn" class="secondary">✏️ Редактировать</button><button id="changePasswordBtn" class="secondary">🔑 Сменить пароль</button><button id="deleteAccountBtn" class="danger">🗑️ Удалить аккаунт</button></div>`}</div><div class="profile-stats"><div class="profile-stat"><div class="profile-stat-value">${followers}</div><div class="profile-stat-label">Подписчиков</div></div><div class="profile-stat"><div class="profile-stat-value">${friends}</div><div class="profile-stat-label">Друзей</div></div><div class="profile-stat"><div class="profile-stat-value">${posts.length}</div><div class="profile-stat-label">Постов</div></div></div><h3>📝 Посты</h3><div id="userPostsContainer">${posts.length?posts.map(p=>renderPostHtml(p,isOwn,true)).join(""):"<div class='card'>😢 Нет постов</div>"}</div></div>`;
+    }
+    
+    function renderGroupProfileHtml(group){
+        const members=group.members.map(m=>getUserDisplay(m)).filter(m=>!m.deleted);
+        const posts=getPosts().filter(p=>p.groupId===group.id);
+        return `<div><div class="profile-header"><img src="${group.avatar}" class="avatar-large"><h2>👥 ${escapeHtml(group.name)}</h2><p style="color:#718096">${group.description||"Нет описания"}</p><div><span class="chat-badge group">👥 Группа</span> • ${group.members.length} участников</div>${group.admins.includes(currentUser.id)?`<div style="margin-top:15px"><button onclick="selectChat('${group.id}','group');showPage('chatsPage');" class="secondary">💬 Перейти в чат</button></div>`:``}</div><h3>👥 Участники (${members.length})</h3><div class="friend-list">${members.map(m=>`<div class="friend-chip" onclick="viewProfile('${m.deleted?'':group.members.find(mid=>getUserDisplay(mid).nick===m.nick)}','user')">${escapeHtml(m.nick)} <span class="online-status ${isOnline(group.members.find(mid=>getUserDisplay(mid).nick===m.nick)?'online':'offline'}"></span></div>`).join("")}</div><h3>📝 Посты группы</h3><div id="groupPostsContainer">${posts.length?posts.map(p=>renderPostHtml(p,false,true)).join(""):"<div class='card'>😢 Нет постов</div>"}</div></div>`;
+    }
+    
+    window.followUserFromProfile=(uid)=>{
+        if(currentUser.following.includes(uid)) currentUser.following=currentUser.following.filter(id=>id!==uid);
+        else currentUser.following.push(uid);
+        saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u));
+        renderProfilePage();
+        renderAllFeeds();
+        renderChatsList();
+    };
+    
+    let editAvatar=null, tempEditAvatar=null;
+
+    
+
+    function enableEditMode(){
+        const container=document.getElementById("profileCard");
+        container.innerHTML=`<div><h2>✏️ Редактирование профиля</h2><input type="text" id="editNick" placeholder="Новый ник" value="${escapeHtml(currentUser.nick)}"><input type="email" id="editEmail" placeholder="Новая почта" value="${escapeHtml(currentUser.email)}"><div class="upload-area" id="editAvatarUploadArea">📸 Новый аватар<input type="file" id="editAvatarFile" accept="image/*" style="display:none"></div><div style="display:flex;gap:10px;margin-top:20px"><button id="saveProfileChangesBtn">💾 Сохранить</button><button id="cancelEditBtn" class="secondary">❌ Отмена</button></div><div id="editCodeZone" style="display:none;margin-top:15px"><input type="text" id="editCodeInput" placeholder="Код подтверждения"><button id="confirmEditEmailBtn">✅ Подтвердить</button></div></div>`;
+        const editArea=document.getElementById("editAvatarUploadArea"), editInput=document.getElementById("editAvatarFile");
+        if(editArea&&editInput){ editArea.onclick=()=>editInput.click(); editInput.onchange=async(e)=>{ if(e.target.files[0]&&e.target.files[0].size<=5*1024*1024){ editAvatar=await fileToBase64(e.target.files[0]); editArea.style.background="#eef2ff"; } }; }
+        document.getElementById("saveProfileChangesBtn").onclick=async()=>{ const nn=document.getElementById("editNick").value.trim(), ne=document.getElementById("editEmail").value.trim(); if(nn!==currentUser.nick&&!isNickFree(nn,currentUser.id)){ alert("Ник занят"); return; } if(ne!==currentUser.email){ const cd=generateCode(); pendingCode={email:ne,code:cd,newNick:nn,newAvatar:editAvatar}; await sendRealEmail(ne,cd,"смены почты"); document.getElementById("editCodeZone").style.display="block"; document.getElementById("confirmEditEmailBtn").onclick=()=>{ if(document.getElementById("editCodeInput").value.trim()===pendingCode.code){ if(pendingCode.newNick) currentUser.nick=pendingCode.newNick; currentUser.email=pendingCode.email; if(pendingCode.newAvatar) currentUser.avatar=pendingCode.newAvatar; else if(editAvatar) currentUser.avatar=editAvatar; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage(); alert("✅ Профиль обновлён"); } else alert("❌ Неверный код"); }; } else { if(editAvatar) currentUser.avatar=editAvatar; currentUser.nick=nn; saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderProfilePage(); alert("✅ Профиль обновлён"); } };
+        document.getElementById("cancelEditBtn").onclick=()=>renderProfilePage();
+    }
+ 
+    function enablePasswordMode(){
+        const container=document.getElementById("profileCard");
+        container.innerHTML=`<div><h2>🔑 Смена пароля</h2><div class="password-wrapper"><input type="password" id="oldPassword" placeholder="Текущий пароль"><button class="toggle-password" onclick="togglePassword('oldPassword')">👁️</button></div><div class="password-wrapper"><input type="password" id="newPasswordProfile" placeholder="Новый пароль"><button class="toggle-password" onclick="togglePassword('newPasswordProfile')">👁️</button></div><div class="password-wrapper"><input type="password" id="newPasswordProfile2" placeholder="Повторите"><button class="toggle-password" onclick="togglePassword('newPasswordProfile2')">👁️</button></div><div style="display:flex;gap:10px;margin-top:20px"><button id="savePasswordBtn">💾 Сохранить</button><button id="cancelPasswordBtn" class="secondary">❌ Отмена</button></div></div>`;
+        document.getElementById("savePasswordBtn").onclick=()=>{const op=document.getElementById("oldPassword").value, np=document.getElementById("newPasswordProfile").value, np2=document.getElementById("newPasswordProfile2").value; if(currentUser.password!==btoa(op)){alert("Неверный пароль");return;} if(np!==np2){alert("Пароли не совпадают");return;} if(np.length<4){alert("Пароль ≥4 символов");return;} let u=getUsers(); const user=u.find(u=>u.id===currentUser.id); user.password=btoa(np); saveUsers(u); currentUser.password=btoa(np); alert("✅ Пароль изменён"); renderProfilePage();};
+        document.getElementById("cancelPasswordBtn").onclick=()=>renderProfilePage();
+    }
+    
+    let tempAvatar=null; setupFileUpload('avatarUploadArea','avatarFile',async f=>{if(f.size<=5*1024*1024) tempAvatar=await fileToBase64(f);});
+    document.getElementById("registerBtn").onclick=()=>{const n=document.getElementById("regNick").value.trim(), e=document.getElementById("regEmail").value.trim(), p=document.getElementById("regPassword").value, p2=document.getElementById("regPassword2").value; if(!n||!e||!p){showMsg("regMessage","Заполните всё",1);return;} if(p!==p2){showMsg("regMessage","Пароли не совпадают",1);return;} if(p.length<4){showMsg("regMessage","Пароль ≥4 символов",1);return;} if(!isNickFree(n)){showMsg("regMessage","Ник занят",1);return;} if(getUsers().some(u=>u.email===e)){showMsg("regMessage","Почта занята",1);return;} const a=tempAvatar||`https://ui-avatars.com/api/?background=667eea&color=fff&size=128&name=${encodeURIComponent(n)}`; const nu={id:Date.now().toString(), nick:n, email:e, password:btoa(p), avatar:a, followers:[], following:[], isPublic:true}; const u=getUsers(); u.push(nu); saveUsers(u); currentUser=nu; localStorage.setItem("mas_current",currentUser.id); localStorage.setItem("mas_last_device","true"); updateLastActivity(); switchUI(true); showMsg("regMessage","✅ Успешно!",0);};
+    document.getElementById("loginBtn").onclick=()=>{const e=document.getElementById("loginEmail").value.trim(), p=document.getElementById("loginPassword").value; const u=getUsers().find(u=>u.email===e); if(!u){showMsg("loginMessage","Пользователь не найден",1);return;} if(u.password!==btoa(p)){showMsg("loginMessage","Неверный пароль",1);return;} currentUser=u; localStorage.setItem("mas_current",currentUser.id); localStorage.setItem("mas_last_device","true"); updateLastActivity(); switchUI(true); showMsg("loginMessage","✅ Вход выполнен!",0);};
+    
+    let resetCode=null;
+    document.getElementById("sendResetCodeBtn").onclick=async()=>{const e=document.getElementById("resetEmail").value.trim(); const u=getUsers().find(u=>u.email===e); if(!u){showMsg("resetMessage","Пользователь не найден",1);return;} const cd=generateCode(); resetCode={email:e,code:cd,userId:u.id}; await sendRealEmail(e,cd,"восстановления"); document.getElementById("resetCodeSection").style.display="block"; showMsg("resetMessage","Код отправлен",0);};
+    document.getElementById("confirmResetBtn").onclick=()=>{const cd=document.getElementById("resetCode").value.trim(), np=document.getElementById("newPassword").value, np2=document.getElementById("newPassword2").value; if(!resetCode||resetCode.code!==cd){showMsg("resetMessage","Неверный код",1);return;} if(np!==np2){showMsg("resetMessage","Пароли не совпадают",1);return;} if(np.length<4){showMsg("resetMessage","Пароль ≥4 символов",1);return;} let u=getUsers(); const user=u.find(u=>u.id===resetCode.userId); user.password=btoa(np); saveUsers(u); showMsg("resetMessage","✅ Пароль изменён",0); setTimeout(()=>showPage("loginPage"),2000);};
+    
+    document.getElementById("logoutBtn").onclick=()=>{if(confirm("Выйти?")){currentUser=null; localStorage.removeItem("mas_current"); switchUI(false);}};
+    document.getElementById("forgotPasswordBtn").onclick=()=>showPage("resetPasswordPage");
+    document.getElementById("createGroupInChatsBtn").onclick=()=>openGroupCreate();
+    
+    document.getElementById("searchBtn").onclick=()=>{const q=document.getElementById("searchPeople").value.toLowerCase(); const users=getUsers().filter(u=>u.nick.toLowerCase().includes(q)&&u.id!==currentUser.id&&!isUserDeleted(u.id)); document.getElementById("searchResults").innerHTML=users.map(u=>`<div class="friend-chip" style="justify-content:space-between;width:100%;margin-bottom:8px">${escapeHtml(u.nick)} <div><button onclick="followUserFromSearch('${u.id}')" class="small">${currentUser.following?.includes(u.id)?'Отписаться':'Подписаться'}</button><button onclick="viewProfile('${u.id}','user')" class="small">👁️</button><button onclick="selectChat('${u.id}','user');showPage('chatsPage');" class="small">💬</button></div></div>`).join(""); if(users.length===0) document.getElementById("searchResults").innerHTML="<div class='card'>👻 Никого не найдено</div>";};
+    window.followUserFromSearch=(uid)=>{if(currentUser.following.includes(uid)) currentUser.following=currentUser.following.filter(id=>id!==uid); else currentUser.following.push(uid); saveUsers(getUsers().map(u=>u.id===currentUser.id?currentUser:u)); renderAllFeeds(); renderChatsList(); document.getElementById("searchBtn").click();};
+    
+    let pendingMedia=null,pendingType=null; setupFileUpload('mediaUploadArea','mediaFile',async f=>{if(f.size>20*1024*1024){alert(">20MB");return;} pendingMedia=await fileToBase64(f); pendingType=f.type.startsWith('image/')?'image':f.type.startsWith('video/')?'video':'audio'; document.getElementById("mediaPreview").innerHTML=pendingType==='image'?`<img src="${pendingMedia}" style="max-width:100%;border-radius:16px">`:(pendingType==='video'?`<video src="${pendingMedia}" controls style="max-width:100%"></video>`:`<audio controls src="${pendingMedia}" style="width:100%"></audio>`);});
+    document.getElementById("publishPostBtn").onclick=()=>{const t=document.getElementById("postText").value.trim(); if(!t&&!pendingMedia){document.getElementById("postResult").innerHTML="<span class='error'>Напишите текст</span>";return;} const p=getPosts(); p.unshift({id:Date.now(),userId:currentUser.id,text:t,mediaUrl:pendingMedia,mediaType:pendingType,likes:[],dislikes:[],comments:[],createdAt:new Date().toISOString()}); savePosts(p); document.getElementById("postText").value=""; document.getElementById("mediaPreview").innerHTML=""; pendingMedia=null; renderAllFeeds(); showPage("myfeedPage"); document.getElementById("postResult").innerHTML="<span class='success'>✅ Опубликовано</span>"; setTimeout(()=>document.getElementById("postResult").innerHTML="",2000);};
+    
+    function showPage(id){const pages=["loginPage","registerPage","resetPasswordPage","profilePage","feedPage","myfeedPage","chatsPage","peoplePage","createpostPage"]; pages.forEach(p=>document.getElementById(p).classList.remove("active-page")); document.getElementById(id).classList.add("active-page"); if(id==="chatsPage"&&currentUser) renderChatsList(); if(id==="profilePage") renderProfilePage(); updateLastActivity();}
+    function showMsg(id,msg,isErr){const d=document.getElementById(id); if(d) d.innerHTML=`<div class="${isErr?'error':'success'}">${msg}</div>`; setTimeout(()=>{if(d) d.innerHTML="";},5000);}
+    function switchUI(logged){document.getElementById("navGuest").style.display=logged?"none":"flex"; document.getElementById("navUser").style.display=logged?"flex":"none"; if(logged){ showPage("feed"); viewingProfile=null; }else showPage("login");}
+    document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{viewingProfile=null; showPage(b.getAttribute("data-page")+"Page");}));
+    
+    window.onload=()=>{loadDB(); const sid=localStorage.getItem("mas_current"); if(sid&&localStorage.getItem("mas_last_device")){currentUser=getUsers().find(u=>u.id===sid); if(currentUser) switchUI(true); else switchUI(false);} else switchUI(false); setInterval(()=>{if(currentUser){updateLastActivity(); if(document.getElementById("chatsPage").classList.contains("active-page")&&currentChat) selectChat(currentChat.id,currentChat.type);}},3000);};
+</script>
+</body>
+</html>
