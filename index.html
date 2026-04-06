@@ -18,11 +18,11 @@
             color: #e0e0e0;
         }
         
-        /* Страницы */
+        /* Увеличенная ширина в 3 раза */
         .page {
             display: none;
-            padding: 20px;
-            max-width: 600px;
+            padding: 30px;
+            max-width: 1800px;
             margin: 0 auto;
             min-height: 100vh;
         }
@@ -31,39 +31,110 @@
             display: block;
         }
         
-        /* Карточки */
-        .card {
-            background: #1a1a2e;
-            border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid #2a2a3e;
+        /* Двухколоночная раскладка для главного приложения */
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            min-height: 85vh;
         }
         
-        h2, h3 {
-            margin-bottom: 16px;
+        .sidebar {
+            width: 320px;
+            background: #1a1a2e;
+            border-radius: 32px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .content-area {
+            flex: 1;
+            background: #1a1a2e;
+            border-radius: 32px;
+            padding: 30px;
+            min-height: 85vh;
+        }
+        
+        /* Навигация в сайдбаре */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 20px;
+            background: #2a2a3a;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .nav-menu-item:hover {
+            background: #3a3a4a;
+            transform: translateX(5px);
+        }
+        
+        .nav-menu-item.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+        }
+        
+        .logout-btn {
+            margin-top: 30px;
+            background: #dc2626 !important;
+        }
+        
+        .logout-btn:hover {
+            background: #b91c1c !important;
+        }
+        
+        /* Карточки */
+        .card {
+            background: #2a2a3a;
+            border-radius: 28px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid #3a3a4a;
+        }
+        
+        h2 {
+            font-size: 32px;
+            margin-bottom: 25px;
             color: #00d4ff;
         }
         
-        input, button {
+        h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+        
+        input, button, textarea {
             width: 100%;
-            padding: 14px;
-            margin: 8px 0;
+            padding: 16px;
+            margin: 10px 0;
             border-radius: 50px;
             border: none;
             font-size: 16px;
             transition: all 0.2s ease;
         }
         
-        input {
-            background: #2a2a3a;
+        input, textarea {
+            background: #1a1a2e;
             color: white;
             outline: none;
             border: 1px solid #3a3a4a;
         }
         
-        input:focus {
+        input:focus, textarea:focus {
             border-color: #00d4ff;
             box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
         }
@@ -76,8 +147,8 @@
         }
         
         button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
         }
         
         .password-wrapper {
@@ -88,96 +159,50 @@
         
         .password-wrapper input {
             flex: 1;
-            padding-right: 50px;
+            padding-right: 55px;
         }
         
         .toggle-eye {
             position: absolute;
-            right: 12px;
+            right: 15px;
             cursor: pointer;
             background: transparent;
             width: auto;
             padding: 8px;
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
             color: #888;
         }
         
-        .toggle-eye:hover {
-            transform: none;
-            box-shadow: none;
-            background: transparent;
-        }
-        
-        hr {
-            margin: 20px 0;
-            border-color: #2a2a3e;
-        }
-        
-        /* Навигация */
-        .nav-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            background: #1a1a2e;
-            padding: 12px;
-            border-radius: 60px;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-        }
-        
-        .nav-btn {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            background: #2a2a3a;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .nav-btn:hover {
-            background: #3a3a4a;
-        }
-        
-        .nav-btn.active-nav {
-            background: linear-gradient(135deg, #00d4ff, #0099cc);
-            color: white;
-        }
-        
-        /* Аватар */
         .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 60px;
+            width: 150px;
+            height: 150px;
+            border-radius: 75px;
             object-fit: cover;
-            margin: 10px auto;
+            margin: 0 auto 20px;
             display: block;
-            border: 3px solid #00d4ff;
+            border: 4px solid #00d4ff;
+            cursor: pointer;
         }
         
         .avatar-placeholder {
-            width: 45px;
-            height: 45px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background: linear-gradient(135deg, #00d4ff, #0099cc);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            margin-right: 14px;
+            font-size: 26px;
+            margin-right: 15px;
         }
         
-        /* Контакты и чаты */
         .contact-item, .chat-item {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            background: #2a2a3a;
-            margin: 10px 0;
+            padding: 15px 20px;
+            background: #1a1a2e;
+            margin: 12px 0;
             border-radius: 60px;
             cursor: pointer;
             transition: all 0.2s;
@@ -185,28 +210,22 @@
         
         .contact-item:hover, .chat-item:hover {
             background: #3a3a4a;
-            transform: translateX(5px);
+            transform: translateX(8px);
         }
         
         .contact-name, .chat-name {
             font-weight: 600;
-            font-size: 16px;
+            font-size: 18px;
         }
         
         .chat-preview {
-            font-size: 12px;
+            font-size: 14px;
             color: #888;
-            margin-top: 3px;
+            margin-top: 4px;
         }
         
         .chat-info {
             flex: 1;
-        }
-        
-        .search-result-btn {
-            margin: 5px 0;
-            background: #2a2a3a;
-            font-size: 14px;
         }
         
         /* Чат */
@@ -214,7 +233,7 @@
             display: flex;
             flex-direction: column;
             height: 70vh;
-            background: #1a1a2e;
+            background: #2a2a3a;
             border-radius: 28px;
             overflow: hidden;
         }
@@ -222,14 +241,14 @@
         .messages-area {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
         
         .message {
-            margin: 8px 0;
-            max-width: 75%;
+            margin: 10px 0;
+            max-width: 65%;
         }
         
         .sent {
@@ -241,9 +260,9 @@
         }
         
         .message-bubble {
-            padding: 10px 14px;
-            border-radius: 20px;
-            background: #2a2a3a;
+            padding: 12px 18px;
+            border-radius: 24px;
+            background: #1a1a2e;
         }
         
         .sent .message-bubble {
@@ -252,34 +271,33 @@
         }
         
         .message-text {
-            font-size: 15px;
+            font-size: 16px;
             word-wrap: break-word;
         }
         
         .message-time {
-            font-size: 10px;
+            font-size: 11px;
             opacity: 0.7;
-            margin-top: 4px;
+            margin-top: 5px;
             text-align: right;
         }
         
         .input-area {
             display: flex;
-            gap: 12px;
-            padding: 16px;
+            gap: 15px;
+            padding: 20px;
             background: #1a1a2e;
-            border-top: 1px solid #2a2a3e;
+            border-top: 1px solid #3a3a4a;
         }
         
         .input-area input {
             flex: 1;
             margin: 0;
-            background: #2a2a3a;
         }
         
         .input-area button {
             width: auto;
-            padding: 14px 24px;
+            padding: 16px 30px;
             margin: 0;
         }
         
@@ -287,157 +305,250 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .chat-header button {
             width: auto;
-            padding: 10px 20px;
+            padding: 12px 25px;
             background: #2a2a3a;
             margin: 0;
         }
         
-        #searchResults {
-            margin-top: 12px;
+        .search-results {
+            margin-top: 15px;
         }
         
-        #searchResults button {
-            margin: 6px 0;
-        }
-        
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
+        .search-results button {
+            margin: 8px 0;
             background: #1a1a2e;
         }
         
+        .edit-btn {
+            background: #3a3a4a;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .inline-edit {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .inline-edit input {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .inline-edit button {
+            width: auto;
+            padding: 12px 20px;
+            margin: 0;
+        }
+        
+        .code-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #1a1a2e;
+            border-radius: 20px;
+            display: none;
+        }
+        
+        .row-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1000px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .message {
+                max-width: 85%;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
         ::-webkit-scrollbar-thumb {
             background: #00d4ff;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         
         .empty-state {
             text-align: center;
             color: #888;
-            padding: 40px;
+            padding: 50px;
+            font-size: 18px;
         }
         
-        .back-btn {
-            background: #2a2a3a !important;
-            width: auto !important;
-            padding: 10px 20px !important;
+        .info-text {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <!-- Страница входа -->
     <div id="loginPage" class="page active">
-        <div class="card">
-            <h2>✨ Real MAS Manager</h2>
-            <p style="margin-bottom: 20px;">Современный мессенджер</p>
-            
-            <h3>🔐 Вход</h3>
-            <input type="email" id="loginEmail" placeholder="Электронная почта">
-            <div class="password-wrapper">
-                <input type="password" id="loginPassword" placeholder="Пароль">
-                <button class="toggle-eye" onclick="togglePassword('loginPassword', 'eyeLogin')">👁️</button>
+        <div class="row-2cols" style="max-width: 1400px; margin: 0 auto;">
+            <div class="card">
+                <h2>🔐 Вход</h2>
+                <input type="email" id="loginEmail" placeholder="Электронная почта">
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="Пароль">
+                    <button class="toggle-eye" onclick="togglePassword('loginPassword', 'eyeLogin')">👁️</button>
+                </div>
+                <button onclick="login()">Войти</button>
+                <button onclick="forgotPassword()" style="background: #3a3a4a;">Забыли пароль?</button>
             </div>
-            <button onclick="login()">Войти</button>
-            <button onclick="forgotPassword()" style="background: #3a3a4a;">Забыли пароль?</button>
             
-            <hr>
-            
-            <h3>📝 Регистрация</h3>
-            <input type="email" id="regEmail" placeholder="Электронная почта">
-            <input type="text" id="regUsername" placeholder="Никнейм (уникальный)">
-            <div class="password-wrapper">
-                <input type="password" id="regPassword" placeholder="Пароль (мин. 6 символов)">
-                <button class="toggle-eye" onclick="togglePassword('regPassword', 'eyeReg')">👁️</button>
-            </div>
-            <div class="password-wrapper">
-                <input type="password" id="regConfirm" placeholder="Повторите пароль">
-                <button class="toggle-eye" onclick="togglePassword('regConfirm', 'eyeConf')">👁️</button>
-            </div>
-            <input type="file" id="regAvatar" accept="image/*">
-            <button onclick="register()">Зарегистрироваться</button>
-            
-            <div id="verificationSection" style="display:none; margin-top: 20px;">
-                <input type="text" id="verificationCode" placeholder="Введите 6-значный код из письма">
-                <button id="verifyCodeBtn" style="background: #4caf50;">Подтвердить</button>
+            <div class="card">
+                <h2>📝 Регистрация</h2>
+                <input type="email" id="regEmail" placeholder="Электронная почта">
+                <input type="text" id="regUsername" placeholder="Никнейм (уникальный)">
+                <div class="password-wrapper">
+                    <input type="password" id="regPassword" placeholder="Пароль (мин. 6 символов)">
+                    <button class="toggle-eye" onclick="togglePassword('regPassword', 'eyeReg')">👁️</button>
+                </div>
+                <div class="password-wrapper">
+                    <input type="password" id="regConfirm" placeholder="Повторите пароль">
+                    <button class="toggle-eye" onclick="togglePassword('regConfirm', 'eyeConf')">👁️</button>
+                </div>
+                <input type="file" id="regAvatar" accept="image/*">
+                <button onclick="register()">Зарегистрироваться</button>
+                <div id="verificationSection" style="display:none; margin-top: 20px;">
+                    <input type="text" id="verificationCode" placeholder="Введите 6-значный код из письма">
+                    <button id="verifyCodeBtn" style="background: #4caf50;">Подтвердить</button>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Главное приложение (мессенджер) -->
+    <!-- Главное приложение (расширенное) -->
     <div id="mainApp" class="page">
-        <!-- Навигация -->
-        <div class="nav-bar">
-            <div class="nav-btn" data-tab="profile">👤 Профиль</div>
-            <div class="nav-btn" data-tab="chats">💬 Чаты</div>
-            <div class="nav-btn" data-tab="contacts">📞 Контакты</div>
-            <div class="nav-btn" onclick="logout()">🚪 Выйти</div>
-        </div>
-        
-        <!-- Профиль -->
-        <div id="profileTab" class="tab-content">
-            <div class="card">
-                <img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120?text=User">
-                <p><strong>📧 Почта:</strong> <span id="profileEmail">—</span></p>
-                <p><strong>👤 Ник:</strong> <span id="profileUsername">—</span></p>
-                <input type="file" id="newAvatarInput" accept="image/*">
-                <button onclick="updateProfileAvatar()">🖼️ Обновить аватар</button>
+        <div class="main-layout">
+            <!-- Сайдбар -->
+            <div class="sidebar">
+                <div class="nav-menu">
+                    <div class="nav-menu-item" data-tab="profile">
+                        <span>👤</span> Профиль
+                    </div>
+                    <div class="nav-menu-item" data-tab="chats">
+                        <span>💬</span> Чаты
+                    </div>
+                    <div class="nav-menu-item" data-tab="contacts">
+                        <span>📞</span> Контакты
+                    </div>
+                    <div class="nav-menu-item logout-btn" onclick="logout()">
+                        <span>🚪</span> Выйти
+                    </div>
+                </div>
+                <div class="info-text" style="text-align: center; margin-top: 20px;">
+                    Real MAS Manager v2.0
+                </div>
             </div>
-        </div>
-        
-        <!-- Чаты -->
-        <div id="chatsTab" class="tab-content" style="display: none;">
-            <div class="card">
-                <h3>💬 Активные чаты</h3>
-                <div id="chatsList"></div>
-            </div>
-        </div>
-        
-        <!-- Контакты -->
-        <div id="contactsTab" class="tab-content" style="display: none;">
-            <div class="card">
-                <h3>🔍 Поиск контакта</h3>
-                <input type="text" id="searchNickname" placeholder="Введите никнейм">
-                <button onclick="searchContact()">Найти</button>
-                <div id="searchResults"></div>
+            
+            <!-- Контентная область -->
+            <div class="content-area">
+                <!-- Профиль -->
+                <div id="profileTab" class="tab-content">
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/150?text=User" onclick="document.getElementById('newAvatarInput').click()">
+                        <input type="file" id="newAvatarInput" accept="image/*" style="display: none;" onchange="updateProfileAvatar()">
+                        
+                        <div class="card">
+                            <h3>👤 Информация</h3>
+                            <p><strong>📧 Почта:</strong> <span id="profileEmail">—</span>
+                                <button class="edit-btn" onclick="showEditEmail()" style="width: auto; padding: 5px 15px; margin-left: 10px;">✏️ Сменить</button>
+                            </p>
+                            <div id="editEmailSection" style="display: none; margin-top: 15px;">
+                                <input type="email" id="newEmailInput" placeholder="Новая почта">
+                                <button onclick="sendEmailChangeCode()">Отправить код подтверждения</button>
+                                <div id="emailCodeSection" style="display: none; margin-top: 10px;">
+                                    <input type="text" id="emailCodeInput" placeholder="Введите код из письма">
+                                    <button onclick="confirmEmailChange()">Подтвердить смену почты</button>
+                                </div>
+                            </div>
+                            
+                            <p><strong>👤 Никнейм:</strong> <span id="profileUsername">—</span>
+                                <button class="edit-btn" onclick="editUsername()" style="width: auto; padding: 5px 15px; margin-left: 10px;">✏️</button>
+                            </p>
+                            <div id="editUsernameSection" style="display: none; margin-top: 15px;">
+                                <div class="inline-edit">
+                                    <input type="text" id="newUsernameInput" placeholder="Новый никнейм">
+                                    <button onclick="updateUsername()">Сохранить</button>
+                                    <button onclick="cancelEditUsername()" style="background: #3a3a4a;">Отмена</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>🔐 Безопасность</h3>
+                            <button onclick="changePassword()">Сменить пароль</button>
+                            <div class="info-text">На почту придёт ссылка для сброса пароля</button>
+                        </div>
+                    </div>
+                </div>
                 
-                <h3 style="margin-top: 25px;">📋 Мои контакты</h3>
-                <div id="contactsList"></div>
+                <!-- Чаты -->
+                <div id="chatsTab" class="tab-content" style="display: none;">
+                    <h2>💬 Активные чаты</h2>
+                    <div id="chatsList"></div>
+                </div>
+                
+                <!-- Контакты -->
+                <div id="contactsTab" class="tab-content" style="display: none;">
+                    <h2>🔍 Поиск пользователей</h2>
+                    <div class="card">
+                        <p>Найдите друзей по нику! Пользователи с разных устройств видят друг друга.</p>
+                        <input type="text" id="searchNickname" placeholder="Введите никнейм для поиска">
+                        <button onclick="searchContact()">🔎 Найти</button>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    
+                    <h2 style="margin-top: 30px;">📋 Мои контакты</h2>
+                    <div id="contactsList"></div>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Страница чата (отдельная) -->
+    <!-- Страница чата -->
     <div id="chatPage" class="page">
         <div class="chat-header">
-            <button class="back-btn" onclick="closeChat()">← Назад</button>
+            <button onclick="closeChat()">← Назад к чатам</button>
             <h3 id="chatHeaderName">Чат</h3>
-            <div style="width: 60px;"></div>
+            <div style="width: 80px;"></div>
         </div>
         <div class="chat-container">
             <div class="messages-area" id="messagesContainer">
-                <div class="empty-state">💬 Выберите чат</div>
+                <div class="empty-state">💬 Напишите первое сообщение</div>
             </div>
             <div class="input-area">
                 <input id="messageInput" placeholder="Введите сообщение..." autocomplete="off">
-                <button onclick="sendMessage()">📤</button>
+                <button onclick="sendMessage()">📤 Отправить</button>
             </div>
         </div>
     </div>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         
-        // Firebase конфиг
         const firebaseConfig = {
             apiKey: "AIzaSyA0ML0f4E-nAjUL5qaDcjzw8Ea8K94tjlQ",
             authDomain: "messenger-mas.firebaseapp.com",
@@ -452,28 +563,28 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         
-        // EmailJS
         emailjs.init("popGxqPJLrqP3ySB4");
         
-        // Глобальные переменные
         let currentUserData = null;
         let unsubscribeContacts = null;
         let unsubscribeMessages = null;
         let activeChatId = null;
         let activeOtherUser = null;
+        let pendingEmailChange = null;
         let pendingRegistrations = new Map();
         
-        // Функции навигации по табам
+        // Навигация
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.style.display = 'none';
             });
-            document.getElementById(`${tabName}Tab`).style.display = 'block';
+            const activeTab = document.getElementById(`${tabName}Tab`);
+            if (activeTab) activeTab.style.display = 'block';
             
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active-nav');
+            document.querySelectorAll('.nav-menu-item').forEach(item => {
+                item.classList.remove('active');
             });
-            document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active-nav');
+            document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
         }
         
         function showPage(pageId) {
@@ -484,10 +595,7 @@
         }
         
         window.closeChat = function() {
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
-                unsubscribeMessages = null;
-            }
+            if (unsubscribeMessages) unsubscribeMessages();
             showPage('mainApp');
             switchTab('chats');
         };
@@ -501,18 +609,17 @@
             }
         };
         
-        // Отправка кода
         async function sendVerificationCode(email, code, type) {
             try {
                 await emailjs.send("service_bmmno0o", "template_wlrjvkf", {
                     to_email: email,
                     verification_code: code,
-                    message_type: type === 'register' ? 'Код подтверждения регистрации' : 'Код восстановления пароля'
+                    message_type: type === 'register' ? 'Код подтверждения регистрации' : 'Код подтверждения смены почты'
                 });
                 return true;
             } catch (error) {
-                console.error("EmailJS error:", error);
-                alert("Ошибка отправки письма. Проверьте интернет.");
+                console.error(error);
+                alert("Ошибка отправки письма");
                 return false;
             }
         }
@@ -529,27 +636,14 @@
             const confirm = document.getElementById('regConfirm').value;
             const avatarFile = document.getElementById('regAvatar').files[0];
             
-            if (!email || !username || !password || !confirm) {
-                alert("Заполните все поля!");
-                return;
-            }
-            if (password !== confirm) {
-                alert("Пароли не совпадают!");
-                return;
-            }
-            if (password.length < 6) {
-                alert("Пароль минимум 6 символов!");
-                return;
-            }
+            if (!email || !username || !password || !confirm) return alert("Заполните все поля!");
+            if (password !== confirm) return alert("Пароли не совпадают!");
+            if (password.length < 6) return alert("Пароль минимум 6 символов!");
             
-            // Проверка уникальности ника
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", "==", username));
             const querySnap = await getDocs(q);
-            if (!querySnap.empty) {
-                alert("Этот ник уже занят!");
-                return;
-            }
+            if (!querySnap.empty) return alert("Этот ник уже занят!");
             
             const code = generateCode();
             const sent = await sendVerificationCode(email, code, 'register');
@@ -564,27 +658,18 @@
         async function verifyRegister(email) {
             const inputCode = document.getElementById('verificationCode').value.trim();
             const pending = pendingRegistrations.get(email);
-            
-            if (!pending || pending.expires < Date.now()) {
-                alert("Код истёк или не найден");
-                return;
-            }
-            if (inputCode !== pending.code) {
-                alert("Неверный код!");
-                return;
-            }
+            if (!pending || pending.expires < Date.now()) return alert("Код истёк");
+            if (inputCode !== pending.code) return alert("Неверный код!");
             
             try {
                 const userCred = await createUserWithEmailAndPassword(auth, email, pending.password);
                 const user = userCred.user;
-                
                 let photoURL = "";
                 if (pending.avatarFile) {
                     const storageRef = ref(storage, `avatars/${user.uid}`);
                     await uploadBytes(storageRef, pending.avatarFile);
                     photoURL = await getDownloadURL(storageRef);
                 }
-                
                 await updateProfile(user, { displayName: pending.username, photoURL });
                 await setDoc(doc(db, "users", user.uid), {
                     username: pending.username,
@@ -593,68 +678,52 @@
                     createdAt: new Date(),
                     contacts: []
                 });
-                
                 pendingRegistrations.delete(email);
-                alert("Регистрация успешна! Войдите в аккаунт.");
+                alert("Регистрация успешна! Войдите.");
                 showPage('loginPage');
                 document.getElementById('verificationSection').style.display = 'none';
-                document.getElementById('regForm')?.reset();
             } catch (err) {
                 alert("Ошибка: " + err.message);
             }
         }
         
-        // Вход
         window.login = async function() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                alert("Введите почту и пароль");
-                return;
-            }
-            
+            if (!email || !password) return alert("Введите почту и пароль");
             try {
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 alert("Вход выполнен!");
                 await loadMainApp(userCred.user);
             } catch (err) {
-                alert("Ошибка входа: " + err.message);
-            }
-        };
-        
-        // Восстановление пароля
-        window.forgotPassword = async function() {
-            const email = prompt("Введите вашу почту:");
-            if (!email) return;
-            
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert(`Ссылка для сброса пароля отправлена на ${email}`);
-            } catch (err) {
                 alert("Ошибка: " + err.message);
             }
         };
         
-        // Загрузка главного приложения
+        window.forgotPassword = async function() {
+            const email = prompt("Введите вашу почту:");
+            if (email) {
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    alert(`Ссылка для сброса отправлена на ${email}`);
+                } catch (err) {
+                    alert("Ошибка: " + err.message);
+                }
+            }
+        };
+        
         async function loadMainApp(user) {
             const userDoc = await getDoc(doc(db, "users", user.uid));
             if (!userDoc.exists()) return;
-            
             currentUserData = { uid: user.uid, ...userDoc.data() };
             
-            // Загружаем данные в профиль
             document.getElementById('profileEmail').innerText = currentUserData.email;
             document.getElementById('profileUsername').innerText = currentUserData.username;
-            if (currentUserData.photoURL) {
-                document.getElementById('profileAvatar').src = currentUserData.photoURL;
-            }
+            if (currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL;
             
-            // Загружаем контакты и чаты
             await loadContactsList();
             await loadChatsList();
             
-            // Подписка на обновления
             if (unsubscribeContacts) unsubscribeContacts();
             unsubscribeContacts = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
                 if (docSnap.exists()) {
@@ -667,8 +736,7 @@
             showPage('mainApp');
             switchTab('profile');
             
-            // Навигация по табам
-            document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+            document.querySelectorAll('.nav-menu-item[data-tab]').forEach(btn => {
                 btn.onclick = () => switchTab(btn.getAttribute('data-tab'));
             });
         }
@@ -676,7 +744,6 @@
         window.updateProfileAvatar = async function() {
             const file = document.getElementById('newAvatarInput').files[0];
             if (!file) return;
-            
             const user = auth.currentUser;
             const storageRef = ref(storage, `avatars/${user.uid}`);
             await uploadBytes(storageRef, file);
@@ -688,15 +755,88 @@
             alert("Аватар обновлён!");
         };
         
+        // Редактирование ника
+        window.editUsername = function() {
+            document.getElementById('editUsernameSection').style.display = 'block';
+        };
+        
+        window.cancelEditUsername = function() {
+            document.getElementById('editUsernameSection').style.display = 'none';
+            document.getElementById('newUsernameInput').value = '';
+        };
+        
+        window.updateUsername = async function() {
+            const newUsername = document.getElementById('newUsernameInput').value.trim();
+            if (!newUsername) return alert("Введите никнейм");
+            
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("username", "==", newUsername));
+            const querySnap = await getDocs(q);
+            if (!querySnap.empty && querySnap.docs[0].id !== auth.currentUser.uid) {
+                return alert("Этот ник уже занят!");
+            }
+            
+            await updateProfile(auth.currentUser, { displayName: newUsername });
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { username: newUsername });
+            currentUserData.username = newUsername;
+            document.getElementById('profileUsername').innerText = newUsername;
+            document.getElementById('editUsernameSection').style.display = 'none';
+            alert("Никнейм обновлён!");
+        };
+        
+        // Смена почты с подтверждением
+        window.showEditEmail = function() {
+            document.getElementById('editEmailSection').style.display = 'block';
+        };
+        
+        window.sendEmailChangeCode = async function() {
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            if (!newEmail) return alert("Введите новую почту");
+            
+            const signInMethods = await fetchSignInMethodsForEmail(auth, newEmail);
+            if (signInMethods.length > 0) return alert("Эта почта уже используется!");
+            
+            const code = generateCode();
+            const sent = await sendVerificationCode(newEmail, code, 'email_change');
+            if (!sent) return;
+            
+            pendingEmailChange = { newEmail, code, expires: Date.now() + 5 * 60000 };
+            document.getElementById('emailCodeSection').style.display = 'block';
+            alert("Код подтверждения отправлен на новую почту!");
+        };
+        
+        window.confirmEmailChange = async function() {
+            const inputCode = document.getElementById('emailCodeInput').value.trim();
+            if (!pendingEmailChange || pendingEmailChange.expires < Date.now()) return alert("Сессия истекла");
+            if (inputCode !== pendingEmailChange.code) return alert("Неверный код!");
+            
+            try {
+                await updateEmail(auth.currentUser, pendingEmailChange.newEmail);
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { email: pendingEmailChange.newEmail });
+                currentUserData.email = pendingEmailChange.newEmail;
+                document.getElementById('profileEmail').innerText = pendingEmailChange.newEmail;
+                document.getElementById('editEmailSection').style.display = 'none';
+                document.getElementById('emailCodeSection').style.display = 'none';
+                alert("Почта успешно изменена!");
+                pendingEmailChange = null;
+            } catch (err) {
+                alert("Ошибка: " + err.message);
+            }
+        };
+        
+        window.changePassword = async function() {
+            const email = auth.currentUser.email;
+            await sendPasswordResetEmail(auth, email);
+            alert(`Ссылка для сброса пароля отправлена на ${email}`);
+        };
+        
         async function loadContactsList() {
             const container = document.getElementById('contactsList');
             const contacts = currentUserData?.contacts || [];
-            
             if (contacts.length === 0) {
                 container.innerHTML = '<div class="empty-state">📭 Нет контактов. Добавьте через поиск.</div>';
                 return;
             }
-            
             container.innerHTML = contacts.map(contact => `
                 <div class="contact-item" onclick="openChat('${contact.uid}', '${escapeHtml(contact.username)}')">
                     <div class="avatar-placeholder">👤</div>
@@ -708,12 +848,10 @@
         async function loadChatsList() {
             const container = document.getElementById('chatsList');
             const contacts = currentUserData?.contacts || [];
-            
             if (contacts.length === 0) {
                 container.innerHTML = '<div class="empty-state">📭 Нет чатов. Добавьте контакты.</div>';
                 return;
             }
-            
             container.innerHTML = contacts.map(contact => `
                 <div class="chat-item" onclick="openChat('${contact.uid}', '${escapeHtml(contact.username)}')">
                     <div class="avatar-placeholder">💬</div>
@@ -728,19 +866,16 @@
         window.searchContact = async function() {
             const nick = document.getElementById('searchNickname').value.trim();
             if (!nick) return;
-            
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", ">=", nick), where("username", "<=", nick + "\uf8ff"));
             const snapshot = await getDocs(q);
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = "";
-            
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
                 if (data.username !== currentUserData?.username) {
                     const already = currentUserData?.contacts?.some(c => c.uid === docSnap.id);
                     const btn = document.createElement("button");
-                    btn.className = "search-result-btn";
                     if (already) {
                         btn.innerText = `✅ ${data.username} (уже в контактах)`;
                         btn.disabled = true;
@@ -751,17 +886,12 @@
                     resultsDiv.appendChild(btn);
                 }
             });
-            
-            if (resultsDiv.children.length === 0) {
-                resultsDiv.innerHTML = "<p>❌ Пользователь не найден</p>";
-            }
+            if (resultsDiv.children.length === 0) resultsDiv.innerHTML = "<p>❌ Пользователь не найден</p>";
         };
         
         async function addContact(contactUid, contactUsername) {
             const userRef = doc(db, "users", auth.currentUser.uid);
-            await updateDoc(userRef, {
-                contacts: arrayUnion({ uid: contactUid, username: contactUsername })
-            });
+            await updateDoc(userRef, { contacts: arrayUnion({ uid: contactUid, username: contactUsername }) });
             alert(`✅ ${contactUsername} добавлен в контакты`);
             document.getElementById('searchNickname').value = '';
             document.getElementById('searchResults').innerHTML = '';
@@ -777,15 +907,12 @@
         
         function loadMessages() {
             if (unsubscribeMessages) unsubscribeMessages();
-            
             const messagesRef = collection(db, "chats", activeChatId, "messages");
             const q = query(messagesRef, orderBy("timestamp", "asc"));
-            
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('messagesContainer');
                 container.innerHTML = "";
                 const currentUid = auth.currentUser.uid;
-                
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     const div = document.createElement('div');
@@ -801,13 +928,8 @@
         window.sendMessage = async function() {
             const text = document.getElementById('messageInput').value.trim();
             if (!text || !activeChatId) return;
-            
             const messagesRef = collection(db, "chats", activeChatId, "messages");
-            await addDoc(messagesRef, {
-                text: text,
-                senderId: auth.currentUser.uid,
-                timestamp: new Date()
-            });
+            await addDoc(messagesRef, { text, senderId: auth.currentUser.uid, timestamp: new Date() });
             document.getElementById('messageInput').value = "";
         };
         
@@ -821,28 +943,16 @@
         
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
         }
         
-        // Проверка авторизации
         onAuthStateChanged(auth, async (user) => {
-            if (user && !currentUserData) {
-                await loadMainApp(user);
-            } else if (!user && document.getElementById('mainApp').classList.contains('active')) {
-                showPage('loginPage');
-            }
+            if (user && !currentUserData) await loadMainApp(user);
+            else if (!user && document.getElementById('mainApp').classList.contains('active')) showPage('loginPage');
         });
         
-        // Enter для отправки сообщения
         document.addEventListener('keypress', (e) => {
-            if (e.target.id === 'messageInput' && e.key === 'Enter') {
-                window.sendMessage();
-            }
+            if (e.target.id === 'messageInput' && e.key === 'Enter') window.sendMessage();
         });
     </script>
 </body>
