@@ -18,7 +18,6 @@
             color: #e0e0e0;
         }
         
-        /* Увеличенная ширина в 3 раза */
         .page {
             display: none;
             padding: 30px;
@@ -31,7 +30,6 @@
             display: block;
         }
         
-        /* Двухколоночная раскладка для главного приложения */
         .main-layout {
             display: flex;
             gap: 30px;
@@ -56,7 +54,6 @@
             min-height: 85vh;
         }
         
-        /* Навигация в сайдбаре */
         .nav-menu {
             display: flex;
             flex-direction: column;
@@ -96,7 +93,6 @@
             background: #b91c1c !important;
         }
         
-        /* Карточки */
         .card {
             background: #2a2a3a;
             border-radius: 28px;
@@ -200,6 +196,7 @@
         .contact-item, .chat-item {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 15px 20px;
             background: #1a1a2e;
             margin: 12px 0;
@@ -210,25 +207,75 @@
         
         .contact-item:hover, .chat-item:hover {
             background: #3a3a4a;
-            transform: translateX(8px);
         }
         
-        .contact-name, .chat-name {
+        .contact-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .contact-name {
             font-weight: 600;
             font-size: 18px;
         }
         
-        .chat-preview {
-            font-size: 14px;
+        .contact-username {
+            font-size: 12px;
             color: #888;
-            margin-top: 4px;
+            margin-left: 10px;
         }
         
-        .chat-info {
-            flex: 1;
+        .blocked-badge {
+            background: #dc2626;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
         }
         
-        /* Чат */
+        .contact-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .icon-btn {
+            width: auto;
+            padding: 8px 15px;
+            margin: 0;
+            font-size: 14px;
+            background: #3a3a4a;
+        }
+        
+        .icon-btn.danger {
+            background: #dc2626;
+        }
+        
+        .icon-btn.success {
+            background: #10b981;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 32px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -330,35 +377,23 @@
             font-size: 14px;
         }
         
-        .inline-edit {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .inline-edit input {
-            flex: 1;
-            margin: 0;
-        }
-        
-        .inline-edit button {
-            width: auto;
-            padding: 12px 20px;
-            margin: 0;
-        }
-        
-        .code-section {
-            margin-top: 15px;
-            padding: 15px;
-            background: #1a1a2e;
-            border-radius: 20px;
-            display: none;
-        }
-        
         .row-2cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        
+        .info-text {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
         }
         
         @media (max-width: 1000px) {
@@ -384,23 +419,9 @@
             background: #00d4ff;
             border-radius: 4px;
         }
-        
-        .empty-state {
-            text-align: center;
-            color: #888;
-            padding: 50px;
-            font-size: 18px;
-        }
-        
-        .info-text {
-            color: #888;
-            font-size: 14px;
-            margin-top: 5px;
-        }
     </style>
 </head>
 <body>
-    <!-- Страница входа -->
     <div id="loginPage" class="page active">
         <div class="row-2cols" style="max-width: 1400px; margin: 0 auto;">
             <div class="card">
@@ -413,7 +434,6 @@
                 <button onclick="login()">Войти</button>
                 <button onclick="forgotPassword()" style="background: #3a3a4a;">Забыли пароль?</button>
             </div>
-            
             <div class="card">
                 <h2>📝 Регистрация</h2>
                 <input type="email" id="regEmail" placeholder="Электронная почта">
@@ -436,88 +456,57 @@
         </div>
     </div>
     
-    <!-- Главное приложение (расширенное) -->
     <div id="mainApp" class="page">
         <div class="main-layout">
-            <!-- Сайдбар -->
             <div class="sidebar">
                 <div class="nav-menu">
-                    <div class="nav-menu-item" data-tab="profile">
-                        <span>👤</span> Профиль
-                    </div>
-                    <div class="nav-menu-item" data-tab="chats">
-                        <span>💬</span> Чаты
-                    </div>
-                    <div class="nav-menu-item" data-tab="contacts">
-                        <span>📞</span> Контакты
-                    </div>
-                    <div class="nav-menu-item logout-btn" onclick="logout()">
-                        <span>🚪</span> Выйти
-                    </div>
+                    <div class="nav-menu-item" data-tab="profile">👤 Профиль</div>
+                    <div class="nav-menu-item" data-tab="chats">💬 Чаты</div>
+                    <div class="nav-menu-item" data-tab="contacts">📞 Контакты</div>
+                    <div class="nav-menu-item logout-btn" onclick="logout()">🚪 Выйти</div>
                 </div>
-                <div class="info-text" style="text-align: center; margin-top: 20px;">
-                    Real MAS Manager v2.0
-                </div>
+                <div class="info-text" style="text-align: center; margin-top: 20px;">Real MAS Manager v3.0</div>
             </div>
             
-            <!-- Контентная область -->
             <div class="content-area">
-                <!-- Профиль -->
                 <div id="profileTab" class="tab-content">
                     <div style="max-width: 600px; margin: 0 auto;">
                         <img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/150?text=User" onclick="document.getElementById('newAvatarInput').click()">
                         <input type="file" id="newAvatarInput" accept="image/*" style="display: none;" onchange="updateProfileAvatar()">
-                        
                         <div class="card">
                             <h3>👤 Информация</h3>
-                            <p><strong>📧 Почта:</strong> <span id="profileEmail">—</span>
-                                <button class="edit-btn" onclick="showEditEmail()" style="width: auto; padding: 5px 15px; margin-left: 10px;">✏️ Сменить</button>
-                            </p>
-                            <div id="editEmailSection" style="display: none; margin-top: 15px;">
-                                <input type="email" id="newEmailInput" placeholder="Новая почта">
-                                <button onclick="sendEmailChangeCode()">Отправить код подтверждения</button>
-                                <div id="emailCodeSection" style="display: none; margin-top: 10px;">
-                                    <input type="text" id="emailCodeInput" placeholder="Введите код из письма">
-                                    <button onclick="confirmEmailChange()">Подтвердить смену почты</button>
-                                </div>
-                            </div>
-                            
+                            <p><strong>📧 Почта:</strong> <span id="profileEmail">—</span></p>
                             <p><strong>👤 Никнейм:</strong> <span id="profileUsername">—</span>
                                 <button class="edit-btn" onclick="editUsername()" style="width: auto; padding: 5px 15px; margin-left: 10px;">✏️</button>
                             </p>
                             <div id="editUsernameSection" style="display: none; margin-top: 15px;">
-                                <div class="inline-edit">
+                                <div style="display: flex; gap: 10px;">
                                     <input type="text" id="newUsernameInput" placeholder="Новый никнейм">
-                                    <button onclick="updateUsername()">Сохранить</button>
-                                    <button onclick="cancelEditUsername()" style="background: #3a3a4a;">Отмена</button>
+                                    <button onclick="updateUsername()" style="width: auto;">Сохранить</button>
+                                    <button onclick="cancelEditUsername()" style="width: auto; background: #3a3a4a;">Отмена</button>
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="card">
                             <h3>🔐 Безопасность</h3>
                             <button onclick="changePassword()">Сменить пароль</button>
-                            <div class="info-text">На почту придёт ссылка для сброса пароля</div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Чаты -->
                 <div id="chatsTab" class="tab-content" style="display: none;">
                     <h2>💬 Активные чаты</h2>
                     <div id="chatsList"></div>
                 </div>
                 
-                <!-- Контакты -->
                 <div id="contactsTab" class="tab-content" style="display: none;">
                     <h2>🔍 Поиск пользователей</h2>
                     <div class="card">
-                        <p>Найдите друзей по нику! Пользователи с разных устройств видят друг друга.</p>
+                        <p>Найдите друга по нику и добавьте в контакты</p>
                         <input type="text" id="searchNickname" placeholder="Введите никнейм для поиска">
                         <button onclick="searchContact()">🔎 Найти</button>
                         <div id="searchResults" class="search-results"></div>
                     </div>
-                    
                     <h2 style="margin-top: 30px;">📋 Мои контакты</h2>
                     <div id="contactsList"></div>
                 </div>
@@ -525,17 +514,14 @@
         </div>
     </div>
     
-    <!-- Страница чата -->
     <div id="chatPage" class="page">
         <div class="chat-header">
-            <button onclick="closeChat()">← Назад к чатам</button>
+            <button onclick="closeChat()">← Назад</button>
             <h3 id="chatHeaderName">Чат</h3>
             <div style="width: 80px;"></div>
         </div>
         <div class="chat-container">
-            <div class="messages-area" id="messagesContainer">
-                <div class="empty-state">💬 Напишите первое сообщение</div>
-            </div>
+            <div class="messages-area" id="messagesContainer"></div>
             <div class="input-area">
                 <input id="messageInput" placeholder="Введите сообщение..." autocomplete="off">
                 <button onclick="sendMessage()">📤 Отправить</button>
@@ -543,10 +529,31 @@
         </div>
     </div>
     
+    <div id="nameContactModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>✏️ Добавление контакта</h3>
+            <p>Придумайте имя для пользователя <strong id="modalUsername"></strong></p>
+            <input type="text" id="contactFirstName" placeholder="Имя *">
+            <input type="text" id="contactLastName" placeholder="Фамилия (по желанию)">
+            <button onclick="confirmAddContact()">➕ Добавить</button>
+            <button onclick="closeNameModal()" style="background: #3a3a4a;">Отмена</button>
+        </div>
+    </div>
+    
+    <div id="renameContactModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>✏️ Редактировать контакт</h3>
+            <input type="text" id="renameFirstName" placeholder="Имя">
+            <input type="text" id="renameLastName" placeholder="Фамилия">
+            <button onclick="saveRenameContact()">Сохранить</button>
+            <button onclick="closeRenameModal()" style="background: #3a3a4a;">Отмена</button>
+        </div>
+    </div>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, arrayRemove, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         
         const firebaseConfig = {
@@ -570,27 +577,19 @@
         let unsubscribeMessages = null;
         let activeChatId = null;
         let activeOtherUser = null;
-        let pendingEmailChange = null;
+        let pendingContact = null;
+        let pendingRenameContact = null;
         let pendingRegistrations = new Map();
         
-        // Навигация
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            const activeTab = document.getElementById(`${tabName}Tab`);
-            if (activeTab) activeTab.style.display = 'block';
-            
-            document.querySelectorAll('.nav-menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.getElementById(`${tabName}Tab`).style.display = 'block';
+            document.querySelectorAll('.nav-menu-item').forEach(item => item.classList.remove('active'));
             document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
         }
         
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
         }
         
@@ -609,33 +608,14 @@
             }
         };
         
-        async function sendVerificationCode(email, code, type) {
-            try {
-                await emailjs.send("service_bmmno0o", "template_wlrjvkf", {
-                    to_email: email,
-                    verification_code: code,
-                    message_type: type === 'register' ? 'Код подтверждения регистрации' : 'Код подтверждения смены почты'
-                });
-                return true;
-            } catch (error) {
-                console.error(error);
-                alert("Ошибка отправки письма");
-                return false;
-            }
-        }
+        function generateCode() { return Math.floor(100000 + Math.random() * 900000).toString(); }
         
-        function generateCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-        
-        // Регистрация
         window.register = async function() {
             const email = document.getElementById('regEmail').value.trim();
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirm = document.getElementById('regConfirm').value;
             const avatarFile = document.getElementById('regAvatar').files[0];
-            
             if (!email || !username || !password || !confirm) return alert("Заполните все поля!");
             if (password !== confirm) return alert("Пароли не совпадают!");
             if (password.length < 6) return alert("Пароль минимум 6 символов!");
@@ -646,8 +626,11 @@
             if (!querySnap.empty) return alert("Этот ник уже занят!");
             
             const code = generateCode();
-            const sent = await sendVerificationCode(email, code, 'register');
-            if (!sent) return;
+            try {
+                await emailjs.send("service_bmmno0o", "template_wlrjvkf", {
+                    to_email: email, verification_code: code, message_type: 'Код подтверждения регистрации'
+                });
+            } catch(e) { return alert("Ошибка отправки письма"); }
             
             pendingRegistrations.set(email, { code, expires: Date.now() + 5 * 60000, username, password, avatarFile });
             alert("Код отправлен на почту!");
@@ -660,7 +643,6 @@
             const pending = pendingRegistrations.get(email);
             if (!pending || pending.expires < Date.now()) return alert("Код истёк");
             if (inputCode !== pending.code) return alert("Неверный код!");
-            
             try {
                 const userCred = await createUserWithEmailAndPassword(auth, email, pending.password);
                 const user = userCred.user;
@@ -672,19 +654,13 @@
                 }
                 await updateProfile(user, { displayName: pending.username, photoURL });
                 await setDoc(doc(db, "users", user.uid), {
-                    username: pending.username,
-                    email: email,
-                    photoURL: photoURL,
-                    createdAt: new Date(),
-                    contacts: []
+                    username: pending.username, email, photoURL, createdAt: new Date(), contacts: []
                 });
                 pendingRegistrations.delete(email);
                 alert("Регистрация успешна! Войдите.");
                 showPage('loginPage');
                 document.getElementById('verificationSection').style.display = 'none';
-            } catch (err) {
-                alert("Ошибка: " + err.message);
-            }
+            } catch (err) { alert("Ошибка: " + err.message); }
         }
         
         window.login = async function() {
@@ -693,49 +669,41 @@
             if (!email || !password) return alert("Введите почту и пароль");
             try {
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
-                alert("Вход выполнен!");
                 await loadMainApp(userCred.user);
-            } catch (err) {
-                alert("Ошибка: " + err.message);
-            }
+            } catch (err) { alert("Ошибка: " + err.message); }
         };
         
         window.forgotPassword = async function() {
             const email = prompt("Введите вашу почту:");
-            if (email) {
-                try {
-                    await sendPasswordResetEmail(auth, email);
-                    alert(`Ссылка для сброса отправлена на ${email}`);
-                } catch (err) {
-                    alert("Ошибка: " + err.message);
-                }
-            }
+            if (email) try {
+                await sendPasswordResetEmail(auth, email);
+                alert(`Ссылка для сброса отправлена на ${email}`);
+            } catch(err) { alert("Ошибка: " + err.message); }
         };
         
         async function loadMainApp(user) {
             const userDoc = await getDoc(doc(db, "users", user.uid));
             if (!userDoc.exists()) return;
-            currentUserData = { uid: user.uid, ...userDoc.data() };
+            currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [] };
             
             document.getElementById('profileEmail').innerText = currentUserData.email;
             document.getElementById('profileUsername').innerText = currentUserData.username;
             if (currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL;
             
-            await loadContactsList();
-            await loadChatsList();
+            await renderContacts();
+            await renderChats();
             
             if (unsubscribeContacts) unsubscribeContacts();
             unsubscribeContacts = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
                 if (docSnap.exists()) {
                     currentUserData.contacts = docSnap.data().contacts || [];
-                    loadContactsList();
-                    loadChatsList();
+                    renderContacts();
+                    renderChats();
                 }
             });
             
             showPage('mainApp');
             switchTab('profile');
-            
             document.querySelectorAll('.nav-menu-item[data-tab]').forEach(btn => {
                 btn.onclick = () => switchTab(btn.getAttribute('data-tab'));
             });
@@ -744,119 +712,83 @@
         window.updateProfileAvatar = async function() {
             const file = document.getElementById('newAvatarInput').files[0];
             if (!file) return;
-            const user = auth.currentUser;
-            const storageRef = ref(storage, `avatars/${user.uid}`);
+            const storageRef = ref(storage, `avatars/${auth.currentUser.uid}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
-            await updateProfile(user, { photoURL: url });
-            await updateDoc(doc(db, "users", user.uid), { photoURL: url });
-            currentUserData.photoURL = url;
+            await updateProfile(auth.currentUser, { photoURL: url });
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url });
             document.getElementById('profileAvatar').src = url;
             alert("Аватар обновлён!");
         };
         
-        // Редактирование ника
-        window.editUsername = function() {
-            document.getElementById('editUsernameSection').style.display = 'block';
-        };
-        
-        window.cancelEditUsername = function() {
-            document.getElementById('editUsernameSection').style.display = 'none';
-            document.getElementById('newUsernameInput').value = '';
-        };
-        
+        window.editUsername = () => document.getElementById('editUsernameSection').style.display = 'block';
+        window.cancelEditUsername = () => document.getElementById('editUsernameSection').style.display = 'none';
         window.updateUsername = async function() {
             const newUsername = document.getElementById('newUsernameInput').value.trim();
             if (!newUsername) return alert("Введите никнейм");
-            
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", "==", newUsername));
             const querySnap = await getDocs(q);
-            if (!querySnap.empty && querySnap.docs[0].id !== auth.currentUser.uid) {
-                return alert("Этот ник уже занят!");
-            }
-            
+            if (!querySnap.empty && querySnap.docs[0].id !== auth.currentUser.uid) return alert("Этот ник уже занят!");
             await updateProfile(auth.currentUser, { displayName: newUsername });
             await updateDoc(doc(db, "users", auth.currentUser.uid), { username: newUsername });
-            currentUserData.username = newUsername;
             document.getElementById('profileUsername').innerText = newUsername;
             document.getElementById('editUsernameSection').style.display = 'none';
             alert("Никнейм обновлён!");
         };
         
-        // Смена почты с подтверждением
-        window.showEditEmail = function() {
-            document.getElementById('editEmailSection').style.display = 'block';
+        window.changePassword = async () => {
+            await sendPasswordResetEmail(auth, auth.currentUser.email);
+            alert(`Ссылка для сброса отправлена на ${auth.currentUser.email}`);
         };
         
-        window.sendEmailChangeCode = async function() {
-            const newEmail = document.getElementById('newEmailInput').value.trim();
-            if (!newEmail) return alert("Введите новую почту");
-            
-            const signInMethods = await fetchSignInMethodsForEmail(auth, newEmail);
-            if (signInMethods.length > 0) return alert("Эта почта уже используется!");
-            
-            const code = generateCode();
-            const sent = await sendVerificationCode(newEmail, code, 'email_change');
-            if (!sent) return;
-            
-            pendingEmailChange = { newEmail, code, expires: Date.now() + 5 * 60000 };
-            document.getElementById('emailCodeSection').style.display = 'block';
-            alert("Код подтверждения отправлен на новую почту!");
-        };
+        function getContactDisplayName(contact) {
+            if (contact.customName) return contact.customName;
+            if (contact.firstName) return `${contact.firstName}${contact.lastName ? ' ' + contact.lastName : ''}`;
+            return contact.username;
+        }
         
-        window.confirmEmailChange = async function() {
-            const inputCode = document.getElementById('emailCodeInput').value.trim();
-            if (!pendingEmailChange || pendingEmailChange.expires < Date.now()) return alert("Сессия истекла");
-            if (inputCode !== pendingEmailChange.code) return alert("Неверный код!");
-            
-            try {
-                await updateEmail(auth.currentUser, pendingEmailChange.newEmail);
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { email: pendingEmailChange.newEmail });
-                currentUserData.email = pendingEmailChange.newEmail;
-                document.getElementById('profileEmail').innerText = pendingEmailChange.newEmail;
-                document.getElementById('editEmailSection').style.display = 'none';
-                document.getElementById('emailCodeSection').style.display = 'none';
-                alert("Почта успешно изменена!");
-                pendingEmailChange = null;
-            } catch (err) {
-                alert("Ошибка: " + err.message);
-            }
-        };
-        
-        window.changePassword = async function() {
-            const email = auth.currentUser.email;
-            await sendPasswordResetEmail(auth, email);
-            alert(`Ссылка для сброса пароля отправлена на ${email}`);
-        };
-        
-        async function loadContactsList() {
+        async function renderContacts() {
             const container = document.getElementById('contactsList');
             const contacts = currentUserData?.contacts || [];
             if (contacts.length === 0) {
-                container.innerHTML = '<div class="empty-state">📭 У вас пока нет контактов. Добавьте друзей через поиск выше!</div>';
+                container.innerHTML = '<div class="empty-state">📭 Нет контактов. Добавьте друзей через поиск!</div>';
                 return;
             }
             container.innerHTML = contacts.map(contact => `
-                <div class="contact-item" onclick="openChat('${contact.uid}', '${escapeHtml(contact.username)}')">
-                    <div class="avatar-placeholder">👤</div>
-                    <span class="contact-name">${escapeHtml(contact.username)}</span>
+                <div class="contact-item">
+                    <div class="contact-info" onclick="openChat('${contact.uid}', '${escapeHtml(contact.username)}')">
+                        <div class="avatar-placeholder">👤</div>
+                        <div>
+                            <div class="contact-name">${escapeHtml(getContactDisplayName(contact))}</div>
+                            <div class="contact-username">@${escapeHtml(contact.username)}</div>
+                        </div>
+                        ${contact.blocked ? '<span class="blocked-badge">🔒 Заблокирован</span>' : ''}
+                    </div>
+                    <div class="contact-actions">
+                        <button class="icon-btn" onclick="editContact('${contact.uid}')">✏️</button>
+                        ${contact.blocked ? 
+                            `<button class="icon-btn success" onclick="unblockContact('${contact.uid}')">🔓 Разблок.</button>` :
+                            `<button class="icon-btn danger" onclick="blockContact('${contact.uid}')">🚫 Блок.</button>`
+                        }
+                    </div>
                 </div>
             `).join('');
         }
         
-        async function loadChatsList() {
+        async function renderChats() {
             const container = document.getElementById('chatsList');
             const contacts = currentUserData?.contacts || [];
-            if (contacts.length === 0) {
-                container.innerHTML = '<div class="empty-state">💬 У вас нет активных чатов. Добавьте контакты, чтобы начать общение!</div>';
+            const activeContacts = contacts.filter(c => !c.blocked);
+            if (activeContacts.length === 0) {
+                container.innerHTML = '<div class="empty-state">💬 Нет активных чатов. Добавьте контакты!</div>';
                 return;
             }
-            container.innerHTML = contacts.map(contact => `
+            container.innerHTML = activeContacts.map(contact => `
                 <div class="chat-item" onclick="openChat('${contact.uid}', '${escapeHtml(contact.username)}')">
                     <div class="avatar-placeholder">💬</div>
                     <div class="chat-info">
-                        <div class="chat-name">${escapeHtml(contact.username)}</div>
+                        <div class="chat-name">${escapeHtml(getContactDisplayName(contact))}</div>
                         <div class="chat-preview">Нажмите для чата</div>
                     </div>
                 </div>
@@ -865,53 +797,156 @@
         
         window.searchContact = async function() {
             const nick = document.getElementById('searchNickname').value.trim();
-            if (!nick) {
-                alert("Введите никнейм для поиска");
-                return;
-            }
-            
+            if (!nick) return alert("Введите никнейм");
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", ">=", nick), where("username", "<=", nick + "\uf8ff"));
             const snapshot = await getDocs(q);
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = "";
-            
             let found = false;
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
                 if (data.username !== currentUserData?.username) {
                     found = true;
                     const already = currentUserData?.contacts?.some(c => c.uid === docSnap.id);
-                    const btn = document.createElement("button");
-                    if (already) {
-                        btn.innerText = `✅ ${data.username} (уже в контактах)`;
-                        btn.style.opacity = "0.6";
-                        btn.disabled = true;
-                    } else {
+                    if (!already) {
+                        const btn = document.createElement("button");
                         btn.innerText = `➕ Добавить ${data.username}`;
-                        btn.onclick = () => addContact(docSnap.id, data.username);
+                        btn.onclick = () => showNameModal(docSnap.id, data.username);
+                        resultsDiv.appendChild(btn);
+                    } else {
+                        const btn = document.createElement("button");
+                        btn.innerText = `✅ ${data.username} (уже в контактах)`;
+                        btn.disabled = true;
+                        btn.style.opacity = "0.6";
+                        resultsDiv.appendChild(btn);
                     }
-                    resultsDiv.appendChild(btn);
                 }
             });
+            if (!found) resultsDiv.innerHTML = '<div class="empty-state">❌ Пользователь не найден</div>';
+        };
+        
+        window.showNameModal = (uid, username) => {
+            pendingContact = { uid, username };
+            document.getElementById('modalUsername').innerText = username;
+            document.getElementById('contactFirstName').value = '';
+            document.getElementById('contactLastName').value = '';
+            document.getElementById('nameContactModal').style.display = 'flex';
+        };
+        
+        window.confirmAddContact = async function() {
+            const firstName = document.getElementById('contactFirstName').value.trim();
+            if (!firstName) return alert("Введите имя контакта!");
+            const lastName = document.getElementById('contactLastName').value.trim();
+            const customName = lastName ? `${firstName} ${lastName}` : firstName;
             
-            if (!found) {
-                resultsDiv.innerHTML = '<div class="empty-state" style="padding: 20px;">❌ Пользователь с ником "' + escapeHtml(nick) + '" не найден</div>';
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            const newContact = {
+                uid: pendingContact.uid,
+                username: pendingContact.username,
+                firstName: firstName,
+                lastName: lastName,
+                customName: customName,
+                blocked: false,
+                createdAt: new Date()
+            };
+            await updateDoc(userRef, { contacts: arrayUnion(newContact) });
+            
+            // Добавляем в контакты другого пользователя (как неизвестный)
+            const otherUserRef = doc(db, "users", pendingContact.uid);
+            const otherUserDoc = await getDoc(otherUserRef);
+            if (otherUserDoc.exists()) {
+                const otherContacts = otherUserDoc.data().contacts || [];
+                const alreadyHas = otherContacts.some(c => c.uid === auth.currentUser.uid);
+                if (!alreadyHas) {
+                    const otherNewContact = {
+                        uid: auth.currentUser.uid,
+                        username: currentUserData.username,
+                        firstName: null,
+                        lastName: null,
+                        customName: null,
+                        blocked: false,
+                        isUnknown: true,
+                        createdAt: new Date()
+                    };
+                    await updateDoc(otherUserRef, { contacts: arrayUnion(otherNewContact) });
+                }
+            }
+            
+            closeNameModal();
+            alert(`✅ ${customName} добавлен в контакты!`);
+            document.getElementById('searchNickname').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        };
+        
+        window.editContact = async (uid) => {
+            const contact = currentUserData.contacts.find(c => c.uid === uid);
+            if (contact) {
+                pendingRenameContact = contact;
+                document.getElementById('renameFirstName').value = contact.firstName || '';
+                document.getElementById('renameLastName').value = contact.lastName || '';
+                document.getElementById('renameContactModal').style.display = 'flex';
             }
         };
         
-        async function addContact(contactUid, contactUsername) {
+        window.saveRenameContact = async function() {
+            const firstName = document.getElementById('renameFirstName').value.trim();
+            if (!firstName) return alert("Введите имя!");
+            const lastName = document.getElementById('renameLastName').value.trim();
+            const customName = lastName ? `${firstName} ${lastName}` : firstName;
+            
             const userRef = doc(db, "users", auth.currentUser.uid);
-            await updateDoc(userRef, { contacts: arrayUnion({ uid: contactUid, username: contactUsername }) });
-            alert(`✅ ${contactUsername} добавлен в контакты! Теперь вы можете начать чат.`);
-            document.getElementById('searchNickname').value = '';
-            document.getElementById('searchResults').innerHTML = '';
-        }
+            const contacts = currentUserData.contacts.map(c => {
+                if (c.uid === pendingRenameContact.uid) {
+                    return { ...c, firstName, lastName, customName };
+                }
+                return c;
+            });
+            await updateDoc(userRef, { contacts: contacts });
+            closeRenameModal();
+            alert("Контакт обновлён!");
+        };
+        
+        window.blockContact = async (uid) => {
+            if (confirm("Заблокировать пользователя? Вы не сможете получать от него сообщения.")) {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                const contacts = currentUserData.contacts.map(c => {
+                    if (c.uid === uid) return { ...c, blocked: true };
+                    return c;
+                });
+                await updateDoc(userRef, { contacts: contacts });
+                alert("Пользователь заблокирован");
+            }
+        };
+        
+        window.unblockContact = async (uid) => {
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            const contacts = currentUserData.contacts.map(c => {
+                if (c.uid === uid) return { ...c, blocked: false };
+                return c;
+            });
+            await updateDoc(userRef, { contacts: contacts });
+            alert("Пользователь разблокирован");
+        };
         
         window.openChat = function(otherUid, otherUsername) {
+            const contact = currentUserData.contacts?.find(c => c.uid === otherUid);
+            if (contact && contact.blocked) {
+                alert("⚠️ Пользователь заблокирован. Разблокируйте его в контактах, чтобы отправить сообщение.");
+                return;
+            }
+            if (contact && (!contact.firstName || !contact.customName)) {
+                pendingContact = { uid: otherUid, username: otherUsername };
+                document.getElementById('modalUsername').innerText = otherUsername;
+                document.getElementById('contactFirstName').value = '';
+                document.getElementById('contactLastName').value = '';
+                document.getElementById('nameContactModal').style.display = 'flex';
+                return;
+            }
             activeChatId = [auth.currentUser.uid, otherUid].sort().join('_');
             activeOtherUser = { uid: otherUid, username: otherUsername };
-            document.getElementById('chatHeaderName').innerHTML = `${escapeHtml(otherUsername)} 💬`;
+            const displayName = contact ? getContactDisplayName(contact) : otherUsername;
+            document.getElementById('chatHeaderName').innerHTML = `${escapeHtml(displayName)} 💬`;
             showPage('chatPage');
             loadMessages();
         };
@@ -924,9 +959,7 @@
                 const container = document.getElementById('messagesContainer');
                 container.innerHTML = "";
                 const currentUid = auth.currentUser.uid;
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="empty-state">💬 Напишите первое сообщение</div>';
-                }
+                if (snapshot.empty) container.innerHTML = '<div class="empty-state">💬 Напишите первое сообщение</div>';
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     const div = document.createElement('div');
@@ -954,6 +987,9 @@
             currentUserData = null;
             showPage('loginPage');
         };
+        
+        window.closeNameModal = () => document.getElementById('nameContactModal').style.display = 'none';
+        window.closeRenameModal = () => document.getElementById('renameContactModal').style.display = 'none';
         
         function escapeHtml(str) {
             if (!str) return '';
