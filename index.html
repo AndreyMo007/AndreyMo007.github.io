@@ -138,7 +138,7 @@
             justify-content: space-between;
             padding: 15px 20px;
             background: var(--bg-card);
-            margin: 12px 0;
+            margin: 14px 0;
             border-radius: 60px;
             cursor: pointer;
             border: 1px solid var(--border-color);
@@ -149,7 +149,7 @@
         .chats-divider {
             height: 2px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            margin: 12px 0;
+            margin: 14px 0;
         }
         
         .contact-info { display: flex; align-items: center; flex: 1; gap: 12px; }
@@ -197,9 +197,10 @@
         }
         .message {
             margin: 8px 0; max-width: 70%; position: relative;
+            cursor: pointer;
         }
         .sent { align-self: flex-end; }
-        .received { align-self: flex-start; }
+        .received { align-self: flex-start; cursor: default; }
         .message-bubble {
             padding: 10px 14px; border-radius: 20px;
             word-wrap: break-word; font-size: var(--message-font-size);
@@ -208,12 +209,17 @@
         .received .message-bubble { background: var(--bg-message-other); color: var(--text-primary); }
         
         .message-footer {
-            display: flex; align-items: center; justify-content: flex-end;
-            gap: 4px; margin-top: 4px; font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 10px;
         }
-        .message-status { display: inline-flex; gap: 2px; }
+        .message-status { display: inline-flex; gap: 2px; margin-left: 6px; }
         .status-sent { color: var(--text-secondary); }
-        .status-delivered, .status-read { color: var(--accent); }
+        .status-delivered { color: var(--accent); opacity: 0.7; }
+        .status-read { color: var(--accent); font-weight: bold; }
         .status-pending { color: #f59e0b; }
         
         .delete-message-btn {
@@ -222,7 +228,7 @@
             font-size: 11px; cursor: pointer; display: none; color: white;
             z-index: 10;
         }
-        .message:hover .delete-message-btn { display: block; }
+        .message.active-delete .delete-message-btn { display: block; }
         
         .input-area {
             display: flex; gap: 12px; padding: 16px;
@@ -241,52 +247,54 @@
         .confirm-modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:1001; }
         .confirm-modal-content { background:var(--bg-sidebar); border-radius:28px; padding:28px; max-width:350px; width:90%; text-align:center; }
         
+        .online-status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--success);
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
         @media (max-width: 1000px) {
             .main-layout { flex-direction: column; }
             .sidebar { width: 100%; }
             .message { max-width: 85%; }
             .delete-message-btn { left: auto; right: -5px; top: -25px; }
         }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-sidebar); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
     </style>
 </head>
 <body>
     <div id="loginPage" class="page active">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto;">
-            <div class="card"><h2 data-i18n="loginTitle">🔐 Вход</h2><input type="email" id="loginEmail" placeholder="Почта"><div class="password-wrapper"><input type="password" id="loginPassword" placeholder="Пароль"><button class="toggle-eye" onclick="togglePassword('loginPassword','eyeLogin')">👁️</button></div><button onclick="login()" data-i18n="loginBtn">Войти</button><button onclick="forgotPassword()" style="background:var(--bg-input)" data-i18n="forgotBtn">Забыли пароль?</button></div>
-            <div class="card"><h2 data-i18n="registerTitle">📝 Регистрация</h2><input type="email" id="regEmail" placeholder="Почта"><input type="text" id="regUsername" placeholder="Никнейм"><div class="password-wrapper"><input type="password" id="regPassword" placeholder="Пароль (мин.6)"><button class="toggle-eye" onclick="togglePassword('regPassword','eyeReg')">👁️</button></div><div class="password-wrapper"><input type="password" id="regConfirm" placeholder="Повторите"><button class="toggle-eye" onclick="togglePassword('regConfirm','eyeConf')">👁️</button></div><input type="file" id="regAvatar" accept="image/*"><button onclick="register()" data-i18n="registerBtn">Зарегистрироваться</button><div id="verificationSection" style="display:none; margin-top:15px;"><input type="text" id="verificationCode" placeholder="Код из письма"><button id="verifyCodeBtn" style="background:var(--success)">Подтвердить</button></div></div>
+            <div class="card"><h2>🔐 Вход</h2><input type="email" id="loginEmail" placeholder="Почта"><input type="password" id="loginPassword" placeholder="Пароль"><button onclick="login()">Войти</button><button onclick="forgotPassword()" style="background:var(--bg-input)">Забыли пароль?</button></div>
+            <div class="card"><h2>📝 Регистрация</h2><input type="email" id="regEmail" placeholder="Почта"><input type="text" id="regUsername" placeholder="Никнейм"><input type="password" id="regPassword" placeholder="Пароль (мин.6)"><input type="password" id="regConfirm" placeholder="Повторите"><input type="file" id="regAvatar" accept="image/*"><button onclick="register()">Зарегистрироваться</button><div id="verificationSection" style="display:none; margin-top:15px;"><input type="text" id="verificationCode" placeholder="Код из письма"><button id="verifyCodeBtn" style="background:var(--success)">Подтвердить</button></div></div>
         </div>
     </div>
     
     <div id="mainApp" class="page">
         <div class="main-layout">
             <div class="sidebar">
-                <div class="nav-menu-item" data-tab="profile" data-i18n="profile">👤 Профиль</div>
-                <div class="nav-menu-item" data-tab="chats" data-i18n="chats">💬 Чаты</div>
-                <div class="nav-menu-item" data-tab="contacts" data-i18n="contacts">📞 Контакты</div>
-                <div class="nav-menu-item" data-tab="settings" data-i18n="settings">⚙️ Настройки</div>
-                <div class="nav-menu-item logout-btn" onclick="confirmLogout()" data-i18n="logout">🚪 Выйти</div>
+                <div class="nav-menu-item" data-tab="profile">👤 Профиль</div>
+                <div class="nav-menu-item" data-tab="chats">💬 Чаты</div>
+                <div class="nav-menu-item" data-tab="contacts">📞 Контакты</div>
+                <div class="nav-menu-item" data-tab="settings">⚙️ Настройки</div>
+                <div class="nav-menu-item logout-btn" onclick="confirmLogout()">🚪 Выйти</div>
             </div>
             <div class="content-area">
-                <div id="profileTab" class="tab-content">
-                    <div style="max-width:500px; margin:0 auto;">
-                        <img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120">
-                        <input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()">
-                        <div class="card">
-                            <p><strong data-i18n="email">📧 Почта:</strong> <span id="profileEmail">—</span></p>
-                            <p><strong data-i18n="nickname">👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p>
-                            <div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div>
-                        </div>
-                        <div class="card"><button onclick="changePassword()" data-i18n="changePassword">Сменить пароль</button></div>
-                    </div>
-                </div>
-                <div id="chatsTab" class="tab-content" style="display:none"><h2 data-i18n="chatsTitle">💬 Активные чаты</h2><div id="chatsList"></div></div>
-                <div id="contactsTab" class="tab-content" style="display:none"><h2 data-i18n="searchTitle">🔍 Поиск</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()" data-i18n="searchBtn">Найти</button><div id="searchResults"></div></div><h2 data-i18n="myContactsTitle">📋 Мои контакты</h2><div id="contactsList"></div></div>
-                <div id="settingsTab" class="tab-content" style="display:none">
-                    <h2 data-i18n="settingsTitle">⚙️ Настройки</h2>
-                    <div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label data-i18n="theme">Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div><div class="settings-row"><label data-i18n="bgMyMsg">Фон моих сообщений:</label><input type="color" id="bgMyMsgColor" value="#00d4ff"></div><div class="settings-row"><label data-i18n="bgOtherMsg">Фон чужих сообщений:</label><input type="color" id="bgOtherMsgColor" value="#2a2a3a"></div><div class="settings-row"><label data-i18n="accentColor">Цвет акцента:</label><input type="color" id="accentColor" value="#00d4ff"></div></div>
-                    <div class="card"><h3>🔤 Шрифт</h3><div class="settings-row"><label data-i18n="fontFamily">Шрифт сообщений:</label><select id="fontFamilySelect"><option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto">Системный</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Arial', sans-serif">Arial</option><option value="'Georgia', serif">Georgia</option></select></div><div class="settings-row"><label data-i18n="fontSize">Размер сообщений:</label><input type="range" id="fontSizeRange" min="12" max="22" step="1" value="15"><span id="fontSizeValue">15px</span></div></div>
-                    <div class="card"><h3>🌐 Язык интерфейса</h3><div class="settings-row"><label data-i18n="language">Язык:</label><select id="languageSelect"><option value="ru">Русский</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option></select></div></div>
-                </div>
+                <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
+                <div id="chatsTab" class="tab-content" style="display:none"><h2>💬 Активные чаты</h2><div id="chatsList"></div></div>
+                <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div></div>
+                <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div><div class="settings-row"><label>Фон моих сообщений:</label><input type="color" id="bgMyMsgColor" value="#00d4ff"></div><div class="settings-row"><label>Фон чужих сообщений:</label><input type="color" id="bgOtherMsgColor" value="#2a2a3a"></div><div class="settings-row"><label>Цвет акцента:</label><input type="color" id="accentColor" value="#00d4ff"></div></div><div class="card"><h3>🔤 Шрифт</h3><div class="settings-row"><label>Шрифт сообщений:</label><select id="fontFamilySelect"><option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto">Системный</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Arial', sans-serif">Arial</option><option value="'Georgia', serif">Georgia</option></select></div><div class="settings-row"><label>Размер сообщений:</label><input type="range" id="fontSizeRange" min="12" max="22" step="1" value="15"><span id="fontSizeValue">15px</span></div></div></div>
             </div>
         </div>
     </div>
@@ -296,13 +304,12 @@
     <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeNameModal()" style="background:var(--bg-input)">Отмена</button></div></div>
     <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeRenameModal()" style="background:var(--bg-input)">Отмена</button></div></div>
     <div id="contactProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px"><h3 id="contactProfileName" style="text-align:center"></h3><p id="contactProfileUsername" style="text-align:center;color:var(--text-secondary)"></p><p id="contactProfileStatus" style="text-align:center"></p><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="renameFromProfile()" style="flex:1">✏️ Переименовать</button><button id="blockUnblockProfileBtn" style="flex:1"></button></div><button onclick="closeContactProfile()" style="margin-top:10px; background:var(--bg-input)">Закрыть</button></div></div>
-    
     <div id="confirmLogoutModal" class="confirm-modal" style="display:none"><div class="confirm-modal-content"><h3>Выход из аккаунта</h3><p>Вы уверены, что хотите выйти?</p><div style="display:flex; gap:10px; margin-top:20px;"><button onclick="logout()" style="background:var(--danger)">Да, выйти</button><button onclick="closeConfirmLogout()" style="background:var(--bg-input)">Отмена</button></div></div></div>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, deleteDoc, onSnapshot, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, deleteDoc, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         
         const firebaseConfig = {
@@ -320,12 +327,10 @@
         emailjs.init("popGxqPJLrqP3ySB4");
         
         let currentUserData = null, unsubscribeContacts = null, unsubscribeMessages = null, activeChatId = null, activeOtherUser = null, pendingContact = null, pendingRenameContact = null, pendingEmailChange = null;
-        let currentLang = 'ru';
-        
-        const translations = { ru:{loginTitle:"🔐 Вход",loginBtn:"Войти",forgotBtn:"Забыли пароль?",registerTitle:"📝 Регистрация",registerBtn:"Зарегистрироваться",profile:"👤 Профиль",chats:"💬 Чаты",contacts:"📞 Контакты",settings:"⚙️ Настройки",logout:"🚪 Выйти",searchTitle:"🔍 Поиск",searchBtn:"Найти",myContactsTitle:"📋 Мои контакты",chatsTitle:"💬 Активные чаты",email:"📧 Почта:",nickname:"👤 Ник:",changePassword:"Сменить пароль",theme:"Тема:",bgMyMsg:"Фон моих сообщений:",bgOtherMsg:"Фон чужих сообщений:",accentColor:"Цвет акцента:",fontFamily:"Шрифт сообщений:",fontSize:"Размер сообщений:",language:"Язык:",settingsTitle:"⚙️ Настройки",noContacts:"📭 Нет контактов",noChats:"💬 Нет чатов",online:"в сети",offline:"был(а)"}, en:{loginTitle:"🔐 Login",loginBtn:"Login",forgotBtn:"Forgot password?",registerTitle:"📝 Register",registerBtn:"Register",profile:"👤 Profile",chats:"💬 Chats",contacts:"📞 Contacts",settings:"⚙️ Settings",logout:"🚪 Logout",searchTitle:"🔍 Search",searchBtn:"Search",myContactsTitle:"📋 My contacts",chatsTitle:"💬 Active chats",email:"📧 Email:",nickname:"👤 Nickname:",changePassword:"Change password",theme:"Theme:",bgMyMsg:"My messages bg:",bgOtherMsg:"Other messages bg:",accentColor:"Accent color:",fontFamily:"Font family:",fontSize:"Font size:",language:"Language:",settingsTitle:"⚙️ Settings",noContacts:"📭 No contacts",noChats:"💬 No chats",online:"online",offline:"was"}, es:{loginTitle:"🔐 Inicio",loginBtn:"Entrar",forgotBtn:"¿Olvidaste contraseña?",registerTitle:"📝 Registro",registerBtn:"Registrarse",profile:"👤 Perfil",chats:"💬 Charlas",contacts:"📞 Contactos",settings:"⚙️ Ajustes",logout:"🚪 Salir",searchTitle:"🔍 Buscar",searchBtn:"Buscar",myContactsTitle:"📋 Mis contactos",chatsTitle:"💬 Charlas activas",email:"📧 Correo:",nickname:"👤 Nick:",changePassword:"Cambiar contraseña",theme:"Tema:",bgMyMsg:"Fondo mis mensajes:",bgOtherMsg:"Fondo otros mensajes:",accentColor:"Color acento:",fontFamily:"Fuente:",fontSize:"Tamaño:",language:"Idioma:",settingsTitle:"⚙️ Ajustes",noContacts:"📭 Sin contactos",noChats:"💬 Sin chats",online:"en línea",offline:"estuvo"}, fr:{loginTitle:"🔐 Connexion",loginBtn:"Se connecter",forgotBtn:"Mot de passe oublié?",registerTitle:"📝 Inscription",registerBtn:"S'inscrire",profile:"👤 Profil",chats:"💬 Discussions",contacts:"📞 Contacts",settings:"⚙️ Paramètres",logout:"🚪 Déconnexion",searchTitle:"🔍 Rechercher",searchBtn:"Chercher",myContactsTitle:"📋 Mes contacts",chatsTitle:"💬 Discussions actives",email:"📧 Email:",nickname:"👤 Pseudo:",changePassword:"Changer mot de passe",theme:"Thème:",bgMyMsg:"Fond mes messages:",bgOtherMsg:"Fond autres messages:",accentColor:"Couleur accent:",fontFamily:"Police:",fontSize:"Taille:",language:"Langue:",settingsTitle:"⚙️ Paramètres",noContacts:"📭 Aucun contact",noChats:"💬 Aucun chat",online:"en ligne",offline:"était"}, de:{loginTitle:"🔐 Anmeldung",loginBtn:"Einloggen",forgotBtn:"Passwort vergessen?",registerTitle:"📝 Registrierung",registerBtn:"Registrieren",profile:"👤 Profil",chats:"💬 Chats",contacts:"📞 Kontakte",settings:"⚙️ Einstellungen",logout:"🚪 Ausloggen",searchTitle:"🔍 Suchen",searchBtn:"Suchen",myContactsTitle:"📋 Meine Kontakte",chatsTitle:"💬 Aktive Chats",email:"📧 E-Mail:",nickname:"👤 Nickname:",changePassword:"Passwort ändern",theme:"Thema:",bgMyMsg:"Meine Nachrichten BG:",bgOtherMsg:"Andere Nachrichten BG:",accentColor:"Akzentfarbe:",fontFamily:"Schriftart:",fontSize:"Schriftgröße:",language:"Sprache:",settingsTitle:"⚙️ Einstellungen",noContacts:"📭 Keine Kontakte",noChats:"💬 Keine Chats",online:"online",offline:"war"}};
-        
-        function t(key) { return translations[currentLang]?.[key] || translations.ru[key] || key; }
-        function updateUILanguage() { document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if(key && !el.classList.contains('logout-btn')) el.innerHTML = t(key); }); }
+        let pendingRegistrations = new Map();
+        let activeMessageId = null;
+        let statusInterval = null;
+        let processedMessages = new Set();
         
         function applyTheme() {
             const theme = localStorage.getItem('theme') || 'dark';
@@ -350,40 +355,32 @@
             localStorage.setItem('accentColor', document.getElementById('accentColor').value);
             localStorage.setItem('fontFamily', document.getElementById('fontFamilySelect').value);
             localStorage.setItem('fontSize', document.getElementById('fontSizeRange').value);
-            localStorage.setItem('language', document.getElementById('languageSelect').value);
-            currentLang = document.getElementById('languageSelect').value;
             applyTheme();
-            updateUILanguage();
-            renderContacts(); renderChats();
         }
         
         function loadSettings() {
+            if(!document.getElementById('themeSelect')) return;
             document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'dark';
             document.getElementById('bgMyMsgColor').value = localStorage.getItem('bgMyMsg') || '#00d4ff';
             document.getElementById('bgOtherMsgColor').value = localStorage.getItem('bgOtherMsg') || '#2a2a3a';
             document.getElementById('accentColor').value = localStorage.getItem('accentColor') || '#00d4ff';
             document.getElementById('fontFamilySelect').value = localStorage.getItem('fontFamily') || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto";
             document.getElementById('fontSizeRange').value = localStorage.getItem('fontSize') || '15';
-            document.getElementById('languageSelect').value = localStorage.getItem('language') || 'ru';
-            currentLang = document.getElementById('languageSelect').value;
             applyTheme();
-            updateUILanguage();
             document.getElementById('fontSizeRange').oninput = (e) => { document.getElementById('fontSizeValue').innerText = e.target.value + 'px'; saveSettings(); };
             document.getElementById('themeSelect').onchange = saveSettings;
             document.getElementById('bgMyMsgColor').onchange = saveSettings;
             document.getElementById('bgOtherMsgColor').onchange = saveSettings;
             document.getElementById('accentColor').onchange = saveSettings;
             document.getElementById('fontFamilySelect').onchange = saveSettings;
-            document.getElementById('languageSelect').onchange = saveSettings;
         }
         
         function switchTab(tabName) { document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none'); document.getElementById(`${tabName}Tab`).style.display = 'block'; document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active')); document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active'); }
         function showPage(pageId) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
-        window.closeChat = function() { if(unsubscribeMessages) unsubscribeMessages(); if(window.statusInterval) clearInterval(window.statusInterval); showPage('mainApp'); switchTab('chats'); };
-        window.togglePassword = (f,i) => { const field = document.getElementById(f), icon = document.getElementById(i); if(field && icon) { field.type = field.type === "password" ? "text" : "password"; icon.textContent = field.type === "password" ? "👁️" : "🙈"; } };
+        window.closeChat = function() { if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); activeMessageId = null; processedMessages.clear(); showPage('mainApp'); switchTab('chats'); };
+        
         function generateCode() { return Math.floor(100000 + Math.random() * 900000).toString(); }
         
-        let pendingRegistrations = new Map();
         window.register = async function() {
             const email = document.getElementById('regEmail').value.trim(), username = document.getElementById('regUsername').value.trim(), password = document.getElementById('regPassword').value, confirm = document.getElementById('regConfirm').value, avatarFile = document.getElementById('regAvatar').files[0];
             if(!email || !username || !password || !confirm) return alert("Заполните все поля!");
@@ -418,6 +415,55 @@
         };
         window.forgotPassword = async () => { const email = prompt("Введите почту:"); if(email) { await sendPasswordResetEmail(auth, email); alert(`Ссылка отправлена на ${email}`); } };
         
+        window.showChangeEmail = () => document.getElementById('changeEmailSection').style.display = 'block';
+        window.sendEmailChangeCode = async function() {
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            if(!newEmail) return alert("Введите новую почту");
+            const methods = await fetchSignInMethodsForEmail(auth, newEmail);
+            if(methods.length > 0) return alert("Эта почта уже используется!");
+            const code = generateCode();
+            try { await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:newEmail, verification_code:code, message_type:'Смена почты'}); } catch(e) { return alert("Ошибка отправки"); }
+            pendingEmailChange = { newEmail, code, expires: Date.now()+5*60000 };
+            document.getElementById('emailCodeSection').style.display = 'block';
+            alert("Код отправлен на новую почту!");
+        };
+        window.confirmEmailChange = async function() {
+            const inputCode = document.getElementById('emailCodeInput').value.trim();
+            if(!pendingEmailChange || pendingEmailChange.expires < Date.now()) return alert("Сессия истекла");
+            if(inputCode !== pendingEmailChange.code) return alert("Неверный код!");
+            try {
+                await updateEmail(auth.currentUser, pendingEmailChange.newEmail);
+                await updateDoc(doc(db,"users",auth.currentUser.uid), { email: pendingEmailChange.newEmail });
+                document.getElementById('profileEmail').innerText = pendingEmailChange.newEmail;
+                document.getElementById('changeEmailSection').style.display = 'none';
+                document.getElementById('emailCodeSection').style.display = 'none';
+                alert("Почта успешно изменена!");
+                pendingEmailChange = null;
+            } catch(err) { alert("Ошибка: " + err.message); }
+        };
+        
+        window.showChangePassword = () => document.getElementById('changePasswordSection').style.display = 'block';
+        window.cancelChangePassword = () => document.getElementById('changePasswordSection').style.display = 'none';
+        window.confirmChangePassword = async function() {
+            const oldPassword = document.getElementById('oldPasswordInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+            if(!oldPassword || !newPassword || !confirmPassword) return alert("Заполните все поля!");
+            if(newPassword !== confirmPassword) return alert("Новые пароли не совпадают!");
+            if(newPassword.length < 6) return alert("Новый пароль минимум 6 символов!");
+            try {
+                const user = auth.currentUser;
+                const credential = EmailAuthProvider.credential(user.email, oldPassword);
+                await reauthenticateWithCredential(user, credential);
+                await updatePassword(user, newPassword);
+                alert("Пароль успешно изменён!");
+                document.getElementById('changePasswordSection').style.display = 'none';
+                document.getElementById('oldPasswordInput').value = '';
+                document.getElementById('newPasswordInput').value = '';
+                document.getElementById('confirmPasswordInput').value = '';
+            } catch(err) { alert("Ошибка: " + err.message); }
+        };
+        
         async function loadMainApp(user) {
             const userDoc = await getDoc(doc(db,"users",user.uid)); if(!userDoc.exists()) return;
             currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [] };
@@ -431,67 +477,36 @@
             showPage('mainApp'); switchTab('profile');
             document.querySelectorAll('.nav-menu-item[data-tab]').forEach(btn => btn.onclick = () => switchTab(btn.getAttribute('data-tab')));
             loadSettings();
+            setInterval(async () => { if(auth.currentUser) await updateDoc(doc(db,"users",auth.currentUser.uid), { lastSeen: new Date() }); }, 30000);
         }
         
         window.updateProfileAvatar = async function() { const file = document.getElementById('newAvatarInput').files[0]; if(!file) return; const storageRef = ref(storage,`avatars/${auth.currentUser.uid}`); await uploadBytes(storageRef,file); const url = await getDownloadURL(storageRef); await updateProfile(auth.currentUser,{photoURL:url}); await updateDoc(doc(db,"users",auth.currentUser.uid),{photoURL:url}); document.getElementById('profileAvatar').src = url; alert("Аватар обновлён!"); };
-        
         window.editUsername = () => document.getElementById('editUsernameSection').style.display = 'block';
         window.cancelEditUsername = () => document.getElementById('editUsernameSection').style.display = 'none';
         window.updateUsername = async function() { const newUsername = document.getElementById('newUsernameInput').value.trim(); if(!newUsername) return; const q = query(collection(db,"users"), where("username","==",newUsername)); const snap = await getDocs(q); if(!snap.empty && snap.docs[0].id !== auth.currentUser.uid) return alert("Ник занят!"); await updateProfile(auth.currentUser,{displayName:newUsername}); await updateDoc(doc(db,"users",auth.currentUser.uid),{username:newUsername}); document.getElementById('profileUsername').innerText = newUsername; document.getElementById('editUsernameSection').style.display = 'none'; alert("Ник обновлён!"); };
-        window.changePassword = async () => { await sendPasswordResetEmail(auth, auth.currentUser.email); alert(`Ссылка отправлена`); };
         
-        function getContactDisplayName(contact) { 
-            if(contact.firstName && contact.firstName.trim() !== "") 
-                return `${contact.firstName}${contact.lastName ? ' '+contact.lastName : ''}`; 
-            return contact.username; 
-        }
+        function getContactDisplayName(contact) { if(contact.firstName && contact.firstName.trim() !== "") return `${contact.firstName}${contact.lastName ? ' '+contact.lastName : ''}`; return contact.username; }
         
         async function renderContacts() {
             const container = document.getElementById('contactsList'); const contacts = currentUserData?.contacts || [];
-            if(!contacts.length) { container.innerHTML = `<div class="empty-state">${t('noContacts')}</div>`; return; }
-            container.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(getContactDisplayName(c))}</div><div class="contact-username">@${escapeHtml(c.username)}</div></div>${c.blocked ? '<span class="blocked-badge">🔒 Заблокирован</span>' : ''}</div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation(); editContact('${c.uid}')">✏️</button>${c.blocked ? `<button class="icon-btn success" onclick="event.stopPropagation(); unblockContact('${c.uid}')">🔓</button>` : `<button class="icon-btn danger" onclick="event.stopPropagation(); blockContact('${c.uid}')">🚫</button>`}</div></div>`).join('');
+            if(!contacts.length) { container.innerHTML = '<div class="empty-state">📭 Нет контактов</div>'; return; }
+            container.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(getContactDisplayName(c))}</div><div class="contact-username">@${escapeHtml(c.username)}</div></div>${c.blocked ? '<span class="blocked-badge" style="background:var(--danger); padding:2px 8px; border-radius:20px; font-size:11px;">🔒 Заблокирован</span>' : ''}</div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation(); editContact('${c.uid}')">✏️</button>${c.blocked ? `<button class="icon-btn success" onclick="event.stopPropagation(); unblockContact('${c.uid}')">🔓</button>` : `<button class="icon-btn danger" onclick="event.stopPropagation(); blockContact('${c.uid}')">🚫</button>`}</div></div>`).join('');
         }
         
         async function renderChats() {
             const container = document.getElementById('chatsList'); const contacts = (currentUserData?.contacts || []).filter(c => !c.blocked);
-            if(!contacts.length) { container.innerHTML = `<div class="empty-state">${t('noChats')}</div>`; return; }
+            if(!contacts.length) { container.innerHTML = '<div class="empty-state">💬 Нет чатов</div>'; return; }
             let html = ''; contacts.forEach((c,i) => { html += `<div class="chat-item" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">💬</div><div class="chat-info"><div class="chat-name">${escapeHtml(getContactDisplayName(c))}</div><div class="chat-preview">Нажмите для чата</div></div></div>`; if(i<contacts.length-1) html += '<div class="chats-divider"></div>'; });
             container.innerHTML = html;
         }
         
         window.searchContact = async function() { const nick = document.getElementById('searchNickname').value.trim(); if(!nick) return; const q = query(collection(db,"users"), where("username",">=",nick), where("username","<=",nick+"\uf8ff")); const snap = await getDocs(q); const results = document.getElementById('searchResults'); results.innerHTML = ""; let found=false; snap.forEach(d => { const data = d.data(); if(data.username !== currentUserData?.username) { found=true; const already = currentUserData?.contacts?.some(c=>c.uid===d.id); if(!already){ const btn = document.createElement("button"); btn.innerText = `➕ Добавить ${data.username}`; btn.onclick = () => showNameModal(d.id, data.username); results.appendChild(btn); } else results.innerHTML += `<button disabled style="opacity:0.6">✅ ${data.username} (уже в контактах)</button>`; } }); if(!found) results.innerHTML = '<div class="empty-state">❌ Не найден</div>'; };
-        
         window.showNameModal = (uid, username) => { pendingContact = { uid, username }; document.getElementById('modalUsername').innerText = username; document.getElementById('nameContactModal').style.display = 'flex'; };
         window.closeNameModal = () => document.getElementById('nameContactModal').style.display = 'none';
-        
-        window.confirmAddContact = async function() { 
-            const firstName = document.getElementById('contactFirstName').value.trim(); 
-            if(!firstName) return alert("Введите имя!"); 
-            const lastName = document.getElementById('contactLastName').value.trim(); 
-            const userRef = doc(db,"users",auth.currentUser.uid); 
-            const existingContact = currentUserData.contacts.find(c => c.uid === pendingContact.uid);
-            let updatedContacts;
-            if (existingContact) {
-                updatedContacts = currentUserData.contacts.map(c => c.uid === pendingContact.uid ? { ...c, firstName, lastName } : c);
-            } else {
-                updatedContacts = [...currentUserData.contacts, { uid: pendingContact.uid, username: pendingContact.username, firstName, lastName, blocked: false }];
-            }
-            await updateDoc(userRef, { contacts: updatedContacts });
-            const otherRef = doc(db,"users",pendingContact.uid); 
-            const otherDoc = await getDoc(otherRef); 
-            if(otherDoc.exists() && !otherDoc.data().contacts?.some(c=>c.uid===auth.currentUser.uid)) { 
-                await updateDoc(otherRef, { contacts: arrayUnion({ uid: auth.currentUser.uid, username: currentUserData.username }) });
-            }
-            closeNameModal(); 
-            alert("Контакт сохранён!"); 
-            document.getElementById('searchNickname').value = ''; 
-            document.getElementById('searchResults').innerHTML = ''; 
-        };
-        
+        window.confirmAddContact = async function() { const firstName = document.getElementById('contactFirstName').value.trim(); if(!firstName) return alert("Введите имя!"); const lastName = document.getElementById('contactLastName').value.trim(); const userRef = doc(db,"users",auth.currentUser.uid); const existingContact = currentUserData.contacts.find(c => c.uid === pendingContact.uid); let updatedContacts; if (existingContact) { updatedContacts = currentUserData.contacts.map(c => c.uid === pendingContact.uid ? { ...c, firstName, lastName } : c); } else { updatedContacts = [...currentUserData.contacts, { uid: pendingContact.uid, username: pendingContact.username, firstName, lastName, blocked: false }]; } await updateDoc(userRef, { contacts: updatedContacts }); const otherRef = doc(db,"users",pendingContact.uid); const otherDoc = await getDoc(otherRef); if(otherDoc.exists() && !otherDoc.data().contacts?.some(c=>c.uid===auth.currentUser.uid)) { await updateDoc(otherRef, { contacts: arrayUnion({ uid: auth.currentUser.uid, username: currentUserData.username }) }); } closeNameModal(); alert("Контакт сохранён!"); document.getElementById('searchNickname').value = ''; document.getElementById('searchResults').innerHTML = ''; };
         window.editContact = (uid) => { pendingRenameContact = currentUserData.contacts.find(c=>c.uid===uid); document.getElementById('renameFirstName').value = pendingRenameContact.firstName || ''; document.getElementById('renameLastName').value = pendingRenameContact.lastName || ''; document.getElementById('renameContactModal').style.display = 'flex'; };
         window.closeRenameModal = () => document.getElementById('renameContactModal').style.display = 'none';
         window.saveRenameContact = async function() { const firstName = document.getElementById('renameFirstName').value.trim(); if(!firstName) return alert("Введите имя!"); const lastName = document.getElementById('renameLastName').value.trim(); const updated = currentUserData.contacts.map(c=>c.uid===pendingRenameContact.uid ? {...c, firstName, lastName} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); closeRenameModal(); alert("Контакт обновлён!"); };
-        
         window.blockContact = async (uid) => { if(confirm("Заблокировать пользователя?")){ const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c,blocked:true} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); } };
         window.unblockContact = async (uid) => { const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c,blocked:false} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); };
         
@@ -499,52 +514,107 @@
             const contact = currentUserData.contacts?.find(c=>c.uid===otherUid);
             if(contact && contact.blocked) return alert("Пользователь заблокирован!");
             if(contact && contact.firstName && contact.firstName.trim() !== "") {
-                activeChatId = [auth.currentUser.uid, otherUid].sort().join('_'); 
-                activeOtherUser = { uid: otherUid, username: otherUsername };
+                activeChatId = [auth.currentUser.uid, otherUid].sort().join('_'); activeOtherUser = { uid: otherUid, username: otherUsername };
                 document.getElementById('chatHeaderName').innerHTML = escapeHtml(getContactDisplayName(contact));
-                showPage('chatPage'); 
-                loadMessages(); 
-                updateOnlineStatus(); 
-                if(window.statusInterval) clearInterval(window.statusInterval);
-                window.statusInterval = setInterval(updateOnlineStatus, 5000);
+                showPage('chatPage'); loadMessages(); updateOnlineStatus(); if(statusInterval) clearInterval(statusInterval); statusInterval = setInterval(updateOnlineStatus, 3000);
                 return;
             }
-            if(contact && (!contact.firstName || contact.firstName.trim() === "")) {
-                pendingContact = { uid: otherUid, username: otherUsername };
-                document.getElementById('modalUsername').innerText = otherUsername;
-                document.getElementById('nameContactModal').style.display = 'flex';
-                return;
-            }
-            if(!contact) {
-                pendingContact = { uid: otherUid, username: otherUsername };
-                document.getElementById('modalUsername').innerText = otherUsername;
-                document.getElementById('nameContactModal').style.display = 'flex';
-            }
+            pendingContact = { uid: otherUid, username: otherUsername };
+            document.getElementById('modalUsername').innerText = otherUsername;
+            document.getElementById('nameContactModal').style.display = 'flex';
         };
         
         async function updateOnlineStatus() { 
             if(!activeOtherUser) return; 
             const otherDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); 
-            if(otherDoc.exists()){ 
+            if(otherDoc.exists()){
                 const lastSeen = otherDoc.data().lastSeen?.toDate(); 
-                const status = document.getElementById('chatHeaderStatus'); 
-                if(lastSeen && (new Date()-lastSeen)<60000) status.innerHTML = `🟢 ${t('online')}`; 
-                else if(lastSeen) status.innerHTML = `🕐 ${t('offline')} ${lastSeen.toLocaleTimeString()}`; 
-                else status.innerHTML = ""; 
+                const statusDiv = document.getElementById('chatHeaderStatus'); 
+                if(lastSeen && (new Date() - lastSeen) < 60000) 
+                    statusDiv.innerHTML = `<span class="online-status-dot"></span>В сети`; 
+                else if(lastSeen) 
+                    statusDiv.innerHTML = `🕐 Был(а) ${lastSeen.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`; 
+                else statusDiv.innerHTML = "Не в сети"; 
             } 
         }
         
-        window.showContactProfile = async function() { if(!activeOtherUser) return; const userDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(!userDoc.exists()) return; const data = userDoc.data(); const contact = currentUserData.contacts?.find(c=>c.uid===activeOtherUser.uid); document.getElementById('contactProfileAvatar').src = data.photoURL || "https://via.placeholder.com/100"; document.getElementById('contactProfileName').innerText = contact ? getContactDisplayName(contact) : data.username; document.getElementById('contactProfileUsername').innerText = `@${data.username}`; const lastSeen = data.lastSeen?.toDate(); let statusText = ""; if(lastSeen && (new Date()-lastSeen)<60000) statusText = `🟢 ${t('online')}`; else if(lastSeen) statusText = `🕐 ${t('offline')} ${lastSeen.toLocaleString()}`; document.getElementById('contactProfileStatus').innerText = statusText; const isBlocked = contact?.blocked || false; const btn = document.getElementById('blockUnblockProfileBtn'); btn.innerText = isBlocked ? "🔓 Разблокировать" : "🚫 Заблокировать"; btn.style.background = isBlocked ? "var(--success)" : "var(--danger)"; btn.onclick = () => { if(isBlocked) unblockContact(activeOtherUser.uid); else blockContact(activeOtherUser.uid); closeContactProfile(); }; window.profileContactUid = activeOtherUser.uid; document.getElementById('contactProfileModal').style.display = 'flex'; };
+        window.showContactProfile = async function() { if(!activeOtherUser) return; const userDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(!userDoc.exists()) return; const data = userDoc.data(); const contact = currentUserData.contacts?.find(c=>c.uid===activeOtherUser.uid); document.getElementById('contactProfileAvatar').src = data.photoURL || "https://via.placeholder.com/100"; document.getElementById('contactProfileName').innerText = contact ? getContactDisplayName(contact) : data.username; document.getElementById('contactProfileUsername').innerText = `@${data.username}`; const lastSeen = data.lastSeen?.toDate(); let statusText = ""; if(lastSeen && (new Date() - lastSeen) < 60000) statusText = `🟢 в сети`; else if(lastSeen) statusText = `🕐 был ${lastSeen.toLocaleString()}`; document.getElementById('contactProfileStatus').innerText = statusText; const isBlocked = contact?.blocked || false; const btn = document.getElementById('blockUnblockProfileBtn'); btn.innerText = isBlocked ? "🔓 Разблокировать" : "🚫 Заблокировать"; btn.style.background = isBlocked ? "var(--success)" : "var(--danger)"; btn.onclick = () => { if(isBlocked) unblockContact(activeOtherUser.uid); else blockContact(activeOtherUser.uid); closeContactProfile(); }; window.profileContactUid = activeOtherUser.uid; document.getElementById('contactProfileModal').style.display = 'flex'; };
         window.renameFromProfile = async function() { if(!window.profileContactUid) return; closeContactProfile(); const contact = currentUserData.contacts.find(c=>c.uid===window.profileContactUid); if(contact) editContact(window.profileContactUid); };
         window.closeContactProfile = () => document.getElementById('contactProfileModal').style.display = 'none';
         
-        function loadMessages() { if(unsubscribeMessages) unsubscribeMessages(); const messagesRef = collection(db,"chats",activeChatId,"messages"); const q = query(messagesRef, orderBy("timestamp","asc")); unsubscribeMessages = onSnapshot(q, async (snapshot) => { const container = document.getElementById('messagesContainer'); container.innerHTML = ""; const currentUid = auth.currentUser.uid; snapshot.forEach(async (docSnap) => { const msg = docSnap.data(); const isMine = msg.senderId === currentUid; const div = document.createElement('div'); div.className = `message ${isMine ? 'sent' : 'received'}`; div.setAttribute('data-msg-id',docSnap.id); const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; let statusHtml = ""; if(isMine){ if(msg.status === 'read') statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`; else if(msg.status === 'delivered') statusHtml = `<span class="message-status"><span class="status-delivered">✓✓</span></span>`; else if(msg.status === 'sent') statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`; else statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`; } div.innerHTML = `<div class="message-wrapper"><div class="message-bubble"><div class="message-text">${escapeHtml(msg.text)}</div></div><div class="message-footer"><span class="message-time">${time}</span> ${statusHtml}</div></div><div class="delete-message-btn" onclick="deleteMessage('${docSnap.id}')">🗑️</div>`; container.appendChild(div); }); container.scrollTop = container.scrollHeight; if(snapshot.docs.length && snapshot.docs[snapshot.docs.length-1].data().senderId !== currentUid){ const lastMsg = snapshot.docs[snapshot.docs.length-1]; await updateDoc(doc(db,"chats",activeChatId,"messages",lastMsg.id),{status:'read'}); } }); }
-        window.deleteMessage = async (msgId) => { if(confirm("Удалить сообщение?")) await deleteDoc(doc(db,"chats",activeChatId,"messages",msgId)); };
-        window.sendMessage = async function() { const text = document.getElementById('messageInput').value.trim(); if(!text || !activeChatId) return; await addDoc(collection(db,"chats",activeChatId,"messages"), { text, senderId: auth.currentUser.uid, timestamp: new Date(), status: 'sent' }); document.getElementById('messageInput').value = ""; setTimeout(async () => { const msgs = await getDocs(query(collection(db,"chats",activeChatId,"messages"), orderBy("timestamp","desc"), limit(1))); if(!msgs.empty) await updateDoc(doc(db,"chats",activeChatId,"messages",msgs.docs[0].id),{status:'delivered'}); }, 1000); };
+        function toggleDeleteButton(msgElement, msgId) {
+            if(activeMessageId === msgId) { msgElement.classList.remove('active-delete'); activeMessageId = null; }
+            else { if(activeMessageId) { const prevMsg = document.querySelector(`.message[data-msg-id="${activeMessageId}"]`); if(prevMsg) prevMsg.classList.remove('active-delete'); } msgElement.classList.add('active-delete'); activeMessageId = msgId; }
+        }
+        
+        function loadMessages() { 
+            if(unsubscribeMessages) unsubscribeMessages(); 
+            const messagesRef = collection(db,"chats",activeChatId,"messages"); 
+            const q = query(messagesRef, orderBy("timestamp","asc")); 
+            unsubscribeMessages = onSnapshot(q, async (snapshot) => { 
+                const container = document.getElementById('messagesContainer'); 
+                if(!container) return;
+                container.innerHTML = ""; 
+                const currentUid = auth.currentUser.uid; 
+                
+                for(const docSnap of snapshot.docs) { 
+                    const msg = docSnap.data(); 
+                    const isMine = msg.senderId === currentUid; 
+                    const div = document.createElement('div'); 
+                    div.className = `message ${isMine ? 'sent' : 'received'}`; 
+                    div.setAttribute('data-msg-id',docSnap.id); 
+                    if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; 
+                    const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; 
+                    let statusHtml = ""; 
+                    if(isMine){
+                        switch(msg.status) {
+                            case 'read':
+                                statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`;
+                                break;
+                            case 'sent':
+                                statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`;
+                                break;
+                            default:
+                                statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`;
+                        }
+                    } 
+                    div.innerHTML = `<div class="message-wrapper"><div class="message-bubble"><div class="message-text">${escapeHtml(msg.text)}</div></div><div class="message-footer"><span class="message-time">${time}</span> ${statusHtml}</div></div><div class="delete-message-btn" onclick="event.stopPropagation(); deleteMessage('${docSnap.id}')">🗑️</div>`; 
+                    container.appendChild(div); 
+                } 
+                container.scrollTop = container.scrollHeight;
+                
+                // Mark messages as read when user sees them (only received messages)
+                const unreadMessages = snapshot.docs.filter(d => 
+                    d.data().senderId !== currentUid && 
+                    (!d.data().status || d.data().status !== 'read')
+                );
+                
+                for(const docSnap of unreadMessages) {
+                    if(!processedMessages.has(docSnap.id)) {
+                        processedMessages.add(docSnap.id);
+                        await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' });
+                    }
+                }
+            }); 
+        }
+        
+        window.deleteMessage = async (msgId) => { if(confirm("Удалить сообщение?")) { await deleteDoc(doc(db,"chats",activeChatId,"messages",msgId)); if(activeMessageId === msgId) activeMessageId = null; } };
+        
+        window.sendMessage = async function() { 
+            const text = document.getElementById('messageInput').value.trim(); 
+            if(!text || !activeChatId) return; 
+            const messageRef = await addDoc(collection(db,"chats",activeChatId,"messages"), { 
+                text, 
+                senderId: auth.currentUser.uid, 
+                timestamp: new Date(), 
+                status: 'sent' 
+            }); 
+            document.getElementById('messageInput').value = ""; 
+        };
         
         window.confirmLogout = () => document.getElementById('confirmLogoutModal').style.display = 'flex';
         window.closeConfirmLogout = () => document.getElementById('confirmLogoutModal').style.display = 'none';
-        window.logout = function() { document.getElementById('confirmLogoutModal').style.display = 'none'; auth.signOut(); if(unsubscribeContacts) unsubscribeContacts(); if(unsubscribeMessages) unsubscribeMessages(); if(window.statusInterval) clearInterval(window.statusInterval); currentUserData = null; showPage('loginPage'); };
+        window.logout = function() { document.getElementById('confirmLogoutModal').style.display = 'none'; auth.signOut(); if(unsubscribeContacts) unsubscribeContacts(); if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); currentUserData = null; processedMessages.clear(); showPage('loginPage'); };
         
         function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         onAuthStateChanged(auth, async (user) => { if(user && !currentUserData) await loadMainApp(user); else if(!user && document.getElementById('mainApp').classList.contains('active')) showPage('loginPage'); });
