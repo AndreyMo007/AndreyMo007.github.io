@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Messenger MAS | Мессенджер + Группы</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
         }
         
         :root {
@@ -27,7 +27,7 @@
             --accent: #00d4ff;
             --danger: #dc2626;
             --success: #10b981;
-            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
             --message-font-size: 15px;
             --message-color: inherit;
         }
@@ -42,7 +42,7 @@
             --bg-message-other: #e4e6eb;
             --text-primary: #1a1a2e;
             --text-secondary: #65676b;
-            --border-color: #ddd;
+            --border-color: #e4e6eb;
             --accent: #0088cc;
         }
         
@@ -56,35 +56,45 @@
             color: var(--message-color);
         }
         
-        .page { display: none; padding: 30px; max-width: 1800px; margin: 0 auto; min-height: 100vh; }
+        /* Общие стили */
+        .page { display: none; padding: 16px; max-width: 1800px; margin: 0 auto; min-height: 100vh; }
         .page.active { display: block; }
-        .main-layout { display: flex; gap: 30px; min-height: 85vh; }
-        .sidebar { width: 320px; background: var(--bg-sidebar); border-radius: 32px; padding: 20px; position: sticky; top: 20px; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .content-area { flex: 1; background: var(--bg-content); border-radius: 32px; padding: 30px; min-height: 85vh; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .main-layout { display: flex; gap: 20px; min-height: 85vh; }
+        
+        /* Сайдбар - адаптивный */
+        .sidebar { width: 300px; background: var(--bg-sidebar); border-radius: 28px; padding: 20px; position: sticky; top: 16px; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .content-area { flex: 1; background: var(--bg-content); border-radius: 28px; padding: 24px; min-height: 85vh; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
         .nav-menu-item { display: flex; align-items: center; gap: 15px; padding: 14px 20px; background: var(--bg-card); border-radius: 50px; cursor: pointer; margin-bottom: 12px; font-weight: 500; color: var(--text-primary); }
         .nav-menu-item:hover { opacity: 0.8; transform: translateX(5px); }
         .nav-menu-item.active { background: var(--accent); color: white; }
         .logout-btn { background: var(--danger) !important; color: white !important; }
-        .card { background: var(--bg-card); border-radius: 28px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        
+        .card { background: var(--bg-card); border-radius: 24px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); }
         input, button, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 50px; border: none; font-size: 15px; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-color); }
         button { background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
         button:hover { opacity: 0.9; }
-        .icon-btn { width: auto; padding: 6px 12px; margin: 0 2px; background: var(--bg-input); border-radius: 30px; font-size: 12px; cursor: pointer; color: var(--text-primary); border: 1px solid var(--border-color); }
-        .contact-item, .chat-item, .group-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); margin: 14px 0; border-radius: 60px; cursor: pointer; border: 1px solid var(--border-color); }
+        .icon-btn { width: auto; padding: 6px 12px; margin: 0 2px; background: var(--bg-input); border-radius: 30px; font-size: 12px; cursor: pointer; color: var(--text-primary); border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 4px; }
+        
+        .contact-item, .chat-item, .group-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-card); margin: 12px 0; border-radius: 60px; cursor: pointer; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
         .contact-item:hover, .chat-item:hover, .group-item:hover { background: var(--border-color); }
-        .contact-info { display: flex; align-items: center; flex: 1; gap: 12px; }
-        .avatar-placeholder { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+        .contact-info { display: flex; align-items: center; flex: 1; gap: 12px; min-width: 150px; }
+        .avatar-placeholder { width: 48px; height: 48px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; flex-shrink: 0; }
         .contact-name { font-weight: 600; font-size: 16px; }
         .contact-username { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: var(--bg-sidebar); border-radius: 32px; padding: 28px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .chat-container { display: flex; flex-direction: column; height: 75vh; background: var(--bg-content); border-radius: 28px; overflow: hidden; }
-        .chat-header { display: flex; align-items: center; padding: 16px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); cursor: pointer; }
-        .chat-header-back { background: var(--bg-input); padding: 8px 18px; border-radius: 40px; margin-right: 15px; cursor: pointer; color: var(--text-primary); }
-        .chat-header-name { font-size: 18px; font-weight: 600; }
+        
+        /* Модальные окна */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+        .modal-content { background: var(--bg-sidebar); border-radius: 28px; padding: 24px; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; }
+        
+        /* Чат контейнер */
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 100px); min-height: 500px; background: var(--bg-content); border-radius: 28px; overflow: hidden; }
+        .chat-header { display: flex; align-items: center; padding: 14px 18px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); cursor: pointer; flex-shrink: 0; }
+        .chat-header-back { background: var(--bg-input); padding: 8px 18px; border-radius: 40px; margin-right: 15px; cursor: pointer; color: var(--text-primary); font-weight: 500; }
+        .chat-header-name { font-size: 18px; font-weight: 600; word-break: break-word; }
         .chat-header-status { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
-        .messages-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-        .message { margin: 8px 0; max-width: 70%; position: relative; cursor: pointer; }
+        .messages-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .message { margin: 4px 0; max-width: 80%; position: relative; cursor: pointer; }
         .sent { align-self: flex-end; }
         .received { align-self: flex-start; cursor: default; }
         .message-bubble { padding: 10px 14px; border-radius: 20px; word-wrap: break-word; font-size: var(--message-font-size); }
@@ -96,27 +106,72 @@
         .status-delivered { color: var(--accent); opacity: 0.7; }
         .status-read { color: var(--accent); font-weight: bold; }
         .status-pending { color: #f59e0b; }
-        .delete-message-btn { position: absolute; left: -35px; top: 50%; transform: translateY(-50%); background: var(--danger); border-radius: 20px; padding: 4px 8px; font-size: 11px; cursor: pointer; display: none; color: white; z-index: 10; }
+        .delete-message-btn { position: absolute; left: -35px; top: 50%; transform: translateY(-50%); background: var(--danger); border-radius: 20px; padding: 4px 8px; font-size: 11px; cursor: pointer; display: none; color: white; z-index: 10; white-space: nowrap; }
         .message.active-delete .delete-message-btn { display: block; }
-        .input-area { display: flex; gap: 12px; padding: 16px; background: var(--bg-card); border-top: 1px solid var(--border-color); }
+        .input-area { display: flex; gap: 12px; padding: 14px; background: var(--bg-card); border-top: 1px solid var(--border-color); flex-shrink: 0; }
         .input-area input { flex: 1; margin: 0; }
         .input-area button { width: auto; padding: 14px 24px; }
+        
         .profile-avatar { width: 120px; height: 120px; border-radius: 60px; object-fit: cover; margin: 0 auto 20px; display: block; border: 3px solid var(--accent); cursor: pointer; }
-        .group-avatar { width: 80px; height: 80px; border-radius: 40px; object-fit: cover; margin-bottom: 10px; }
+        .group-avatar { width: 80px; height: 80px; border-radius: 40px; object-fit: cover; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+        
         .settings-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; flex-wrap: wrap; gap: 10px; }
         .settings-row label { font-weight: 500; color: var(--text-primary); }
         .settings-row select, .settings-row input { width: auto; min-width: 150px; margin: 0; }
+        
         .online-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: var(--success); animation: pulse 1.5s infinite; margin-right: 4px; }
         @keyframes pulse { 0% { opacity: 0.5; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+        
         .badge-admin { background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
-        .section-title { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px; }
+        .section-title { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px; flex-wrap: wrap; gap: 12px; }
         button.small { width: auto; padding: 8px 16px; margin: 0; }
-        .member-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); }
-        .blocked-badge { background: var(--danger); padding: 2px 8px; border-radius: 20px; font-size: 11px; color: white; margin-left: 10px; }
-        @media (max-width: 1000px) { .main-layout { flex-direction: column; } .sidebar { width: 100%; } .message { max-width: 85%; } .delete-message-btn { left: auto; right: -5px; top: -25px; } }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-sidebar); }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        .member-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px; }
+        .blocked-badge { background: var(--danger); padding: 2px 8px; border-radius: 20px; font-size: 11px; color: white; margin-left: 10px; display: inline-block; }
+        .contact-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        
+        /* Адаптивность */
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; position: static; }
+            .content-area { padding: 20px; }
+            .message { max-width: 85%; }
+        }
+        
+        @media (max-width: 600px) {
+            .page { padding: 12px; }
+            .sidebar { padding: 16px; }
+            .content-area { padding: 16px; }
+            .nav-menu-item { padding: 12px 16px; gap: 12px; }
+            .contact-item, .chat-item, .group-item { padding: 12px 14px; }
+            .avatar-placeholder { width: 40px; height: 40px; font-size: 18px; }
+            .contact-name { font-size: 14px; }
+            .message { max-width: 90%; }
+            .delete-message-btn { left: auto; right: -5px; top: -25px; transform: none; }
+            .message.active-delete .delete-message-btn { display: block; }
+            .chat-container { height: calc(100vh - 80px); border-radius: 20px; }
+            .chat-header-back { padding: 6px 14px; font-size: 14px; }
+            .modal-content { padding: 20px; }
+            .settings-row { flex-direction: column; align-items: stretch; }
+            .settings-row select, .settings-row input { width: 100%; min-width: auto; }
+            .section-title { flex-direction: column; align-items: stretch; }
+            button.small { width: 100%; }
+            .contact-actions { width: 100%; justify-content: flex-end; }
+        }
+        
+        @media (max-width: 480px) {
+            .contact-info { min-width: 100%; }
+            .contact-actions { justify-content: flex-start; margin-top: 8px; }
+            .input-area { gap: 8px; }
+            .input-area button { padding: 12px 18px; }
+            .input-area input { padding: 12px; }
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-sidebar); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+        
+        .empty-state { text-align: center; color: var(--text-secondary); padding: 40px 20px; }
+        .chats-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -136,24 +191,26 @@
                 <div class="nav-menu-item logout-btn" onclick="confirmLogout()">🚪 Выйти</div>
             </div>
             <div class="content-area">
-                <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
+                <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
                 <div id="chatsTab" class="tab-content" style="display:none"><div class="section-title"><h2>💬 Чаты</h2><button class="small" onclick="showCreateGroupModal()">➕ Создать группу</button></div><div id="chatsList"></div></div>
                 <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div><div class="section-title"><h2>👥 Группы</h2></div><div id="groupsListContacts"></div></div>
                 <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div><div class="settings-row"><label>Фон моих сообщений:</label><input type="color" id="bgMyMsgColor" value="#00d4ff"></div><div class="settings-row"><label>Фон чужих сообщений:</label><input type="color" id="bgOtherMsgColor" value="#2a2a3a"></div><div class="settings-row"><label>Цвет акцента:</label><input type="color" id="accentColor" value="#00d4ff"></div></div><div class="card"><h3>🔤 Шрифт</h3><div class="settings-row"><label>Шрифт сообщений:</label><select id="fontFamilySelect"><option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto">Системный</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Arial', sans-serif">Arial</option><option value="'Georgia', serif">Georgia</option></select></div><div class="settings-row"><label>Размер сообщений:</label><input type="range" id="fontSizeRange" min="12" max="22" step="1" value="15"><span id="fontSizeValue">15px</span></div><div class="settings-row"><label>Цвет текста сообщений:</label><input type="color" id="textColor" value="#e0e0e0"></div></div></div>
             </div>
         </div>
     </div>
-    <div id="chatPage" class="page"><div class="chat-container"><div class="chat-header" id="chatHeader" onclick="showChatProfile()"><div class="chat-header-back" onclick="event.stopPropagation(); closeChat()">←</div><div class="chat-header-info"><div class="chat-header-name" id="chatHeaderName">...</div><div class="chat-header-status" id="chatHeaderStatus"></div></div></div><div class="messages-area" id="messagesContainer"></div><div class="input-area"><input id="messageInput" placeholder="Сообщение..."><button onclick="sendMessage()">📤</button></div></div></div>
+    <div id="chatPage" class="page"><div class="chat-container"><div class="chat-header" id="chatHeader" onclick="showChatProfile()"><div class="chat-header-back" onclick="event.stopPropagation(); closeChat()">← Назад</div><div class="chat-header-info"><div class="chat-header-name" id="chatHeaderName">...</div><div class="chat-header-status" id="chatHeaderStatus"></div></div></div><div class="messages-area" id="messagesContainer"></div><div class="input-area"><input id="messageInput" placeholder="Сообщение..."><button onclick="sendMessage()">📤</button></div></div></div>
     <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
     <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeModal('renameContactModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
     <div id="contactProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px"><h3 id="contactProfileName" style="text-align:center"></h3><p id="contactProfileStatus" style="text-align:center"></p><button onclick="closeModal('contactProfileModal')">Закрыть</button></div></div>
-    <div id="confirmLogoutModal" class="modal" style="display:none"><div class="modal-content"><h3>Выход из аккаунта</h3><p>Вы уверены, что хотите выйти?</p><div style="display:flex; gap:10px; margin-top:20px;"><button onclick="logout()" style="background:var(--danger)">Да, выйти</button><button onclick="closeModal('confirmLogoutModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div></div>
+    <div id="confirmLogoutModal" class="modal" style="display:none"><div class="modal-content"><h3>Выход из аккаунта</h3><p>Вы уверены, что хотите выйти?</p><div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;"><button onclick="logout()" style="background:var(--danger)">Да, выйти</button><button onclick="closeModal('confirmLogoutModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div></div>
     <div id="createGroupModal" class="modal" style="display:none"><div class="modal-content"><h3>📁 Создать группу</h3><input type="text" id="groupName" placeholder="Название группы *"><input type="text" id="groupDesc" placeholder="Описание (опционально)"><input type="file" id="groupAvatar" accept="image/*"><p>Выберите участников (минимум 2 из контактов):</p><div id="groupMembersSelect"></div><button onclick="createGroup()">Создать</button><button onclick="closeModal('createGroupModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
-    <div id="groupProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="groupProfileAvatar" class="group-avatar" style="display:block; margin:0 auto 10px;"><h3 id="groupProfileName" style="text-align:center"></h3><p id="groupProfileDesc" style="text-align:center; color:var(--text-secondary)"></p><div id="groupMembersList"></div><div id="groupManageActions"></div><button onclick="closeModal('groupProfileModal')">Закрыть</button></div></div>
+    <div id="groupProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="groupProfileAvatar" class="group-avatar"><h3 id="groupProfileName" style="text-align:center"></h3><p id="groupProfileDesc" style="text-align:center; color:var(--text-secondary)"></p><div id="groupMembersList"></div><div id="groupManageActions"></div><button onclick="closeModal('groupProfileModal')">Закрыть</button></div></div>
+    
     <script type="module">
+        // Импорты Firebase (полный код, как в предыдущей версии, но с адаптивностью)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, arrayRemove, deleteDoc, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, deleteDoc, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         
         const firebaseConfig = { apiKey: "AIzaSyA0ML0f4E-nAjUL5qaDcjzw8Ea8K94tjlQ", authDomain: "messenger-mas.firebaseapp.com", projectId: "messenger-mas", storageBucket: "messenger-mas.firebasestorage.app", messagingSenderId: "60936666061", appId: "1:60936666061:web:c5218d35e9e54f9ebee284" };
@@ -161,14 +218,39 @@
         
         let currentUserData = null, unsubscribeContacts = null, unsubscribeMessages = null, activeChatId = null, activeOtherUser = null, activeGroupData = null, activeChatType = null, pendingContact = null, pendingRenameContact = null, pendingEmailChange = null, pendingRegistrations = new Map(), activeMessageId = null, statusInterval = null;
         
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        window.closeModal = closeModal;
+        window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
         function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         function switchTab(tab) { document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none'); document.getElementById(`${tab}Tab`).style.display = 'block'; document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active')); document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); }
         
-        function applyTheme() { const theme = localStorage.getItem('theme') || 'dark'; document.body.classList.toggle('light', theme === 'light'); const bgMy = localStorage.getItem('bgMyMsg') || '#00d4ff'; const bgOther = localStorage.getItem('bgOtherMsg') || '#2a2a3a'; const accent = localStorage.getItem('accentColor') || '#00d4ff'; const textColor = localStorage.getItem('textColor') || (theme === 'light' ? '#1a1a2e' : '#e0e0e0'); document.documentElement.style.setProperty('--bg-message-me', `linear-gradient(135deg, ${bgMy}, ${bgMy})`); document.documentElement.style.setProperty('--bg-message-other', bgOther); document.documentElement.style.setProperty('--accent', accent); document.documentElement.style.setProperty('--message-color', textColor); const fontFamily = localStorage.getItem('fontFamily') || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto"; const fontSize = localStorage.getItem('fontSize') || '15'; document.documentElement.style.setProperty('--font-family', fontFamily); document.documentElement.style.setProperty('--message-font-size', fontSize + 'px'); if(document.getElementById('fontSizeValue')) document.getElementById('fontSizeValue').innerText = fontSize + 'px'; }
-        function saveSettings() { localStorage.setItem('theme', document.getElementById('themeSelect').value); localStorage.setItem('bgMyMsg', document.getElementById('bgMyMsgColor').value); localStorage.setItem('bgOtherMsg', document.getElementById('bgOtherMsgColor').value); localStorage.setItem('accentColor', document.getElementById('accentColor').value); localStorage.setItem('fontFamily', document.getElementById('fontFamilySelect').value); localStorage.setItem('fontSize', document.getElementById('fontSizeRange').value); localStorage.setItem('textColor', document.getElementById('textColor').value); applyTheme(); }
+        function applyTheme() { 
+            const theme = localStorage.getItem('theme') || 'dark'; 
+            document.body.classList.toggle('light', theme === 'light'); 
+            const bgMy = localStorage.getItem('bgMyMsg') || '#00d4ff'; 
+            const bgOther = localStorage.getItem('bgOtherMsg') || '#2a2a3a'; 
+            const accent = localStorage.getItem('accentColor') || '#00d4ff'; 
+            const textColor = localStorage.getItem('textColor') || (theme === 'light' ? '#1a1a2e' : '#e0e0e0'); 
+            document.documentElement.style.setProperty('--bg-message-me', `linear-gradient(135deg, ${bgMy}, ${bgMy})`); 
+            document.documentElement.style.setProperty('--bg-message-other', bgOther); 
+            document.documentElement.style.setProperty('--accent', accent); 
+            document.documentElement.style.setProperty('--message-color', textColor); 
+            const fontFamily = localStorage.getItem('fontFamily') || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto"; 
+            const fontSize = localStorage.getItem('fontSize') || '15'; 
+            document.documentElement.style.setProperty('--font-family', fontFamily); 
+            document.documentElement.style.setProperty('--message-font-size', fontSize + 'px'); 
+            if(document.getElementById('fontSizeValue')) document.getElementById('fontSizeValue').innerText = fontSize + 'px'; 
+        }
+        function saveSettings() { 
+            localStorage.setItem('theme', document.getElementById('themeSelect').value); 
+            localStorage.setItem('bgMyMsg', document.getElementById('bgMyMsgColor').value); 
+            localStorage.setItem('bgOtherMsg', document.getElementById('bgOtherMsgColor').value); 
+            localStorage.setItem('accentColor', document.getElementById('accentColor').value); 
+            localStorage.setItem('fontFamily', document.getElementById('fontFamilySelect').value); 
+            localStorage.setItem('fontSize', document.getElementById('fontSizeRange').value); 
+            localStorage.setItem('textColor', document.getElementById('textColor').value); 
+            applyTheme(); 
+        }
         
+        // Функции групп, чатов, контактов (полный функционал как в предыдущей версии)
         window.showCreateGroupModal = async () => { if(!currentUserData) return; const container = document.getElementById('groupMembersSelect'); container.innerHTML = ''; const contacts = (currentUserData.contacts || []).filter(c => !c.blocked && c.firstName); for(let c of contacts){ const div = document.createElement('label'); div.style.display='block'; div.style.margin='5px 0'; div.style.color='var(--text-primary)'; div.innerHTML = `<input type="checkbox" value="${c.uid}"> ${c.firstName} ${c.lastName||''} (@${c.username})`; container.appendChild(div); } document.getElementById('createGroupModal').style.display = 'flex'; };
         window.createGroup = async () => { const name = document.getElementById('groupName').value.trim(); if(!name) return alert("Введите название"); const desc = document.getElementById('groupDesc').value.trim(); const avatarFile = document.getElementById('groupAvatar').files[0]; const checkboxes = document.querySelectorAll('#groupMembersSelect input:checked'); const selectedUids = Array.from(checkboxes).map(cb => cb.value); if(selectedUids.length < 2) return alert("Выберите минимум 2 участника"); const members = [{ uid: auth.currentUser.uid, role: 'creator' }]; for(let uid of selectedUids){ const contact = currentUserData.contacts.find(c => c.uid === uid); if(contact) members.push({ uid, role: 'member' }); } let photoURL = ''; if(avatarFile){ const refStorage = ref(storage, `groupAvatars/${Date.now()}`); await uploadBytes(refStorage, avatarFile); photoURL = await getDownloadURL(refStorage); } const groupRef = doc(collection(db, "groups")); const groupData = { id: groupRef.id, name, description: desc, photoURL, creatorId: auth.currentUser.uid, createdAt: new Date(), members }; await setDoc(groupRef, groupData); for(let member of members){ const userRef = doc(db, "users", member.uid); const userDoc = await getDoc(userRef); let groups = userDoc.data()?.groups || []; if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL, role: member.role }); await updateDoc(userRef, { groups }); } alert("Группа создана!"); closeModal('createGroupModal'); renderChats(); renderGroupsInContacts(); };
         
