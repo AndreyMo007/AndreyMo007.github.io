@@ -201,6 +201,62 @@
             "🚗 Транспорт и путешествия": ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🦯","🦽","🦼","🛴","🚲","🛵","🏍️","🛺","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩️","💺","🛰️","🚀","🛸","🚁","🛶","⛵","🚤","🛥️","🛳️","⛴️","🚢","⚓","🪝","🚦","🚥","🗺️","🧭","🏠","🏡","🏢","🏣","🏥","🏦","🏨","🏩","🏪","🏫","🏬","🏭","🏯","🏰","💒","🗼","🗽","⛲","🌋","🎠","🎡","🎢","🚂"]
         };
         
+        // Функция для удаления дубликатов контактов и групп
+        async function removeDuplicates() {
+            if (!currentUserData || !auth.currentUser) return;
+            
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            let needsUpdate = false;
+            
+            // Удаление дубликатов контактов
+            if (currentUserData.contacts && currentUserData.contacts.length > 0) {
+                const uniqueContacts = [];
+                const seenUids = new Set();
+                
+                for (const contact of currentUserData.contacts) {
+                    if (!seenUids.has(contact.uid)) {
+                        seenUids.add(contact.uid);
+                        uniqueContacts.push(contact);
+                    } else {
+                        needsUpdate = true;
+                        console.log(`Найден дубликат контакта: ${contact.username} (${contact.uid})`);
+                    }
+                }
+                
+                if (needsUpdate) {
+                    currentUserData.contacts = uniqueContacts;
+                    await updateDoc(userRef, { contacts: uniqueContacts });
+                    console.log('Дубликаты контактов удалены');
+                }
+            }
+            
+            // Удаление дубликатов групп
+            if (currentUserData.groups && currentUserData.groups.length > 0) {
+                const uniqueGroups = [];
+                const seenGroupIds = new Set();
+                let groupsNeedUpdate = false;
+                
+                for (const group of currentUserData.groups) {
+                    if (!seenGroupIds.has(group.id)) {
+                        seenGroupIds.add(group.id);
+                        uniqueGroups.push(group);
+                    } else {
+                        groupsNeedUpdate = true;
+                        console.log(`Найден дубликат группы: ${group.name} (${group.id})`);
+                    }
+                }
+                
+                if (groupsNeedUpdate) {
+                    currentUserData.groups = uniqueGroups;
+                    await updateDoc(userRef, { groups: uniqueGroups });
+                    console.log('Дубликаты групп удалены');
+                    needsUpdate = true;
+                }
+            }
+            
+            return needsUpdate;
+        }
+        
         window.showEmojiPicker = (event) => { 
             event.stopPropagation(); 
             let panel = document.getElementById('emojiPanel'); 
@@ -482,6 +538,10 @@
             const userDoc = await getDoc(doc(db,"users",user.uid)); 
             if(!userDoc.exists()) return; 
             currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [], groups: userDoc.data().groups || [] }; 
+            
+            // Вызов функции удаления дубликатов
+            await removeDuplicates();
+            
             document.getElementById('profileEmail').innerText = currentUserData.email; 
             document.getElementById('profileUsername').innerText = currentUserData.username; 
             if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; 
