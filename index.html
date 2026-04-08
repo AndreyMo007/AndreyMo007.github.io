@@ -52,10 +52,6 @@
             color: var(--text-primary);
         }
         
-        .message-bubble {
-            color: var(--message-color);
-        }
-        
         .page { display: none; padding: 16px; max-width: 1800px; margin: 0 auto; min-height: 100vh; }
         .page.active { display: block; }
         .main-layout { display: flex; gap: 20px; min-height: 85vh; }
@@ -106,7 +102,6 @@
         .emoji-btn, .file-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 22px; padding: 8px 12px; margin: 0; cursor: pointer; border-radius: 40px; display: inline-flex; align-items: center; justify-content: center; }
         .file-input-hidden { display: none; }
         
-        /* Emoji панель */
         .emoji-panel { position: absolute; bottom: 80px; left: 20px; background: var(--bg-card); border-radius: 24px; padding: 12px; width: 340px; max-height: 350px; overflow-y: auto; z-index: 200; border: 1px solid var(--border-color); box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 12px; }
         .emoji-category { margin-bottom: 8px; }
         .emoji-category-title { font-size: 13px; font-weight: bold; color: var(--accent); margin-bottom: 6px; padding-left: 4px; }
@@ -114,11 +109,9 @@
         .emoji-item { font-size: 26px; cursor: pointer; text-align: center; padding: 6px; border-radius: 12px; transition: transform 0.1s; }
         .emoji-item:hover { background: var(--border-color); transform: scale(1.2); }
         
-        /* Медиа контент в сообщениях */
         .media-preview { max-width: 200px; max-height: 200px; border-radius: 16px; margin-top: 6px; cursor: pointer; object-fit: cover; }
         .message-bubble a { color: white; text-decoration: underline; }
         
-        /* Адаптивность */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
             .sidebar { width: 100%; position: static; }
@@ -151,7 +144,6 @@
         .member-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px; }
         .blocked-badge { background: var(--danger); padding: 2px 8px; border-radius: 20px; font-size: 11px; color: white; margin-left: 10px; display: inline-block; }
         .contact-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-        .chats-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -184,7 +176,6 @@
     
     <div id="chatPage" class="page"><div class="chat-container"><div class="chat-header" id="chatHeader" onclick="showChatProfile()"><div class="chat-header-back" onclick="event.stopPropagation(); closeChat()">← Назад</div><div class="chat-header-info"><div class="chat-header-name" id="chatHeaderName">...</div><div class="chat-header-status" id="chatHeaderStatus"></div></div></div><div class="messages-area" id="messagesContainer"></div><div class="input-area"><input id="messageInput" placeholder="Сообщение..."><button class="emoji-btn" id="emojiButton" type="button">😊</button><button class="file-btn" id="fileButton" type="button">🖼️</button><input type="file" id="fileInput" accept="image/*" style="display:none"><button onclick="sendMessage()">📤</button></div></div></div>
     
-    <!-- Модалки -->
     <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
     <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeModal('renameContactModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
     <div id="contactProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px"><h3 id="contactProfileName" style="text-align:center"></h3><p id="contactProfileStatus" style="text-align:center"></p><button onclick="closeModal('contactProfileModal')">Закрыть</button></div></div>
@@ -202,7 +193,6 @@
         
         let currentUserData = null, unsubscribeContacts = null, unsubscribeMessages = null, activeChatId = null, activeOtherUser = null, activeGroupData = null, activeChatType = null, pendingContact = null, pendingRenameContact = null, pendingEmailChange = null, pendingRegistrations = new Map(), activeMessageId = null, statusInterval = null;
         
-        // БОЛЬШАЯ БИБЛИОТЕКА ЭМОДЗИ (более 150 штук с категориями)
         const emojiCategories = {
             "😀 Смайлы и эмоции": ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️","👽","👾","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾"],
             "🐶 Животные и природа": ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐒","🐔","🐧","🐦","🐤","🐴","🐺","🦋","🐌","🐞","🐜","🦟","🦗","🕷️","🦂","🐢","🐍","🦎","🐙","🦑","🦐","🦀","🐠","🐟","🐡","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘","🦛","🦏","🐪","🐫","🦒","🦘","🦙","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦌","🐕","🐩","🐈","🐓","🦃","🦚","🦜","🦢","🦩","🕊️","🐇","🦝","🦨","🦡","🦔","🐿️","🌲","🌳","🌴","🌵","🌾","🌿","🍀","🍁","🍂","🍃","🌸","🌼","🌻","🌺","🌹","🥀","🌷","💐"],
@@ -211,7 +201,6 @@
             "🚗 Транспорт и путешествия": ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🦯","🦽","🦼","🛴","🚲","🛵","🏍️","🛺","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩️","💺","🛰️","🚀","🛸","🚁","🛶","⛵","🚤","🛥️","🛳️","⛴️","🚢","⚓","🪝","🚦","🚥","🗺️","🧭","🏠","🏡","🏢","🏣","🏥","🏦","🏨","🏩","🏪","🏫","🏬","🏭","🏯","🏰","💒","🗼","🗽","⛲","🌋","🎠","🎡","🎢","🚂"]
         };
         
-        // Функция показа панели эмодзи
         window.showEmojiPicker = (event) => { 
             event.stopPropagation(); 
             let panel = document.getElementById('emojiPanel'); 
@@ -247,7 +236,6 @@
             }); 
         };
         
-        // Отправка фото через Base64 (без Storage)
         window.openFileSelector = () => document.getElementById('fileInput').click();
         
         window.sendImageAsBase64 = async () => { 
@@ -255,16 +243,12 @@
             const file = fileInput.files[0]; 
             if(!file || !activeChatId) return; 
             if(!file.type.startsWith('image/')) return alert("Пожалуйста, выберите изображение");
-            
-            // Конвертируем в Base64
             const reader = new FileReader();
             reader.onloadend = async function() {
-                const base64Image = reader.result; // data:image/...;base64,...
-                let messageText = `📷 Фото: ${base64Image}`;
-                
+                const base64Image = reader.result;
                 if(activeChatType === 'group'){
                     await addDoc(collection(db, "groups", activeChatId, "messages"), { 
-                        text: messageText, 
+                        text: "📷 Фото", 
                         mediaBase64: base64Image,
                         mediaType: 'image',
                         senderId: auth.currentUser.uid, 
@@ -273,7 +257,7 @@
                     });
                 } else {
                     await addDoc(collection(db, "chats", activeChatId, "messages"), { 
-                        text: messageText, 
+                        text: "📷 Фото", 
                         mediaBase64: base64Image,
                         mediaType: 'image',
                         senderId: auth.currentUser.uid, 
@@ -318,7 +302,6 @@
             applyTheme(); 
         }
         
-        // ГРУППЫ
         window.showCreateGroupModal = async () => { if(!currentUserData) return; const container = document.getElementById('groupMembersSelect'); container.innerHTML = ''; const contacts = (currentUserData.contacts || []).filter(c => !c.blocked && c.firstName); for(let c of contacts){ const div = document.createElement('label'); div.style.display='block'; div.style.margin='5px 0'; div.style.color='var(--text-primary)'; div.innerHTML = `<input type="checkbox" value="${c.uid}"> ${c.firstName} ${c.lastName||''} (@${c.username})`; container.appendChild(div); } document.getElementById('createGroupModal').style.display = 'flex'; };
         window.createGroup = async () => { const name = document.getElementById('groupName').value.trim(); if(!name) return alert("Введите название"); const desc = document.getElementById('groupDesc').value.trim(); const avatarFile = document.getElementById('groupAvatar').files[0]; const checkboxes = document.querySelectorAll('#groupMembersSelect input:checked'); const selectedUids = Array.from(checkboxes).map(cb => cb.value); if(selectedUids.length < 2) return alert("Выберите минимум 2 участника"); const members = [{ uid: auth.currentUser.uid, role: 'creator' }]; for(let uid of selectedUids){ const contact = currentUserData.contacts.find(c => c.uid === uid); if(contact) members.push({ uid, role: 'member' }); } let photoURL = ''; if(avatarFile){ const reader = new FileReader(); reader.onload = async function(e) { photoURL = e.target.result; const groupRef = doc(collection(db, "groups")); const groupData = { id: groupRef.id, name, description: desc, photoURL, creatorId: auth.currentUser.uid, createdAt: new Date(), members }; await setDoc(groupRef, groupData); for(let member of members){ const userRef = doc(db, "users", member.uid); const userDoc = await getDoc(userRef); let groups = userDoc.data()?.groups || []; if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL, role: member.role }); await updateDoc(userRef, { groups }); } alert("Группа создана!"); closeModal('createGroupModal'); renderChats(); renderGroupsInContacts(); }; reader.readAsDataURL(avatarFile); return; } else { const groupRef = doc(collection(db, "groups")); const groupData = { id: groupRef.id, name, description: desc, photoURL: '', creatorId: auth.currentUser.uid, createdAt: new Date(), members }; await setDoc(groupRef, groupData); for(let member of members){ const userRef = doc(db, "users", member.uid); const userDoc = await getDoc(userRef); let groups = userDoc.data()?.groups || []; if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL: '', role: member.role }); await updateDoc(userRef, { groups }); } alert("Группа создана!"); closeModal('createGroupModal'); renderChats(); renderGroupsInContacts(); } };
         
@@ -369,7 +352,36 @@
         
         function toggleDeleteButton(el, id){ if(activeMessageId === id){ el.classList.remove('active-delete'); activeMessageId = null; } else { if(activeMessageId){ const prev = document.querySelector(`.message[data-msg-id="${activeMessageId}"]`); if(prev) prev.classList.remove('active-delete'); } el.classList.add('active-delete'); activeMessageId = id; } }
         window.closeChat = function() { if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); activeMessageId = null; showPage('mainApp'); switchTab('chats'); };
-        window.openChat = async (uid, username) => { const contact = currentUserData.contacts?.find(c=>c.uid===uid); if(contact?.blocked) return alert("Пользователь заблокирован!"); if(!contact?.firstName) { pendingContact = { uid, username }; document.getElementById('modalUsername').innerText = username; document.getElementById('nameContactModal').style.display = 'flex'; return; } activeChatId = [auth.currentUser.uid, uid].sort().join('_'); activeChatType = 'private'; activeOtherUser = { uid, username }; document.getElementById('chatHeaderName').innerHTML = escapeHtml(contact.firstName); showPage('chatPage'); loadPrivateMessages(); updateOnlineStatus(); if(statusInterval) clearInterval(statusInterval); statusInterval = setInterval(updateOnlineStatus, 3000); };
+        
+        window.openChat = async (uid, username) => { 
+            let contact = currentUserData.contacts?.find(c=>c.uid===uid); 
+            if(contact?.blocked) return alert("Пользователь заблокирован!"); 
+            
+            // Если контакт есть но без имени (старая версия) - автоматически присваиваем имя
+            if(contact && !contact.firstName) {
+                contact.firstName = username;
+                const updatedContacts = currentUserData.contacts.map(c => c.uid === uid ? {...c, firstName: username} : c);
+                await updateDoc(doc(db,"users",auth.currentUser.uid), { contacts: updatedContacts });
+                currentUserData.contacts = updatedContacts;
+                contact = currentUserData.contacts.find(c=>c.uid===uid);
+            }
+            
+            if(!contact || !contact.firstName) { 
+                pendingContact = { uid, username }; 
+                document.getElementById('modalUsername').innerText = username; 
+                document.getElementById('nameContactModal').style.display = 'flex'; 
+                return; 
+            } 
+            activeChatId = [auth.currentUser.uid, uid].sort().join('_'); 
+            activeChatType = 'private'; 
+            activeOtherUser = { uid, username }; 
+            document.getElementById('chatHeaderName').innerHTML = escapeHtml(contact.firstName); 
+            showPage('chatPage'); 
+            loadPrivateMessages(); 
+            updateOnlineStatus(); 
+            if(statusInterval) clearInterval(statusInterval); 
+            statusInterval = setInterval(updateOnlineStatus, 3000); 
+        };
         
         async function updateOnlineStatus() { if(!activeOtherUser || activeChatType !== 'private') return; const otherDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(otherDoc.exists()){ const lastSeen = otherDoc.data().lastSeen?.toDate(); const statusDiv = document.getElementById('chatHeaderStatus'); if(lastSeen && (new Date() - lastSeen) < 60000) statusDiv.innerHTML = `<span class="online-status-dot"></span>В сети`; else if(lastSeen) statusDiv.innerHTML = `🕐 Был(а) ${lastSeen.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`; else statusDiv.innerHTML = "Не в сети"; } }
         
@@ -381,11 +393,117 @@
         window.saveRenameContact = async () => { const firstName = document.getElementById('renameFirstName').value.trim(); if(!firstName) return alert("Введите имя!"); const lastName = document.getElementById('renameLastName').value.trim(); const updated = currentUserData.contacts.map(c=>c.uid===pendingRenameContact.uid ? {...c, firstName, lastName} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); closeModal('renameContactModal'); renderContacts(); renderChats(); };
         window.blockContact = async (uid) => { if(confirm("Заблокировать пользователя?")){ const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: true} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); } };
         window.unblockContact = async (uid) => { const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: false} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); };
-        window.confirmAddContact = async () => { const firstName = document.getElementById('contactFirstName').value.trim(); if(!firstName) return alert("Введите имя!"); const lastName = document.getElementById('contactLastName').value.trim(); const userRef = doc(db,"users",auth.currentUser.uid); const updatedContacts = [...currentUserData.contacts, { uid: pendingContact.uid, username: pendingContact.username, firstName, lastName, blocked: false }]; await updateDoc(userRef, { contacts: updatedContacts }); const otherRef = doc(db,"users",pendingContact.uid); const otherDoc = await getDoc(otherRef); if(otherDoc.exists() && !otherDoc.data().contacts?.some(c=>c.uid===auth.currentUser.uid)) { await updateDoc(otherRef, { contacts: arrayUnion({ uid: auth.currentUser.uid, username: currentUserData.username }) }); } closeModal('nameContactModal'); renderContacts(); renderChats(); };
-        window.searchContact = async () => { const nick = document.getElementById('searchNickname').value.trim(); if(!nick) return; const q = query(collection(db,"users"), where("username",">=",nick), where("username","<=",nick+"\uf8ff")); const snap = await getDocs(q); const results = document.getElementById('searchResults'); results.innerHTML = ""; let found=false; snap.forEach(d => { if(d.id !== auth.currentUser.uid && !currentUserData.contacts.some(c=>c.uid===d.id)) { found=true; results.innerHTML += `<button onclick="showNameModal('${d.id}','${d.data().username}')">➕ ${d.data().username}</button>`; } }); if(!found) results.innerHTML = '<div class="empty-state">❌ Не найден</div>'; };
-        window.showNameModal = (uid, username) => { pendingContact = { uid, username }; document.getElementById('modalUsername').innerText = username; document.getElementById('nameContactModal').style.display = 'flex'; };
         
-        async function loadMainApp(user) { const userDoc = await getDoc(doc(db,"users",user.uid)); if(!userDoc.exists()) return; currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [], groups: userDoc.data().groups || [] }; document.getElementById('profileEmail').innerText = currentUserData.email; document.getElementById('profileUsername').innerText = currentUserData.username; if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; await renderContacts(); await renderChats(); await renderGroupsInContacts(); if(unsubscribeContacts) unsubscribeContacts(); unsubscribeContacts = onSnapshot(doc(db,"users",user.uid), (snap) => { if(snap.exists()) { currentUserData.contacts = snap.data().contacts || []; currentUserData.groups = snap.data().groups || []; renderContacts(); renderChats(); renderGroupsInContacts(); } }); showPage('mainApp'); switchTab('profile'); document.querySelectorAll('.nav-menu-item[data-tab]').forEach(btn => btn.onclick = () => switchTab(btn.getAttribute('data-tab'))); loadSettings(); setInterval(async () => { if(auth.currentUser) await updateDoc(doc(db,"users",auth.currentUser.uid), { lastSeen: new Date() }); }, 30000); }
+        window.confirmAddContact = async () => { 
+            const firstName = document.getElementById('contactFirstName').value.trim(); 
+            if(!firstName) return alert("Введите имя!"); 
+            const lastName = document.getElementById('contactLastName').value.trim(); 
+            const userRef = doc(db,"users",auth.currentUser.uid); 
+            
+            let currentContacts = currentUserData.contacts || [];
+            const existingIndex = currentContacts.findIndex(c => c.uid === pendingContact.uid);
+            
+            if (existingIndex !== -1) {
+                currentContacts[existingIndex] = { 
+                    ...currentContacts[existingIndex], 
+                    firstName, 
+                    lastName, 
+                    username: pendingContact.username,
+                    blocked: false 
+                };
+            } else {
+                currentContacts.push({ 
+                    uid: pendingContact.uid, 
+                    username: pendingContact.username, 
+                    firstName, 
+                    lastName, 
+                    blocked: false 
+                });
+            }
+            
+            await updateDoc(userRef, { contacts: currentContacts });
+            
+            // Обновляем контакт у другого пользователя
+            const otherRef = doc(db,"users",pendingContact.uid);
+            const otherDoc = await getDoc(otherRef);
+            if(otherDoc.exists()) {
+                let otherContacts = otherDoc.data().contacts || [];
+                const existingOtherIndex = otherContacts.findIndex(c => c.uid === auth.currentUser.uid);
+                const myUsername = currentUserData.username;
+                
+                if (existingOtherIndex !== -1) {
+                    otherContacts[existingOtherIndex] = { 
+                        ...otherContacts[existingOtherIndex],
+                        firstName: myUsername,
+                        lastName: '',
+                        username: myUsername,
+                        blocked: false 
+                    };
+                } else {
+                    otherContacts.push({ 
+                        uid: auth.currentUser.uid, 
+                        username: myUsername,
+                        firstName: myUsername, 
+                        lastName: '',
+                        blocked: false 
+                    });
+                }
+                await updateDoc(otherRef, { contacts: otherContacts });
+            }
+            
+            closeModal('nameContactModal');
+            await renderContacts(); 
+            await renderChats(); 
+        };
+        
+        window.searchContact = async () => { 
+            const nick = document.getElementById('searchNickname').value.trim(); 
+            if(!nick) return; 
+            const q = query(collection(db,"users"), where("username",">=",nick), where("username","<=",nick+"\uf8ff")); 
+            const snap = await getDocs(q); 
+            const results = document.getElementById('searchResults'); 
+            results.innerHTML = ""; 
+            let found=false; 
+            snap.forEach(d => { 
+                if(d.id !== auth.currentUser.uid && !currentUserData.contacts.some(c=>c.uid===d.id)) { 
+                    found=true; 
+                    results.innerHTML += `<button onclick="showNameModal('${d.id}','${d.data().username}')">➕ ${d.data().username}</button>`; 
+                } 
+            }); 
+            if(!found) results.innerHTML = '<div class="empty-state">❌ Не найден</div>'; 
+        };
+        window.showNameModal = (uid, username) => { 
+            pendingContact = { uid, username }; 
+            document.getElementById('modalUsername').innerText = username; 
+            document.getElementById('nameContactModal').style.display = 'flex'; 
+        };
+        
+        async function loadMainApp(user) { 
+            const userDoc = await getDoc(doc(db,"users",user.uid)); 
+            if(!userDoc.exists()) return; 
+            currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [], groups: userDoc.data().groups || [] }; 
+            document.getElementById('profileEmail').innerText = currentUserData.email; 
+            document.getElementById('profileUsername').innerText = currentUserData.username; 
+            if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; 
+            await renderContacts(); 
+            await renderChats(); 
+            await renderGroupsInContacts(); 
+            if(unsubscribeContacts) unsubscribeContacts(); 
+            unsubscribeContacts = onSnapshot(doc(db,"users",user.uid), (snap) => { 
+                if(snap.exists()) { 
+                    currentUserData.contacts = snap.data().contacts || []; 
+                    currentUserData.groups = snap.data().groups || []; 
+                    renderContacts(); 
+                    renderChats(); 
+                    renderGroupsInContacts(); 
+                } 
+            }); 
+            showPage('mainApp'); 
+            switchTab('profile'); 
+            document.querySelectorAll('.nav-menu-item[data-tab]').forEach(btn => btn.onclick = () => switchTab(btn.getAttribute('data-tab'))); 
+            loadSettings(); 
+            setInterval(async () => { if(auth.currentUser) await updateDoc(doc(db,"users",auth.currentUser.uid), { lastSeen: new Date() }); }, 30000); 
+        }
         
         window.updateProfileAvatar = async () => { const file = document.getElementById('newAvatarInput').files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(e) { const photoURL = e.target.result; await updateProfile(auth.currentUser,{photoURL}); await updateDoc(doc(db,"users",auth.currentUser.uid),{photoURL}); document.getElementById('profileAvatar').src = photoURL; alert("Аватар обновлён!"); }; reader.readAsDataURL(file); };
         window.editUsername = () => document.getElementById('editUsernameSection').style.display = 'block';
