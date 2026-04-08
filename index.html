@@ -144,6 +144,9 @@
         .member-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px; }
         .blocked-badge { background: var(--danger); padding: 2px 8px; border-radius: 20px; font-size: 11px; color: white; margin-left: 10px; display: inline-block; }
         .contact-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .notification-status { margin-top: 10px; padding: 10px; border-radius: 20px; background: var(--bg-input); }
+        .notification-enabled { color: var(--success); }
+        .notification-disabled { color: var(--danger); }
     </style>
 </head>
 <body>
@@ -166,7 +169,7 @@
                 <div class="nav-menu-item logout-btn" onclick="confirmLogout()">🚪 Выйти</div>
             </div>
             <div class="content-area">
-                <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
+                <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><h3>🔔 Уведомления</h3><div id="notificationStatus" class="notification-status">Проверка статуса...</div><button id="enableNotificationsBtn" onclick="requestNotificationPermission()">🔔 Разрешить уведомления</button></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
                 <div id="chatsTab" class="tab-content" style="display:none"><div class="section-title"><h2>💬 Чаты</h2><button class="small" onclick="showCreateGroupModal()">➕ Создать группу</button></div><div id="chatsList"></div></div>
                 <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div><div class="section-title"><h2>👥 Группы</h2></div><div id="groupsListContacts"></div></div>
                 <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div><div class="settings-row"><label>Фон моих сообщений:</label><input type="color" id="bgMyMsgColor" value="#00d4ff"></div><div class="settings-row"><label>Фон чужих сообщений:</label><input type="color" id="bgOtherMsgColor" value="#2a2a3a"></div><div class="settings-row"><label>Цвет акцента:</label><input type="color" id="accentColor" value="#00d4ff"></div></div><div class="card"><h3>🔤 Шрифт</h3><div class="settings-row"><label>Шрифт сообщений:</label><select id="fontFamilySelect"><option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto">Системный</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Arial', sans-serif">Arial</option><option value="'Georgia', serif">Georgia</option></select></div><div class="settings-row"><label>Размер сообщений:</label><input type="range" id="fontSizeRange" min="12" max="22" step="1" value="15"><span id="fontSizeValue">15px</span></div><div class="settings-row"><label>Цвет текста сообщений:</label><input type="color" id="textColor" value="#e0e0e0"></div></div></div>
@@ -192,6 +195,7 @@
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); emailjs.init("popGxqPJLrqP3ySB4");
         
         let currentUserData = null, unsubscribeContacts = null, unsubscribeMessages = null, activeChatId = null, activeOtherUser = null, activeGroupData = null, activeChatType = null, pendingContact = null, pendingRenameContact = null, pendingEmailChange = null, pendingRegistrations = new Map(), activeMessageId = null, statusInterval = null;
+        let notificationPermissionGranted = false;
         
         const emojiCategories = {
             "😀 Смайлы и эмоции": ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️","👽","👾","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾"],
@@ -200,6 +204,88 @@
             "⚽ Спорт и активность": ["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🪀","🏓","🏸","🏒","🏑","🥍","🏏","🪃","🥅","⛳","🪁","🏹","🎣","🤿","🥊","🥋","🎽","🛹","🛼","⛸️","🎿","⛷️","🏂","🪂","🏋️","🤼","🤸","⛹️","🤾","🏌️","🏇","🧘","🏄","🏊","🤽","🚣","🧗","🚵","🚴","💪","🦾","🦵","🦿","🦷","🦻","👀","👃","🧠","🫀","🫁","🦴"],
             "🚗 Транспорт и путешествия": ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🦯","🦽","🦼","🛴","🚲","🛵","🏍️","🛺","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩️","💺","🛰️","🚀","🛸","🚁","🛶","⛵","🚤","🛥️","🛳️","⛴️","🚢","⚓","🪝","🚦","🚥","🗺️","🧭","🏠","🏡","🏢","🏣","🏥","🏦","🏨","🏩","🏪","🏫","🏬","🏭","🏯","🏰","💒","🗼","🗽","⛲","🌋","🎠","🎡","🎢","🚂"]
         };
+        
+        // Функция для запроса разрешения на уведомления
+        window.requestNotificationPermission = async () => {
+            if (!("Notification" in window)) {
+                alert("Ваш браузер не поддерживает уведомления");
+                return;
+            }
+            
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    notificationPermissionGranted = true;
+                    updateNotificationStatus();
+                    
+                    // Сохраняем статус в Firestore
+                    if (auth.currentUser) {
+                        await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                            notificationsEnabled: true
+                        });
+                    }
+                    
+                    // Показываем тестовое уведомление
+                    new Notification("Messenger MAS", {
+                        body: "Уведомления успешно включены!",
+                        icon: "https://via.placeholder.com/128"
+                    });
+                    
+                    alert("Уведомления включены!");
+                } else {
+                    notificationPermissionGranted = false;
+                    updateNotificationStatus();
+                    alert("Разрешение на уведомления отклонено");
+                }
+            } catch (error) {
+                console.error("Ошибка при запросе разрешения:", error);
+                alert("Не удалось запросить разрешение на уведомления");
+            }
+        };
+        
+        // Функция для обновления статуса уведомлений в интерфейсе
+        function updateNotificationStatus() {
+            const statusDiv = document.getElementById('notificationStatus');
+            const btn = document.getElementById('enableNotificationsBtn');
+            
+            if (!("Notification" in window)) {
+                statusDiv.innerHTML = '<span class="notification-disabled">❌ Ваш браузер не поддерживает уведомления</span>';
+                btn.style.display = 'none';
+                return;
+            }
+            
+            if (Notification.permission === "granted") {
+                statusDiv.innerHTML = '<span class="notification-enabled">✅ Уведомления включены</span>';
+                btn.textContent = '🔔 Уведомления включены';
+                btn.style.background = 'var(--success)';
+                notificationPermissionGranted = true;
+            } else if (Notification.permission === "denied") {
+                statusDiv.innerHTML = '<span class="notification-disabled">❌ Уведомления заблокированы</span>';
+                btn.textContent = '🔔 Разрешить уведомления';
+                btn.style.background = 'var(--accent)';
+                notificationPermissionGranted = false;
+            } else {
+                statusDiv.innerHTML = '<span>❓ Статус уведомлений не определен</span>';
+                btn.textContent = '🔔 Разрешить уведомления';
+                btn.style.background = 'var(--accent)';
+                notificationPermissionGranted = false;
+            }
+        }
+        
+        // Функция для отправки уведомления
+        function sendNotification(title, body, icon = "https://via.placeholder.com/128") {
+            if (Notification.permission === "granted") {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: icon,
+                        silent: false
+                    });
+                } catch (error) {
+                    console.error("Ошибка при отправке уведомления:", error);
+                }
+            }
+        }
         
         // Функция для удаления дубликатов контактов и групп
         async function removeDuplicates() {
@@ -320,6 +406,15 @@
                         timestamp: new Date(), 
                         status: 'sent' 
                     });
+                    
+                    // Отправляем уведомление о новом фото
+                    if (activeOtherUser) {
+                        sendNotification(
+                            currentUserData?.username || "Новое сообщение",
+                            "📷 Отправил(а) вам фото",
+                            currentUserData?.photoURL || "https://via.placeholder.com/128"
+                        );
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -394,6 +489,15 @@
                         timestamp: new Date(), 
                         status: 'sent' 
                     });
+                    
+                    // Отправляем уведомление о новом сообщении
+                    if (activeOtherUser) {
+                        sendNotification(
+                            currentUserData?.username || "Новое сообщение",
+                            text.length > 50 ? text.substring(0, 50) + "..." : text,
+                            currentUserData?.photoURL || "https://via.placeholder.com/128"
+                        );
+                    }
                 }
                 document.getElementById('messageInput').value = "";
             }
@@ -441,7 +545,18 @@
         
         async function updateOnlineStatus() { if(!activeOtherUser || activeChatType !== 'private') return; const otherDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(otherDoc.exists()){ const lastSeen = otherDoc.data().lastSeen?.toDate(); const statusDiv = document.getElementById('chatHeaderStatus'); if(lastSeen && (new Date() - lastSeen) < 60000) statusDiv.innerHTML = `<span class="online-status-dot"></span>В сети`; else if(lastSeen) statusDiv.innerHTML = `🕐 Был(а) ${lastSeen.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`; else statusDiv.innerHTML = "Не в сети"; } }
         
-        function loadPrivateMessages(){ if(unsubscribeMessages) unsubscribeMessages(); const msgsRef = collection(db,"chats",activeChatId,"messages"); const q = query(msgsRef, orderBy("timestamp","asc")); unsubscribeMessages = onSnapshot(q, async (snapshot) => { const container = document.getElementById('messagesContainer'); if(!container) return; container.innerHTML = ""; const currentUid = auth.currentUser.uid; for(const docSnap of snapshot.docs) { const msg = docSnap.data(); const isMine = msg.senderId === currentUid; const div = document.createElement('div'); div.className = `message ${isMine ? 'sent' : 'received'}`; div.setAttribute('data-msg-id', docSnap.id); if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; let content = escapeHtml(msg.text || ""); if(msg.mediaBase64 && msg.mediaType === 'image') { content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; } let statusHtml = ""; if(isMine && msg.status){ switch(msg.status) { case 'read': statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`; break; case 'sent': statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`; break; default: statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`; } } div.innerHTML = `<div class="message-bubble">${content}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div><div class="delete-message-btn" onclick="event.stopPropagation(); deletePrivateMessage('${docSnap.id}')">🗑️</div>`; container.appendChild(div); } container.scrollTop = container.scrollHeight; const unreadMessages = snapshot.docs.filter(d => d.data().senderId !== currentUid && (!d.data().status || d.data().status !== 'read')); for(const docSnap of unreadMessages) { await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' }); } }); }
+        function loadPrivateMessages(){ if(unsubscribeMessages) unsubscribeMessages(); const msgsRef = collection(db,"chats",activeChatId,"messages"); const q = query(msgsRef, orderBy("timestamp","asc")); unsubscribeMessages = onSnapshot(q, async (snapshot) => { const container = document.getElementById('messagesContainer'); if(!container) return; container.innerHTML = ""; const currentUid = auth.currentUser.uid; let lastMessage = null; for(const docSnap of snapshot.docs) { const msg = docSnap.data(); const isMine = msg.senderId === currentUid; const div = document.createElement('div'); div.className = `message ${isMine ? 'sent' : 'received'}`; div.setAttribute('data-msg-id', docSnap.id); if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; let content = escapeHtml(msg.text || ""); if(msg.mediaBase64 && msg.mediaType === 'image') { content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; } let statusHtml = ""; if(isMine && msg.status){ switch(msg.status) { case 'read': statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`; break; case 'sent': statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`; break; default: statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`; } } div.innerHTML = `<div class="message-bubble">${content}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div><div class="delete-message-btn" onclick="event.stopPropagation(); deletePrivateMessage('${docSnap.id}')">🗑️</div>`; container.appendChild(div); lastMessage = msg; } container.scrollTop = container.scrollHeight; const unreadMessages = snapshot.docs.filter(d => d.data().senderId !== currentUid && (!d.data().status || d.data().status !== 'read')); for(const docSnap of unreadMessages) { await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' }); }
+        
+        // Отправляем уведомление о новом сообщении, если чат не активен
+        if (unreadMessages.length > 0 && document.getElementById('chatPage').classList.contains('active') === false && lastMessage && lastMessage.senderId !== currentUid) {
+            const lastMsg = unreadMessages[unreadMessages.length - 1].data();
+            sendNotification(
+                activeOtherUser?.username || "Новое сообщение",
+                lastMsg.text || "📷 Фото",
+                currentUserData?.photoURL || "https://via.placeholder.com/128"
+            );
+        }
+        }); }
         window.deletePrivateMessage = async (id) => { if(confirm("Удалить?")) await deleteDoc(doc(db,"chats",activeChatId,"messages",id)); };
         
         async function renderContacts() { const container = document.getElementById('contactsList'); const contacts = currentUserData?.contacts || []; if(!contacts.length) { container.innerHTML = '<div class="empty-state">📭 Нет контактов</div>'; return; } container.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${c.lastName ? escapeHtml(c.lastName) : ''}</div><div class="contact-username">@${escapeHtml(c.username)}</div>${c.blocked ? '<span class="blocked-badge">🔒 Заблокирован</span>' : ''}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation(); editContact('${c.uid}')">✏️</button>${c.blocked ? `<button class="icon-btn" onclick="event.stopPropagation(); unblockContact('${c.uid}')">🔓 Разблок.</button>` : `<button class="icon-btn" onclick="event.stopPropagation(); blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>`).join(''); }
@@ -545,6 +660,10 @@
             document.getElementById('profileEmail').innerText = currentUserData.email; 
             document.getElementById('profileUsername').innerText = currentUserData.username; 
             if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; 
+            
+            // Обновляем статус уведомлений
+            updateNotificationStatus();
+            
             await renderContacts(); 
             await renderChats(); 
             await renderGroupsInContacts(); 
