@@ -147,6 +147,7 @@
         .notification-status { margin-top: 10px; padding: 10px; border-radius: 20px; background: var(--bg-input); }
         .notification-enabled { color: var(--success); }
         .notification-disabled { color: var(--danger); }
+        .unread-badge { background: var(--accent); color: white; border-radius: 20px; padding: 2px 8px; font-size: 12px; margin-left: 8px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
@@ -205,32 +206,20 @@
             "🚗 Транспорт и путешествия": ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🦯","🦽","🦼","🛴","🚲","🛵","🏍️","🛺","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩️","💺","🛰️","🚀","🛸","🚁","🛶","⛵","🚤","🛥️","🛳️","⛴️","🚢","⚓","🪝","🚦","🚥","🗺️","🧭","🏠","🏡","🏢","🏣","🏥","🏦","🏨","🏩","🏪","🏫","🏬","🏭","🏯","🏰","💒","🗼","🗽","⛲","🌋","🎠","🎡","🎢","🚂"]
         };
         
-        // Функция для запроса разрешения на уведомления
         window.requestNotificationPermission = async () => {
             if (!("Notification" in window)) {
                 alert("Ваш браузер не поддерживает уведомления");
                 return;
             }
-            
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === "granted") {
                     notificationPermissionGranted = true;
                     updateNotificationStatus();
-                    
-                    // Сохраняем статус в Firestore
                     if (auth.currentUser) {
-                        await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                            notificationsEnabled: true
-                        });
+                        await updateDoc(doc(db, "users", auth.currentUser.uid), { notificationsEnabled: true });
                     }
-                    
-                    // Показываем тестовое уведомление
-                    new Notification("Messenger MAS", {
-                        body: "Уведомления успешно включены!",
-                        icon: "https://via.placeholder.com/128"
-                    });
-                    
+                    new Notification("Messenger MAS", { body: "Уведомления успешно включены!", icon: "https://via.placeholder.com/128" });
                     alert("Уведомления включены!");
                 } else {
                     notificationPermissionGranted = false;
@@ -243,17 +232,14 @@
             }
         };
         
-        // Функция для обновления статуса уведомлений в интерфейсе
         function updateNotificationStatus() {
             const statusDiv = document.getElementById('notificationStatus');
             const btn = document.getElementById('enableNotificationsBtn');
-            
             if (!("Notification" in window)) {
                 statusDiv.innerHTML = '<span class="notification-disabled">❌ Ваш браузер не поддерживает уведомления</span>';
                 btn.style.display = 'none';
                 return;
             }
-            
             if (Notification.permission === "granted") {
                 statusDiv.innerHTML = '<span class="notification-enabled">✅ Уведомления включены</span>';
                 btn.textContent = '🔔 Уведомления включены';
@@ -272,74 +258,54 @@
             }
         }
         
-        // Функция для отправки уведомления
         function sendNotification(title, body, icon = "https://via.placeholder.com/128") {
             if (Notification.permission === "granted") {
                 try {
-                    new Notification(title, {
-                        body: body,
-                        icon: icon,
-                        silent: false
-                    });
+                    new Notification(title, { body: body, icon: icon, silent: false });
                 } catch (error) {
                     console.error("Ошибка при отправке уведомления:", error);
                 }
             }
         }
         
-        // Функция для удаления дубликатов контактов и групп
         async function removeDuplicates() {
             if (!currentUserData || !auth.currentUser) return;
-            
             const userRef = doc(db, "users", auth.currentUser.uid);
             let needsUpdate = false;
-            
-            // Удаление дубликатов контактов
             if (currentUserData.contacts && currentUserData.contacts.length > 0) {
                 const uniqueContacts = [];
                 const seenUids = new Set();
-                
                 for (const contact of currentUserData.contacts) {
                     if (!seenUids.has(contact.uid)) {
                         seenUids.add(contact.uid);
                         uniqueContacts.push(contact);
                     } else {
                         needsUpdate = true;
-                        console.log(`Найден дубликат контакта: ${contact.username} (${contact.uid})`);
                     }
                 }
-                
                 if (needsUpdate) {
                     currentUserData.contacts = uniqueContacts;
                     await updateDoc(userRef, { contacts: uniqueContacts });
-                    console.log('Дубликаты контактов удалены');
                 }
             }
-            
-            // Удаление дубликатов групп
             if (currentUserData.groups && currentUserData.groups.length > 0) {
                 const uniqueGroups = [];
                 const seenGroupIds = new Set();
                 let groupsNeedUpdate = false;
-                
                 for (const group of currentUserData.groups) {
                     if (!seenGroupIds.has(group.id)) {
                         seenGroupIds.add(group.id);
                         uniqueGroups.push(group);
                     } else {
                         groupsNeedUpdate = true;
-                        console.log(`Найден дубликат группы: ${group.name} (${group.id})`);
                     }
                 }
-                
                 if (groupsNeedUpdate) {
                     currentUserData.groups = uniqueGroups;
                     await updateDoc(userRef, { groups: uniqueGroups });
-                    console.log('Дубликаты групп удалены');
                     needsUpdate = true;
                 }
             }
-            
             return needsUpdate;
         }
         
@@ -397,6 +363,16 @@
                         senderName: currentUserData?.username, 
                         timestamp: new Date() 
                     });
+                    if (activeGroupData && activeGroupData.members) {
+                        const otherMembers = activeGroupData.members.filter(m => m.uid !== auth.currentUser.uid);
+                        for (const member of otherMembers) {
+                            sendNotification(
+                                `${currentUserData?.username} в группе ${activeGroupData.name}`,
+                                "📷 Отправил(а) фото",
+                                currentUserData?.photoURL || "https://via.placeholder.com/128"
+                            );
+                        }
+                    }
                 } else {
                     await addDoc(collection(db, "chats", activeChatId, "messages"), { 
                         text: "📷 Фото", 
@@ -406,9 +382,7 @@
                         timestamp: new Date(), 
                         status: 'sent' 
                     });
-                    
-                    // Отправляем уведомление о новом фото
-                    if (activeOtherUser) {
+                    if (activeOtherUser && activeOtherUser.uid !== auth.currentUser.uid) {
                         sendNotification(
                             currentUserData?.username || "Новое сообщение",
                             "📷 Отправил(а) вам фото",
@@ -423,7 +397,16 @@
         
         window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
         function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        function switchTab(tab) { document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none'); document.getElementById(`${tab}Tab`).style.display = 'block'; document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active')); document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); }
+        
+        function switchTab(tab) { 
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none'); 
+            document.getElementById(`${tab}Tab`).style.display = 'block'; 
+            document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active')); 
+            document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); 
+            if (tab === 'chats' && currentUserData) {
+                renderChats();
+            }
+        }
         
         function applyTheme() { 
             const theme = localStorage.getItem('theme') || 'dark'; 
@@ -442,6 +425,7 @@
             document.documentElement.style.setProperty('--message-font-size', fontSize + 'px'); 
             if(document.getElementById('fontSizeValue')) document.getElementById('fontSizeValue').innerText = fontSize + 'px'; 
         }
+        
         function saveSettings() { 
             localStorage.setItem('theme', document.getElementById('themeSelect').value); 
             localStorage.setItem('bgMyMsg', document.getElementById('bgMyMsgColor').value); 
@@ -453,27 +437,192 @@
             applyTheme(); 
         }
         
-        window.showCreateGroupModal = async () => { if(!currentUserData) return; const container = document.getElementById('groupMembersSelect'); container.innerHTML = ''; const contacts = (currentUserData.contacts || []).filter(c => !c.blocked && c.firstName); for(let c of contacts){ const div = document.createElement('label'); div.style.display='block'; div.style.margin='5px 0'; div.style.color='var(--text-primary)'; div.innerHTML = `<input type="checkbox" value="${c.uid}"> ${c.firstName} ${c.lastName||''} (@${c.username})`; container.appendChild(div); } document.getElementById('createGroupModal').style.display = 'flex'; };
-        window.createGroup = async () => { const name = document.getElementById('groupName').value.trim(); if(!name) return alert("Введите название"); const desc = document.getElementById('groupDesc').value.trim(); const avatarFile = document.getElementById('groupAvatar').files[0]; const checkboxes = document.querySelectorAll('#groupMembersSelect input:checked'); const selectedUids = Array.from(checkboxes).map(cb => cb.value); if(selectedUids.length < 2) return alert("Выберите минимум 2 участника"); const members = [{ uid: auth.currentUser.uid, role: 'creator' }]; for(let uid of selectedUids){ const contact = currentUserData.contacts.find(c => c.uid === uid); if(contact) members.push({ uid, role: 'member' }); } let photoURL = ''; if(avatarFile){ const reader = new FileReader(); reader.onload = async function(e) { photoURL = e.target.result; const groupRef = doc(collection(db, "groups")); const groupData = { id: groupRef.id, name, description: desc, photoURL, creatorId: auth.currentUser.uid, createdAt: new Date(), members }; await setDoc(groupRef, groupData); for(let member of members){ const userRef = doc(db, "users", member.uid); const userDoc = await getDoc(userRef); let groups = userDoc.data()?.groups || []; if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL, role: member.role }); await updateDoc(userRef, { groups }); } alert("Группа создана!"); closeModal('createGroupModal'); renderChats(); renderGroupsInContacts(); }; reader.readAsDataURL(avatarFile); return; } else { const groupRef = doc(collection(db, "groups")); const groupData = { id: groupRef.id, name, description: desc, photoURL: '', creatorId: auth.currentUser.uid, createdAt: new Date(), members }; await setDoc(groupRef, groupData); for(let member of members){ const userRef = doc(db, "users", member.uid); const userDoc = await getDoc(userRef); let groups = userDoc.data()?.groups || []; if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL: '', role: member.role }); await updateDoc(userRef, { groups }); } alert("Группа создана!"); closeModal('createGroupModal'); renderChats(); renderGroupsInContacts(); } };
+        window.showCreateGroupModal = async () => { 
+            if(!currentUserData) return; 
+            const container = document.getElementById('groupMembersSelect'); 
+            container.innerHTML = ''; 
+            const contacts = (currentUserData.contacts || []).filter(c => !c.blocked && c.firstName); 
+            for(let c of contacts){ 
+                const div = document.createElement('label'); 
+                div.style.display='block'; 
+                div.style.margin='5px 0'; 
+                div.style.color='var(--text-primary)'; 
+                div.innerHTML = `<input type="checkbox" value="${c.uid}"> ${c.firstName} ${c.lastName||''} (@${c.username})`; 
+                container.appendChild(div); 
+            } 
+            document.getElementById('createGroupModal').style.display = 'flex'; 
+        };
         
-        async function renderChats() { const container = document.getElementById('chatsList'); if(!container) return; let html = ''; const userGroups = currentUserData?.groups || []; for(let g of userGroups){ html += `<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div><div class="contact-name">${escapeHtml(g.name)}</div><div class="contact-username">Группа</div></div></div>`; } const contacts = (currentUserData?.contacts || []).filter(c => !c.blocked); for(let c of contacts){ html += `<div class="chat-item" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">💬</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)}</div></div></div>`; } container.innerHTML = html || '<div class="empty-state">Нет чатов</div>'; }
-        async function renderGroupsInContacts() { const container = document.getElementById('groupsListContacts'); if(!container) return; const groups = currentUserData?.groups || []; container.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div><div class="contact-name">${escapeHtml(g.name)}</div></div></div>`).join('') || '<div class="empty-state">Нет групп</div>'; }
+        window.createGroup = async () => { 
+            const name = document.getElementById('groupName').value.trim(); 
+            if(!name) return alert("Введите название"); 
+            const desc = document.getElementById('groupDesc').value.trim(); 
+            const avatarFile = document.getElementById('groupAvatar').files[0]; 
+            const checkboxes = document.querySelectorAll('#groupMembersSelect input:checked'); 
+            const selectedUids = Array.from(checkboxes).map(cb => cb.value); 
+            if(selectedUids.length < 2) return alert("Выберите минимум 2 участника"); 
+            const members = [{ uid: auth.currentUser.uid, role: 'creator' }]; 
+            for(let uid of selectedUids){ 
+                const contact = currentUserData.contacts.find(c => c.uid === uid); 
+                if(contact) members.push({ uid, role: 'member' }); 
+            } 
+            let photoURL = ''; 
+            if(avatarFile){ 
+                const reader = new FileReader(); 
+                reader.onload = async function(e) { 
+                    photoURL = e.target.result; 
+                    const groupRef = doc(collection(db, "groups")); 
+                    const groupData = { id: groupRef.id, name, description: desc, photoURL, creatorId: auth.currentUser.uid, createdAt: new Date(), members }; 
+                    await setDoc(groupRef, groupData); 
+                    for(let member of members){ 
+                        const userRef = doc(db, "users", member.uid); 
+                        const userDoc = await getDoc(userRef); 
+                        let groups = userDoc.data()?.groups || []; 
+                        if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL, role: member.role }); 
+                        await updateDoc(userRef, { groups }); 
+                    } 
+                    alert("Группа создана!"); 
+                    closeModal('createGroupModal'); 
+                    renderChats(); 
+                    renderGroupsInContacts(); 
+                }; 
+                reader.readAsDataURL(avatarFile); 
+                return; 
+            } else { 
+                const groupRef = doc(collection(db, "groups")); 
+                const groupData = { id: groupRef.id, name, description: desc, photoURL: '', creatorId: auth.currentUser.uid, createdAt: new Date(), members }; 
+                await setDoc(groupRef, groupData); 
+                for(let member of members){ 
+                    const userRef = doc(db, "users", member.uid); 
+                    const userDoc = await getDoc(userRef); 
+                    let groups = userDoc.data()?.groups || []; 
+                    if(!groups.some(g => g.id === groupRef.id)) groups.push({ id: groupRef.id, name, photoURL: '', role: member.role }); 
+                    await updateDoc(userRef, { groups }); 
+                } 
+                alert("Группа создана!"); 
+                closeModal('createGroupModal'); 
+                renderChats(); 
+                renderGroupsInContacts(); 
+            } 
+        };
         
-        window.openGroupChat = async (groupId) => { const groupDoc = await getDoc(doc(db, "groups", groupId)); if(!groupDoc.exists()) return alert("Группа не найдена"); activeGroupData = groupDoc.data(); activeChatId = groupId; activeChatType = 'group'; document.getElementById('chatHeaderName').innerHTML = escapeHtml(activeGroupData.name); document.getElementById('chatHeaderStatus').innerHTML = ''; showPage('chatPage'); loadGroupMessages(); };
+        async function getUnreadCount(chatId, currentUid) {
+            try {
+                const msgsRef = collection(db, "chats", chatId, "messages");
+                const q = query(msgsRef, where("senderId", "!=", currentUid), where("status", "!=", "read"));
+                const snapshot = await getDocs(q);
+                return snapshot.size;
+            } catch(e) { return 0; }
+        }
+
+        async function getGroupUnreadCount(groupId, currentUid) {
+            try {
+                const lastReadKey = `lastRead_${groupId}_${currentUid}`;
+                const lastReadTimestamp = localStorage.getItem(lastReadKey);
+                const msgsRef = collection(db, "groups", groupId, "messages");
+                let q;
+                if (lastReadTimestamp) {
+                    q = query(msgsRef, where("senderId", "!=", currentUid), where("timestamp", ">", new Date(parseInt(lastReadTimestamp))));
+                } else {
+                    q = query(msgsRef, where("senderId", "!=", currentUid));
+                }
+                const snapshot = await getDocs(q);
+                return snapshot.size;
+            } catch(e) { return 0; }
+        }
         
-        function loadGroupMessages(){ if(unsubscribeMessages) unsubscribeMessages(); const msgsRef = collection(db, "groups", activeChatId, "messages"); const q = query(msgsRef, orderBy("timestamp","asc")); unsubscribeMessages = onSnapshot(q, (snapshot) => { const container = document.getElementById('messagesContainer'); if(!container) return; container.innerHTML = ""; const currentUid = auth.currentUser.uid; const isAdmin = activeGroupData.members.find(m => m.uid === currentUid)?.role === 'admin' || activeGroupData.creatorId === currentUid; for(const docSnap of snapshot.docs){ const msg = docSnap.data(); const isMine = msg.senderId === currentUid; const div = document.createElement('div'); div.className = `message ${isMine ? 'sent' : 'received'}`; div.setAttribute('data-msg-id', docSnap.id); if((isMine || isAdmin) && !isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; else if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; let senderName = msg.senderName || "Пользователь"; let content = escapeHtml(msg.text || ""); if(msg.mediaBase64 && msg.mediaType === 'image') { content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; } div.innerHTML = `<div class="message-wrapper"><div class="message-bubble"><div><small style="opacity:0.7">${escapeHtml(senderName)}</small><br>${content}</div></div><div class="message-footer"><span>${time}</span></div></div><div class="delete-message-btn" onclick="event.stopPropagation(); deleteGroupMessage('${docSnap.id}')">🗑️</div>`; container.appendChild(div); } container.scrollTop = container.scrollHeight; }); }
-        window.deleteGroupMessage = async (msgId) => { if(confirm("Удалить сообщение?")) await deleteDoc(doc(db, "groups", activeChatId, "messages", msgId)); };
+        async function renderChats() { 
+            const container = document.getElementById('chatsList'); 
+            if(!container) return; 
+            let html = ''; 
+            const userGroups = currentUserData?.groups || []; 
+            const currentUid = auth.currentUser.uid;
+            for(let g of userGroups){ 
+                const unreadCount = await getGroupUnreadCount(g.id, currentUid);
+                const unreadBadge = unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : '';
+                html += `<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div style="flex:1"><div class="contact-name">${escapeHtml(g.name)} ${unreadBadge}</div><div class="contact-username">Группа ${unreadCount > 0 ? '• Новые сообщения' : ''}</div></div></div>`; 
+            } 
+            const contacts = (currentUserData?.contacts || []).filter(c => !c.blocked); 
+            for(let c of contacts){ 
+                const chatId = [currentUid, c.uid].sort().join('_');
+                const unreadCount = await getUnreadCount(chatId, currentUid);
+                const unreadBadge = unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : '';
+                html += `<div class="chat-item" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">💬</div><div style="flex:1"><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${unreadBadge}</div>${unreadCount > 0 ? '<div class="contact-username">🆕 Непрочитанных: ' + unreadCount + '</div>' : ''}</div></div>`; 
+            } 
+            container.innerHTML = html || '<div class="empty-state">Нет чатов</div>'; 
+        }
+        
+        async function renderGroupsInContacts() { 
+            const container = document.getElementById('groupsListContacts'); 
+            if(!container) return; 
+            const groups = currentUserData?.groups || []; 
+            container.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div><div class="contact-name">${escapeHtml(g.name)}</div></div></div>`).join('') || '<div class="empty-state">Нет групп</div>'; 
+        }
+        
+        window.openGroupChat = async (groupId) => { 
+            const groupDoc = await getDoc(doc(db, "groups", groupId)); 
+            if(!groupDoc.exists()) return alert("Группа не найдена"); 
+            activeGroupData = groupDoc.data(); 
+            activeChatId = groupId; 
+            activeChatType = 'group'; 
+            document.getElementById('chatHeaderName').innerHTML = escapeHtml(activeGroupData.name); 
+            document.getElementById('chatHeaderStatus').innerHTML = ''; 
+            showPage('chatPage'); 
+            loadGroupMessages(); 
+        };
+        
+        function loadGroupMessages(){ 
+            if(unsubscribeMessages) unsubscribeMessages(); 
+            const msgsRef = collection(db, "groups", activeChatId, "messages"); 
+            const q = query(msgsRef, orderBy("timestamp","asc")); 
+            unsubscribeMessages = onSnapshot(q, (snapshot) => { 
+                const container = document.getElementById('messagesContainer'); 
+                if(!container) return; 
+                container.innerHTML = ""; 
+                const currentUid = auth.currentUser.uid; 
+                const isAdmin = activeGroupData.members.find(m => m.uid === currentUid)?.role === 'admin' || activeGroupData.creatorId === currentUid; 
+                let lastTimestamp = null;
+                for(const docSnap of snapshot.docs){ 
+                    const msg = docSnap.data(); 
+                    const isMine = msg.senderId === currentUid; 
+                    const div = document.createElement('div'); 
+                    div.className = `message ${isMine ? 'sent' : 'received'}`; 
+                    div.setAttribute('data-msg-id', docSnap.id); 
+                    if((isMine || isAdmin) && !isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; 
+                    else if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; 
+                    const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; 
+                    let senderName = msg.senderName || "Пользователь"; 
+                    let content = escapeHtml(msg.text || ""); 
+                    if(msg.mediaBase64 && msg.mediaType === 'image') { 
+                        content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; 
+                    } 
+                    div.innerHTML = `<div class="message-wrapper"><div class="message-bubble"><div><small style="opacity:0.7">${escapeHtml(senderName)}</small><br>${content}</div></div><div class="message-footer"><span>${time}</span></div></div><div class="delete-message-btn" onclick="event.stopPropagation(); deleteGroupMessage('${docSnap.id}')">🗑️</div>`; 
+                    container.appendChild(div); 
+                    if (msg.timestamp) {
+                        lastTimestamp = msg.timestamp.toDate ? msg.timestamp.toDate().getTime() : msg.timestamp;
+                    }
+                } 
+                container.scrollTop = container.scrollHeight; 
+                if (lastTimestamp) {
+                    const lastReadKey = `lastRead_${activeChatId}_${currentUid}`;
+                    localStorage.setItem(lastReadKey, lastTimestamp);
+                }
+                renderChats();
+            }); 
+        }
+        
+        window.deleteGroupMessage = async (msgId) => { 
+            if(confirm("Удалить сообщение?")) await deleteDoc(doc(db, "groups", activeChatId, "messages", msgId)); 
+        };
         
         window.sendMessage = async () => { 
             const text = document.getElementById('messageInput').value.trim(); 
             const fileInput = document.getElementById('fileInput');
             const hasFile = fileInput.files.length > 0;
-            
             if(hasFile) {
                 await window.sendImageAsBase64();
                 fileInput.value = '';
             }
-            
             if(text && activeChatId) {
                 if(activeChatType === 'group'){
                     await addDoc(collection(db, "groups", activeChatId, "messages"), { 
@@ -482,6 +631,16 @@
                         senderName: currentUserData?.username, 
                         timestamp: new Date() 
                     });
+                    if (activeGroupData && activeGroupData.members) {
+                        const otherMembers = activeGroupData.members.filter(m => m.uid !== auth.currentUser.uid);
+                        for (const member of otherMembers) {
+                            sendNotification(
+                                `${currentUserData?.username} в группе ${activeGroupData.name}`,
+                                text.length > 50 ? text.substring(0, 50) + "..." : text,
+                                currentUserData?.photoURL || "https://via.placeholder.com/128"
+                            );
+                        }
+                    }
                 } else {
                     await addDoc(collection(db, "chats", activeChatId, "messages"), { 
                         text, 
@@ -489,9 +648,7 @@
                         timestamp: new Date(), 
                         status: 'sent' 
                     });
-                    
-                    // Отправляем уведомление о новом сообщении
-                    if (activeOtherUser) {
+                    if (activeOtherUser && activeOtherUser.uid !== auth.currentUser.uid) {
                         sendNotification(
                             currentUserData?.username || "Новое сообщение",
                             text.length > 50 ? text.substring(0, 50) + "..." : text,
@@ -503,21 +660,134 @@
             }
         };
         
-        window.showChatProfile = async () => { if(activeChatType === 'group'){ const group = await getDoc(doc(db,"groups",activeChatId)); if(!group.exists()) return; const data = group.data(); document.getElementById('groupProfileAvatar').src = data.photoURL || "https://via.placeholder.com/80"; document.getElementById('groupProfileName').innerText = data.name; document.getElementById('groupProfileDesc').innerText = data.description || "Нет описания"; const membersDiv = document.getElementById('groupMembersList'); membersDiv.innerHTML = "<h4>Участники:</h4>"; const currentUid = auth.currentUser.uid; const isCreator = data.creatorId === currentUid; const isAdmin = data.members.find(m=>m.uid===currentUid)?.role === 'admin'; for(let m of data.members){ const userDoc = await getDoc(doc(db,"users",m.uid)); const username = userDoc.exists() ? userDoc.data().username : "Unknown"; membersDiv.innerHTML += `<div class="member-row"><span>${escapeHtml(username)} ${m.role === 'creator' ? '👑' : (m.role==='admin' ? '⭐' : '')}</span><div>${(isCreator || (isAdmin && m.role !== 'creator')) && m.uid !== currentUid ? `<button class="icon-btn" onclick="kickMember('${m.uid}')">Выгнать</button> ${isCreator ? `<button class="icon-btn" onclick="makeAdmin('${m.uid}')">Назначить админом</button>` : ''}` : ''}</div></div>`; } const actions = document.getElementById('groupManageActions'); actions.innerHTML = ''; if(isCreator){ actions.innerHTML += `<button onclick="deleteGroup()" style="background:var(--danger)">🗑️ Удалить группу</button>`; } else { actions.innerHTML += `<button onclick="leaveGroup()" style="background:var(--danger)">🚪 Выйти из группы</button>`; } document.getElementById('groupProfileModal').style.display = 'flex'; } else { if(activeOtherUser){ const userDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(userDoc.exists()){ const data = userDoc.data(); const lastSeen = data.lastSeen?.toDate(); let statusText = ""; if(lastSeen && (new Date() - lastSeen) < 60000) statusText = `🟢 в сети`; else if(lastSeen) statusText = `🕐 был ${lastSeen.toLocaleString()}`; document.getElementById('contactProfileStatus').innerHTML = statusText; document.getElementById('contactProfileAvatar').src = data.photoURL || "https://via.placeholder.com/100"; document.getElementById('contactProfileName').innerText = data.username; document.getElementById('contactProfileModal').style.display = 'flex'; } } } };
+        window.showChatProfile = async () => { 
+            if(activeChatType === 'group'){ 
+                const group = await getDoc(doc(db,"groups",activeChatId)); 
+                if(!group.exists()) return; 
+                const data = group.data(); 
+                document.getElementById('groupProfileAvatar').src = data.photoURL || "https://via.placeholder.com/80"; 
+                document.getElementById('groupProfileName').innerText = data.name; 
+                document.getElementById('groupProfileDesc').innerText = data.description || "Нет описания"; 
+                const membersDiv = document.getElementById('groupMembersList'); 
+                membersDiv.innerHTML = "<h4>Участники:</h4>"; 
+                const currentUid = auth.currentUser.uid; 
+                const isCreator = data.creatorId === currentUid; 
+                const isAdmin = data.members.find(m=>m.uid===currentUid)?.role === 'admin'; 
+                for(let m of data.members){ 
+                    const userDoc = await getDoc(doc(db,"users",m.uid)); 
+                    const username = userDoc.exists() ? userDoc.data().username : "Unknown"; 
+                    membersDiv.innerHTML += `<div class="member-row"><span>${escapeHtml(username)} ${m.role === 'creator' ? '👑' : (m.role==='admin' ? '⭐' : '')}</span><div>${(isCreator || (isAdmin && m.role !== 'creator')) && m.uid !== currentUid ? `<button class="icon-btn" onclick="kickMember('${m.uid}')">Выгнать</button> ${isCreator ? `<button class="icon-btn" onclick="makeAdmin('${m.uid}')">Назначить админом</button>` : ''}` : ''}</div></div>`; 
+                } 
+                const actions = document.getElementById('groupManageActions'); 
+                actions.innerHTML = ''; 
+                if(isCreator){ 
+                    actions.innerHTML += `<button onclick="deleteGroup()" style="background:var(--danger)">🗑️ Удалить группу</button>`; 
+                } else { 
+                    actions.innerHTML += `<button onclick="leaveGroup()" style="background:var(--danger)">🚪 Выйти из группы</button>`; 
+                } 
+                document.getElementById('groupProfileModal').style.display = 'flex'; 
+            } else { 
+                if(activeOtherUser){ 
+                    const userDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); 
+                    if(userDoc.exists()){ 
+                        const data = userDoc.data(); 
+                        const lastSeen = data.lastSeen?.toDate(); 
+                        let statusText = ""; 
+                        if(lastSeen && (new Date() - lastSeen) < 60000) statusText = `🟢 в сети`; 
+                        else if(lastSeen) statusText = `🕐 был ${lastSeen.toLocaleString()}`; 
+                        document.getElementById('contactProfileStatus').innerHTML = statusText; 
+                        document.getElementById('contactProfileAvatar').src = data.photoURL || "https://via.placeholder.com/100"; 
+                        document.getElementById('contactProfileName').innerText = data.username; 
+                        document.getElementById('contactProfileModal').style.display = 'flex'; 
+                    } 
+                } 
+            } 
+        };
         
-        window.kickMember = async (uid) => { const groupRef = doc(db,"groups",activeChatId); const group = (await getDoc(groupRef)).data(); if(group.creatorId !== auth.currentUser.uid && !group.members.find(m=>m.uid===auth.currentUser.uid)?.role==='admin') return alert("Нет прав"); const newMembers = group.members.filter(m => m.uid !== uid); await updateDoc(groupRef, { members: newMembers }); const userRef = doc(db,"users",uid); const userDoc = await getDoc(userRef); const userGroups = (userDoc.data()?.groups || []).filter(g => g.id !== activeChatId); await updateDoc(userRef, { groups: userGroups }); alert("Участник удалён"); showChatProfile(); };
-        window.makeAdmin = async (uid) => { const groupRef = doc(db,"groups",activeChatId); const group = (await getDoc(groupRef)).data(); if(group.creatorId !== auth.currentUser.uid) return alert("Только создатель"); const newMembers = group.members.map(m => m.uid === uid ? {...m, role: 'admin'} : m); await updateDoc(groupRef, { members: newMembers }); alert("Теперь администратор"); showChatProfile(); };
-        window.deleteGroup = async () => { if(confirm("Удалить группу навсегда?")){ const groupRef = doc(db,"groups",activeChatId); const group = (await getDoc(groupRef)).data(); for(let m of group.members){ const userRef = doc(db,"users",m.uid); const userDoc = await getDoc(userRef); const groups = (userDoc.data()?.groups || []).filter(g => g.id !== activeChatId); await updateDoc(userRef, { groups }); } await deleteDoc(groupRef); closeChat(); alert("Группа удалена"); renderChats(); renderGroupsInContacts(); } };
-        window.leaveGroup = async () => { if(confirm("Выйти из группы?")){ const groupRef = doc(db,"groups",activeChatId); const group = (await getDoc(groupRef)).data(); if(group.creatorId === auth.currentUser.uid) return alert("Создатель не может выйти, только удалить группу"); const newMembers = group.members.filter(m => m.uid !== auth.currentUser.uid); await updateDoc(groupRef, { members: newMembers }); const userRef = doc(db,"users",auth.currentUser.uid); const groups = (currentUserData.groups || []).filter(g => g.id !== activeChatId); await updateDoc(userRef, { groups }); closeChat(); renderChats(); renderGroupsInContacts(); } };
+        window.kickMember = async (uid) => { 
+            const groupRef = doc(db,"groups",activeChatId); 
+            const group = (await getDoc(groupRef)).data(); 
+            if(group.creatorId !== auth.currentUser.uid && !group.members.find(m=>m.uid===auth.currentUser.uid)?.role==='admin') return alert("Нет прав"); 
+            const newMembers = group.members.filter(m => m.uid !== uid); 
+            await updateDoc(groupRef, { members: newMembers }); 
+            const userRef = doc(db,"users",uid); 
+            const userDoc = await getDoc(userRef); 
+            const userGroups = (userDoc.data()?.groups || []).filter(g => g.id !== activeChatId); 
+            await updateDoc(userRef, { groups: userGroups }); 
+            alert("Участник удалён"); 
+            showChatProfile(); 
+        };
         
-        function toggleDeleteButton(el, id){ if(activeMessageId === id){ el.classList.remove('active-delete'); activeMessageId = null; } else { if(activeMessageId){ const prev = document.querySelector(`.message[data-msg-id="${activeMessageId}"]`); if(prev) prev.classList.remove('active-delete'); } el.classList.add('active-delete'); activeMessageId = id; } }
-        window.closeChat = function() { if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); activeMessageId = null; showPage('mainApp'); switchTab('chats'); };
+        window.makeAdmin = async (uid) => { 
+            const groupRef = doc(db,"groups",activeChatId); 
+            const group = (await getDoc(groupRef)).data(); 
+            if(group.creatorId !== auth.currentUser.uid) return alert("Только создатель"); 
+            const newMembers = group.members.map(m => m.uid === uid ? {...m, role: 'admin'} : m); 
+            await updateDoc(groupRef, { members: newMembers }); 
+            alert("Теперь администратор"); 
+            showChatProfile(); 
+        };
+        
+        window.deleteGroup = async () => { 
+            if(confirm("Удалить группу навсегда?")){ 
+                const groupRef = doc(db,"groups",activeChatId); 
+                const group = (await getDoc(groupRef)).data(); 
+                for(let m of group.members){ 
+                    const userRef = doc(db,"users",m.uid); 
+                    const userDoc = await getDoc(userRef); 
+                    const groups = (userDoc.data()?.groups || []).filter(g => g.id !== activeChatId); 
+                    await updateDoc(userRef, { groups }); 
+                } 
+                await deleteDoc(groupRef); 
+                closeChat(); 
+                alert("Группа удалена"); 
+                renderChats(); 
+                renderGroupsInContacts(); 
+            } 
+        };
+        
+        window.leaveGroup = async () => { 
+            if(confirm("Выйти из группы?")){ 
+                const groupRef = doc(db,"groups",activeChatId); 
+                const group = (await getDoc(groupRef)).data(); 
+                if(group.creatorId === auth.currentUser.uid) return alert("Создатель не может выйти, только удалить группу"); 
+                const newMembers = group.members.filter(m => m.uid !== auth.currentUser.uid); 
+                await updateDoc(groupRef, { members: newMembers }); 
+                const userRef = doc(db,"users",auth.currentUser.uid); 
+                const groups = (currentUserData.groups || []).filter(g => g.id !== activeChatId); 
+                await updateDoc(userRef, { groups }); 
+                closeChat(); 
+                renderChats(); 
+                renderGroupsInContacts(); 
+            } 
+        };
+        
+        function toggleDeleteButton(el, id){ 
+            if(activeMessageId === id){ 
+                el.classList.remove('active-delete'); 
+                activeMessageId = null; 
+            } else { 
+                if(activeMessageId){ 
+                    const prev = document.querySelector(`.message[data-msg-id="${activeMessageId}"]`); 
+                    if(prev) prev.classList.remove('active-delete'); 
+                } 
+                el.classList.add('active-delete'); 
+                activeMessageId = id; 
+            } 
+        }
+        
+        window.closeChat = function() { 
+            if(unsubscribeMessages) unsubscribeMessages(); 
+            if(statusInterval) clearInterval(statusInterval); 
+            activeMessageId = null; 
+            showPage('mainApp'); 
+            switchTab('chats'); 
+            setTimeout(() => renderChats(), 100);
+        };
         
         window.openChat = async (uid, username) => { 
             let contact = currentUserData.contacts?.find(c=>c.uid===uid); 
             if(contact?.blocked) return alert("Пользователь заблокирован!"); 
-            
-            // Если контакт есть но без имени (старая версия) - автоматически присваиваем имя
             if(contact && !contact.firstName) {
                 contact.firstName = username;
                 const updatedContacts = currentUserData.contacts.map(c => c.uid === uid ? {...c, firstName: username} : c);
@@ -525,7 +795,6 @@
                 currentUserData.contacts = updatedContacts;
                 contact = currentUserData.contacts.find(c=>c.uid===uid);
             }
-            
             if(!contact || !contact.firstName) { 
                 pendingContact = { uid, username }; 
                 document.getElementById('modalUsername').innerText = username; 
@@ -543,85 +812,151 @@
             statusInterval = setInterval(updateOnlineStatus, 3000); 
         };
         
-        async function updateOnlineStatus() { if(!activeOtherUser || activeChatType !== 'private') return; const otherDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); if(otherDoc.exists()){ const lastSeen = otherDoc.data().lastSeen?.toDate(); const statusDiv = document.getElementById('chatHeaderStatus'); if(lastSeen && (new Date() - lastSeen) < 60000) statusDiv.innerHTML = `<span class="online-status-dot"></span>В сети`; else if(lastSeen) statusDiv.innerHTML = `🕐 Был(а) ${lastSeen.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`; else statusDiv.innerHTML = "Не в сети"; } }
-        
-        function loadPrivateMessages(){ if(unsubscribeMessages) unsubscribeMessages(); const msgsRef = collection(db,"chats",activeChatId,"messages"); const q = query(msgsRef, orderBy("timestamp","asc")); unsubscribeMessages = onSnapshot(q, async (snapshot) => { const container = document.getElementById('messagesContainer'); if(!container) return; container.innerHTML = ""; const currentUid = auth.currentUser.uid; let lastMessage = null; for(const docSnap of snapshot.docs) { const msg = docSnap.data(); const isMine = msg.senderId === currentUid; const div = document.createElement('div'); div.className = `message ${isMine ? 'sent' : 'received'}`; div.setAttribute('data-msg-id', docSnap.id); if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; let content = escapeHtml(msg.text || ""); if(msg.mediaBase64 && msg.mediaType === 'image') { content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; } let statusHtml = ""; if(isMine && msg.status){ switch(msg.status) { case 'read': statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`; break; case 'sent': statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`; break; default: statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`; } } div.innerHTML = `<div class="message-bubble">${content}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div><div class="delete-message-btn" onclick="event.stopPropagation(); deletePrivateMessage('${docSnap.id}')">🗑️</div>`; container.appendChild(div); lastMessage = msg; } container.scrollTop = container.scrollHeight; const unreadMessages = snapshot.docs.filter(d => d.data().senderId !== currentUid && (!d.data().status || d.data().status !== 'read')); for(const docSnap of unreadMessages) { await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' }); }
-        
-        // Отправляем уведомление о новом сообщении, если чат не активен
-        if (unreadMessages.length > 0 && document.getElementById('chatPage').classList.contains('active') === false && lastMessage && lastMessage.senderId !== currentUid) {
-            const lastMsg = unreadMessages[unreadMessages.length - 1].data();
-            sendNotification(
-                activeOtherUser?.username || "Новое сообщение",
-                lastMsg.text || "📷 Фото",
-                currentUserData?.photoURL || "https://via.placeholder.com/128"
-            );
+        async function updateOnlineStatus() { 
+            if(!activeOtherUser || activeChatType !== 'private') return; 
+            const otherDoc = await getDoc(doc(db,"users",activeOtherUser.uid)); 
+            if(otherDoc.exists()){ 
+                const lastSeen = otherDoc.data().lastSeen?.toDate(); 
+                const statusDiv = document.getElementById('chatHeaderStatus'); 
+                if(lastSeen && (new Date() - lastSeen) < 60000) statusDiv.innerHTML = `<span class="online-status-dot"></span>В сети`; 
+                else if(lastSeen) statusDiv.innerHTML = `🕐 Был(а) ${lastSeen.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`; 
+                else statusDiv.innerHTML = "Не в сети"; 
+            } 
         }
-        }); }
-        window.deletePrivateMessage = async (id) => { if(confirm("Удалить?")) await deleteDoc(doc(db,"chats",activeChatId,"messages",id)); };
         
-        async function renderContacts() { const container = document.getElementById('contactsList'); const contacts = currentUserData?.contacts || []; if(!contacts.length) { container.innerHTML = '<div class="empty-state">📭 Нет контактов</div>'; return; } container.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${c.lastName ? escapeHtml(c.lastName) : ''}</div><div class="contact-username">@${escapeHtml(c.username)}</div>${c.blocked ? '<span class="blocked-badge">🔒 Заблокирован</span>' : ''}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation(); editContact('${c.uid}')">✏️</button>${c.blocked ? `<button class="icon-btn" onclick="event.stopPropagation(); unblockContact('${c.uid}')">🔓 Разблок.</button>` : `<button class="icon-btn" onclick="event.stopPropagation(); blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>`).join(''); }
-        window.editContact = (uid) => { pendingRenameContact = currentUserData.contacts.find(c=>c.uid===uid); document.getElementById('renameFirstName').value = pendingRenameContact.firstName || ''; document.getElementById('renameLastName').value = pendingRenameContact.lastName || ''; document.getElementById('renameContactModal').style.display = 'flex'; };
-        window.saveRenameContact = async () => { const firstName = document.getElementById('renameFirstName').value.trim(); if(!firstName) return alert("Введите имя!"); const lastName = document.getElementById('renameLastName').value.trim(); const updated = currentUserData.contacts.map(c=>c.uid===pendingRenameContact.uid ? {...c, firstName, lastName} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); closeModal('renameContactModal'); renderContacts(); renderChats(); };
-        window.blockContact = async (uid) => { if(confirm("Заблокировать пользователя?")){ const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: true} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); } };
-        window.unblockContact = async (uid) => { const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: false} : c); await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); };
+        function loadPrivateMessages(){ 
+            if(unsubscribeMessages) unsubscribeMessages(); 
+            const msgsRef = collection(db,"chats",activeChatId,"messages"); 
+            const q = query(msgsRef, orderBy("timestamp","asc")); 
+            const currentUid = auth.currentUser.uid;
+            let initialLoad = true;
+            unsubscribeMessages = onSnapshot(q, async (snapshot) => { 
+                const container = document.getElementById('messagesContainer'); 
+                if(!container) return; 
+                container.innerHTML = ""; 
+                let lastMessage = null; 
+                const newMessages = [];
+                for(const docSnap of snapshot.docs) { 
+                    const msg = docSnap.data(); 
+                    const isMine = msg.senderId === currentUid; 
+                    const div = document.createElement('div'); 
+                    div.className = `message ${isMine ? 'sent' : 'received'}`; 
+                    div.setAttribute('data-msg-id', docSnap.id); 
+                    if(isMine) div.onclick = (e) => { e.stopPropagation(); toggleDeleteButton(div, docSnap.id); }; 
+                    const time = msg.timestamp?.toDate ? new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ""; 
+                    let content = escapeHtml(msg.text || ""); 
+                    if(msg.mediaBase64 && msg.mediaType === 'image') { 
+                        content = `<img src="${msg.mediaBase64}" class="media-preview" onclick="window.open('${msg.mediaBase64}','_blank')" alt="Фото">`; 
+                    } 
+                    let statusHtml = ""; 
+                    if(isMine && msg.status){ 
+                        switch(msg.status) { 
+                            case 'read': statusHtml = `<span class="message-status"><span class="status-read">✓✓</span></span>`; break; 
+                            case 'sent': statusHtml = `<span class="message-status"><span class="status-sent">✓</span></span>`; break; 
+                            default: statusHtml = `<span class="message-status"><span class="status-pending">🕐</span></span>`; 
+                        } 
+                    } 
+                    div.innerHTML = `<div class="message-bubble">${content}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div><div class="delete-message-btn" onclick="event.stopPropagation(); deletePrivateMessage('${docSnap.id}')">🗑️</div>`; 
+                    container.appendChild(div); 
+                    lastMessage = msg; 
+                    if (!isMine && (!msg.status || msg.status !== 'read')) {
+                        newMessages.push(docSnap);
+                    }
+                } 
+                container.scrollTop = container.scrollHeight; 
+                for(const docSnap of newMessages) { 
+                    await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' }); 
+                }
+                const chatPageActive = document.getElementById('chatPage').classList.contains('active');
+                if (!initialLoad && !chatPageActive && newMessages.length > 0 && lastMessage && lastMessage.senderId !== currentUid) {
+                    const lastMsg = newMessages[newMessages.length - 1].data();
+                    if (activeOtherUser && activeOtherUser.uid !== currentUid) {
+                        sendNotification(
+                            activeOtherUser.username || "Новое сообщение",
+                            lastMsg.text || "📷 Фото",
+                            currentUserData?.photoURL || "https://via.placeholder.com/128"
+                        );
+                    }
+                }
+                initialLoad = false;
+                renderChats();
+            }); 
+        }
+        
+        window.deletePrivateMessage = async (id) => { 
+            if(confirm("Удалить?")) await deleteDoc(doc(db,"chats",activeChatId,"messages",id)); 
+        };
+        
+        async function renderContacts() { 
+            const container = document.getElementById('contactsList'); 
+            const contacts = currentUserData?.contacts || []; 
+            if(!contacts.length) { 
+                container.innerHTML = '<div class="empty-state">📭 Нет контактов</div>'; 
+                return; 
+            } 
+            container.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${c.lastName ? escapeHtml(c.lastName) : ''}</div><div class="contact-username">@${escapeHtml(c.username)}</div>${c.blocked ? '<span class="blocked-badge">🔒 Заблокирован</span>' : ''}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation(); editContact('${c.uid}')">✏️</button>${c.blocked ? `<button class="icon-btn" onclick="event.stopPropagation(); unblockContact('${c.uid}')">🔓 Разблок.</button>` : `<button class="icon-btn" onclick="event.stopPropagation(); blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>`).join(''); 
+        }
+        
+        window.editContact = (uid) => { 
+            pendingRenameContact = currentUserData.contacts.find(c=>c.uid===uid); 
+            document.getElementById('renameFirstName').value = pendingRenameContact.firstName || ''; 
+            document.getElementById('renameLastName').value = pendingRenameContact.lastName || ''; 
+            document.getElementById('renameContactModal').style.display = 'flex'; 
+        };
+        
+        window.saveRenameContact = async () => { 
+            const firstName = document.getElementById('renameFirstName').value.trim(); 
+            if(!firstName) return alert("Введите имя!"); 
+            const lastName = document.getElementById('renameLastName').value.trim(); 
+            const updated = currentUserData.contacts.map(c=>c.uid===pendingRenameContact.uid ? {...c, firstName, lastName} : c); 
+            await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); 
+            closeModal('renameContactModal'); 
+            renderContacts(); 
+            renderChats(); 
+        };
+        
+        window.blockContact = async (uid) => { 
+            if(confirm("Заблокировать пользователя?")){ 
+                const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: true} : c); 
+                await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); 
+                renderContacts();
+                renderChats();
+            } 
+        };
+        
+        window.unblockContact = async (uid) => { 
+            const updated = currentUserData.contacts.map(c=>c.uid===uid ? {...c, blocked: false} : c); 
+            await updateDoc(doc(db,"users",auth.currentUser.uid),{contacts:updated}); 
+            renderContacts();
+            renderChats();
+        };
         
         window.confirmAddContact = async () => { 
             const firstName = document.getElementById('contactFirstName').value.trim(); 
             if(!firstName) return alert("Введите имя!"); 
             const lastName = document.getElementById('contactLastName').value.trim(); 
             const userRef = doc(db,"users",auth.currentUser.uid); 
-            
             let currentContacts = currentUserData.contacts || [];
             const existingIndex = currentContacts.findIndex(c => c.uid === pendingContact.uid);
-            
             if (existingIndex !== -1) {
-                currentContacts[existingIndex] = { 
-                    ...currentContacts[existingIndex], 
-                    firstName, 
-                    lastName, 
-                    username: pendingContact.username,
-                    blocked: false 
-                };
+                currentContacts[existingIndex] = { ...currentContacts[existingIndex], firstName, lastName, username: pendingContact.username, blocked: false };
             } else {
-                currentContacts.push({ 
-                    uid: pendingContact.uid, 
-                    username: pendingContact.username, 
-                    firstName, 
-                    lastName, 
-                    blocked: false 
-                });
+                currentContacts.push({ uid: pendingContact.uid, username: pendingContact.username, firstName, lastName, blocked: false });
             }
-            
             await updateDoc(userRef, { contacts: currentContacts });
-            
-            // Обновляем контакт у другого пользователя
             const otherRef = doc(db,"users",pendingContact.uid);
             const otherDoc = await getDoc(otherRef);
             if(otherDoc.exists()) {
                 let otherContacts = otherDoc.data().contacts || [];
                 const existingOtherIndex = otherContacts.findIndex(c => c.uid === auth.currentUser.uid);
                 const myUsername = currentUserData.username;
-                
                 if (existingOtherIndex !== -1) {
-                    otherContacts[existingOtherIndex] = { 
-                        ...otherContacts[existingOtherIndex],
-                        firstName: myUsername,
-                        lastName: '',
-                        username: myUsername,
-                        blocked: false 
-                    };
+                    otherContacts[existingOtherIndex] = { ...otherContacts[existingOtherIndex], firstName: myUsername, lastName: '', username: myUsername, blocked: false };
                 } else {
-                    otherContacts.push({ 
-                        uid: auth.currentUser.uid, 
-                        username: myUsername,
-                        firstName: myUsername, 
-                        lastName: '',
-                        blocked: false 
-                    });
+                    otherContacts.push({ uid: auth.currentUser.uid, username: myUsername, firstName: myUsername, lastName: '', blocked: false });
                 }
                 await updateDoc(otherRef, { contacts: otherContacts });
             }
-            
             closeModal('nameContactModal');
             await renderContacts(); 
             await renderChats(); 
@@ -643,6 +978,7 @@
             }); 
             if(!found) results.innerHTML = '<div class="empty-state">❌ Не найден</div>'; 
         };
+        
         window.showNameModal = (uid, username) => { 
             pendingContact = { uid, username }; 
             document.getElementById('modalUsername').innerText = username; 
@@ -653,17 +989,11 @@
             const userDoc = await getDoc(doc(db,"users",user.uid)); 
             if(!userDoc.exists()) return; 
             currentUserData = { uid: user.uid, ...userDoc.data(), contacts: userDoc.data().contacts || [], groups: userDoc.data().groups || [] }; 
-            
-            // Вызов функции удаления дубликатов
             await removeDuplicates();
-            
             document.getElementById('profileEmail').innerText = currentUserData.email; 
             document.getElementById('profileUsername').innerText = currentUserData.username; 
             if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; 
-            
-            // Обновляем статус уведомлений
             updateNotificationStatus();
-            
             await renderContacts(); 
             await renderChats(); 
             await renderGroupsInContacts(); 
@@ -684,24 +1014,168 @@
             setInterval(async () => { if(auth.currentUser) await updateDoc(doc(db,"users",auth.currentUser.uid), { lastSeen: new Date() }); }, 30000); 
         }
         
-        window.updateProfileAvatar = async () => { const file = document.getElementById('newAvatarInput').files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(e) { const photoURL = e.target.result; await updateProfile(auth.currentUser,{photoURL}); await updateDoc(doc(db,"users",auth.currentUser.uid),{photoURL}); document.getElementById('profileAvatar').src = photoURL; alert("Аватар обновлён!"); }; reader.readAsDataURL(file); };
+        window.updateProfileAvatar = async () => { 
+            const file = document.getElementById('newAvatarInput').files[0]; 
+            if(!file) return; 
+            const reader = new FileReader(); 
+            reader.onload = async function(e) { 
+                const photoURL = e.target.result; 
+                await updateProfile(auth.currentUser,{photoURL}); 
+                await updateDoc(doc(db,"users",auth.currentUser.uid),{photoURL}); 
+                document.getElementById('profileAvatar').src = photoURL; 
+                alert("Аватар обновлён!"); 
+            }; 
+            reader.readAsDataURL(file); 
+        };
+        
         window.editUsername = () => document.getElementById('editUsernameSection').style.display = 'block';
         window.cancelEditUsername = () => document.getElementById('editUsernameSection').style.display = 'none';
-        window.updateUsername = async function() { const newUsername = document.getElementById('newUsernameInput').value.trim(); if(!newUsername) return; const q = query(collection(db,"users"), where("username","==",newUsername)); const snap = await getDocs(q); if(!snap.empty && snap.docs[0].id !== auth.currentUser.uid) return alert("Ник занят!"); await updateProfile(auth.currentUser,{displayName:newUsername}); await updateDoc(doc(db,"users",auth.currentUser.uid),{username:newUsername}); document.getElementById('profileUsername').innerText = newUsername; document.getElementById('editUsernameSection').style.display = 'none'; alert("Ник обновлён!"); };
+        window.updateUsername = async function() { 
+            const newUsername = document.getElementById('newUsernameInput').value.trim(); 
+            if(!newUsername) return; 
+            const q = query(collection(db,"users"), where("username","==",newUsername)); 
+            const snap = await getDocs(q); 
+            if(!snap.empty && snap.docs[0].id !== auth.currentUser.uid) return alert("Ник занят!"); 
+            await updateProfile(auth.currentUser,{displayName:newUsername}); 
+            await updateDoc(doc(db,"users",auth.currentUser.uid),{username:newUsername}); 
+            document.getElementById('profileUsername').innerText = newUsername; 
+            document.getElementById('editUsernameSection').style.display = 'none'; 
+            alert("Ник обновлён!"); 
+        };
+        
         window.showChangeEmail = () => document.getElementById('changeEmailSection').style.display = 'block';
-        window.sendEmailChangeCode = async () => { const newEmail = document.getElementById('newEmailInput').value.trim(); if(!newEmail) return; const methods = await fetchSignInMethodsForEmail(auth, newEmail); if(methods.length > 0) return alert("Эта почта уже используется!"); const code = Math.floor(100000+Math.random()*900000).toString(); await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:newEmail, verification_code:code}); pendingEmailChange = { newEmail, code, expires: Date.now()+300000 }; document.getElementById('emailCodeSection').style.display = 'block'; alert("Код отправлен!"); };
-        window.confirmEmailChange = async () => { const inputCode = document.getElementById('emailCodeInput').value.trim(); if(!pendingEmailChange || pendingEmailChange.expires < Date.now()) return alert("Сессия истекла"); if(inputCode !== pendingEmailChange.code) return alert("Неверный код!"); await updateEmail(auth.currentUser, pendingEmailChange.newEmail); await updateDoc(doc(db,"users",auth.currentUser.uid), { email: pendingEmailChange.newEmail }); document.getElementById('profileEmail').innerText = pendingEmailChange.newEmail; alert("Почта изменена!"); };
+        window.sendEmailChangeCode = async () => { 
+            const newEmail = document.getElementById('newEmailInput').value.trim(); 
+            if(!newEmail) return; 
+            const methods = await fetchSignInMethodsForEmail(auth, newEmail); 
+            if(methods.length > 0) return alert("Эта почта уже используется!"); 
+            const code = Math.floor(100000+Math.random()*900000).toString(); 
+            await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:newEmail, verification_code:code}); 
+            pendingEmailChange = { newEmail, code, expires: Date.now()+300000 }; 
+            document.getElementById('emailCodeSection').style.display = 'block'; 
+            alert("Код отправлен!"); 
+        };
+        
+        window.confirmEmailChange = async () => { 
+            const inputCode = document.getElementById('emailCodeInput').value.trim(); 
+            if(!pendingEmailChange || pendingEmailChange.expires < Date.now()) return alert("Сессия истекла"); 
+            if(inputCode !== pendingEmailChange.code) return alert("Неверный код!"); 
+            await updateEmail(auth.currentUser, pendingEmailChange.newEmail); 
+            await updateDoc(doc(db,"users",auth.currentUser.uid), { email: pendingEmailChange.newEmail }); 
+            document.getElementById('profileEmail').innerText = pendingEmailChange.newEmail; 
+            alert("Почта изменена!"); 
+        };
+        
         window.showChangePassword = () => document.getElementById('changePasswordSection').style.display = 'block';
         window.cancelChangePassword = () => document.getElementById('changePasswordSection').style.display = 'none';
-        window.confirmChangePassword = async () => { const oldPwd = document.getElementById('oldPasswordInput').value, newPwd = document.getElementById('newPasswordInput').value, confirm = document.getElementById('confirmPasswordInput').value; if(!oldPwd || !newPwd || !confirm) return alert("Заполните поля"); if(newPwd !== confirm) return alert("Пароли не совпадают"); if(newPwd.length < 6) return alert("Минимум 6 символов"); const credential = EmailAuthProvider.credential(auth.currentUser.email, oldPwd); await reauthenticateWithCredential(auth.currentUser, credential); await updatePassword(auth.currentUser, newPwd); alert("Пароль изменён!"); };
+        window.confirmChangePassword = async () => { 
+            const oldPwd = document.getElementById('oldPasswordInput').value, newPwd = document.getElementById('newPasswordInput').value, confirm = document.getElementById('confirmPasswordInput').value; 
+            if(!oldPwd || !newPwd || !confirm) return alert("Заполните поля"); 
+            if(newPwd !== confirm) return alert("Пароли не совпадают"); 
+            if(newPwd.length < 6) return alert("Минимум 6 символов"); 
+            const credential = EmailAuthProvider.credential(auth.currentUser.email, oldPwd); 
+            await reauthenticateWithCredential(auth.currentUser, credential); 
+            await updatePassword(auth.currentUser, newPwd); 
+            alert("Пароль изменён!"); 
+        };
         
-        window.login = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); } catch(e){ alert(e.message); } };
-        window.forgotPassword = async () => { const email = prompt("Введите почту:"); if(email) { await sendPasswordResetEmail(auth, email); alert(`Ссылка отправлена на ${email}`); } };
-        window.register = async () => { const email = document.getElementById('regEmail').value.trim(), username = document.getElementById('regUsername').value.trim(), password = document.getElementById('regPassword').value, confirm = document.getElementById('regConfirm').value; if(!email || !username || !password || !confirm) return alert("Заполните все поля!"); if(password !== confirm) return alert("Пароли не совпадают!"); if(password.length < 6) return alert("Пароль минимум 6 символов!"); const q = query(collection(db,"users"), where("username","==",username)); if(!(await getDocs(q)).empty) return alert("Ник занят!"); const code = Math.floor(100000+Math.random()*900000).toString(); await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:email, verification_code:code}); pendingRegistrations.set(email, { code, expires: Date.now()+300000, username, password, avatarFile: document.getElementById('regAvatar').files[0] }); alert("Код отправлен на почту!"); document.getElementById('verificationSection').style.display = 'block'; document.getElementById('verifyCodeBtn').onclick = async () => { const pending = pendingRegistrations.get(email); if(pending && pending.code === document.getElementById('verificationCode').value){ const userCred = await createUserWithEmailAndPassword(auth, email, pending.password); let photoURL = ""; if(pending.avatarFile){ const reader = new FileReader(); reader.onload = async function(e) { photoURL = e.target.result; await updateProfile(userCred.user, { displayName: pending.username, photoURL }); await setDoc(doc(db,"users",userCred.user.uid), { username: pending.username, email, photoURL, contacts: [], groups: [], createdAt: new Date(), lastSeen: new Date() }); alert("Регистрация успешна!"); showPage('loginPage'); }; reader.readAsDataURL(pending.avatarFile); return; } else { await updateProfile(userCred.user, { displayName: pending.username }); await setDoc(doc(db,"users",userCred.user.uid), { username: pending.username, email, photoURL: '', contacts: [], groups: [], createdAt: new Date(), lastSeen: new Date() }); alert("Регистрация успешна!"); showPage('loginPage'); } } else alert("Неверный код!"); }; };
-        window.logout = function() { closeModal('confirmLogoutModal'); auth.signOut(); if(unsubscribeContacts) unsubscribeContacts(); if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); currentUserData = null; showPage('loginPage'); };
+        window.login = async () => { 
+            try { 
+                await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); 
+            } catch(e){ alert(e.message); } 
+        };
+        
+        window.forgotPassword = async () => { 
+            const email = prompt("Введите почту:"); 
+            if(email) { 
+                await sendPasswordResetEmail(auth, email); 
+                alert(`Ссылка отправлена на ${email}`); 
+            } 
+        };
+        
+        window.register = async () => { 
+            const email = document.getElementById('regEmail').value.trim(), username = document.getElementById('regUsername').value.trim(), password = document.getElementById('regPassword').value, confirm = document.getElementById('regConfirm').value; 
+            if(!email || !username || !password || !confirm) return alert("Заполните все поля!"); 
+            if(password !== confirm) return alert("Пароли не совпадают!"); 
+            if(password.length < 6) return alert("Пароль минимум 6 символов!"); 
+            const q = query(collection(db,"users"), where("username","==",username)); 
+            if(!(await getDocs(q)).empty) return alert("Ник занят!"); 
+            const code = Math.floor(100000+Math.random()*900000).toString(); 
+            await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:email, verification_code:code}); 
+            pendingRegistrations.set(email, { code, expires: Date.now()+300000, username, password, avatarFile: document.getElementById('regAvatar').files[0] }); 
+            alert("Код отправлен на почту!"); 
+            document.getElementById('verificationSection').style.display = 'block'; 
+            document.getElementById('verifyCodeBtn').onclick = async () => { 
+                const pending = pendingRegistrations.get(email); 
+                if(pending && pending.code === document.getElementById('verificationCode').value){ 
+                    const userCred = await createUserWithEmailAndPassword(auth, email, pending.password); 
+                    let photoURL = ""; 
+                    if(pending.avatarFile){ 
+                        const reader = new FileReader(); 
+                        reader.onload = async function(e) { 
+                            photoURL = e.target.result; 
+                            await updateProfile(userCred.user, { displayName: pending.username, photoURL }); 
+                            await setDoc(doc(db,"users",userCred.user.uid), { username: pending.username, email, photoURL, contacts: [], groups: [], createdAt: new Date(), lastSeen: new Date() }); 
+                            alert("Регистрация успешна!"); 
+                            showPage('loginPage'); 
+                        }; 
+                        reader.readAsDataURL(pending.avatarFile); 
+                        return; 
+                    } else { 
+                        await updateProfile(userCred.user, { displayName: pending.username }); 
+                        await setDoc(doc(db,"users",userCred.user.uid), { username: pending.username, email, photoURL: '', contacts: [], groups: [], createdAt: new Date(), lastSeen: new Date() }); 
+                        alert("Регистрация успешна!"); 
+                        showPage('loginPage'); 
+                    } 
+                } else alert("Неверный код!"); 
+            }; 
+        };
+        
+        window.logout = function() { 
+            closeModal('confirmLogoutModal'); 
+            auth.signOut(); 
+            if(unsubscribeContacts) unsubscribeContacts(); 
+            if(unsubscribeMessages) unsubscribeMessages(); 
+            if(statusInterval) clearInterval(statusInterval); 
+            currentUserData = null; 
+            showPage('loginPage'); 
+        };
+        
         window.confirmLogout = () => document.getElementById('confirmLogoutModal').style.display = 'flex';
-        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-        function loadSettings() { if(document.getElementById('themeSelect')) { document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'dark'; document.getElementById('bgMyMsgColor').value = localStorage.getItem('bgMyMsg') || '#00d4ff'; document.getElementById('bgOtherMsgColor').value = localStorage.getItem('bgOtherMsg') || '#2a2a3a'; document.getElementById('accentColor').value = localStorage.getItem('accentColor') || '#00d4ff'; document.getElementById('fontFamilySelect').value = localStorage.getItem('fontFamily') || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto"; document.getElementById('fontSizeRange').value = localStorage.getItem('fontSize') || '15'; document.getElementById('textColor').value = localStorage.getItem('textColor') || '#e0e0e0'; applyTheme(); document.getElementById('fontSizeRange').oninput = (e) => { document.getElementById('fontSizeValue').innerText = e.target.value + 'px'; saveSettings(); }; document.getElementById('themeSelect').onchange = saveSettings; document.getElementById('bgMyMsgColor').onchange = saveSettings; document.getElementById('bgOtherMsgColor').onchange = saveSettings; document.getElementById('accentColor').onchange = saveSettings; document.getElementById('fontFamilySelect').onchange = saveSettings; document.getElementById('textColor').onchange = saveSettings; } }
+        
+        function escapeHtml(str) { 
+            if(!str) return ''; 
+            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); 
+        }
+        
+        function loadSettings() { 
+            if(document.getElementById('themeSelect')) { 
+                document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'dark'; 
+                document.getElementById('bgMyMsgColor').value = localStorage.getItem('bgMyMsg') || '#00d4ff'; 
+                document.getElementById('bgOtherMsgColor').value = localStorage.getItem('bgOtherMsg') || '#2a2a3a'; 
+                document.getElementById('accentColor').value = localStorage.getItem('accentColor') || '#00d4ff'; 
+                document.getElementById('fontFamilySelect').value = localStorage.getItem('fontFamily') || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto"; 
+                document.getElementById('fontSizeRange').value = localStorage.getItem('fontSize') || '15'; 
+                document.getElementById('textColor').value = localStorage.getItem('textColor') || '#e0e0e0'; 
+                applyTheme(); 
+                document.getElementById('fontSizeRange').oninput = (e) => { 
+                    document.getElementById('fontSizeValue').innerText = e.target.value + 'px'; 
+                    saveSettings(); 
+                }; 
+                document.getElementById('themeSelect').onchange = saveSettings; 
+                document.getElementById('bgMyMsgColor').onchange = saveSettings; 
+                document.getElementById('bgOtherMsgColor').onchange = saveSettings; 
+                document.getElementById('accentColor').onchange = saveSettings; 
+                document.getElementById('fontFamilySelect').onchange = saveSettings; 
+                document.getElementById('textColor').onchange = saveSettings; 
+            } 
+        }
+        
+        window.addEventListener('focus', () => {
+            if (currentUserData && auth.currentUser) {
+                renderChats();
+            }
+        });
         
         onAuthStateChanged(auth, async (user) => { 
             if(user && !currentUserData) { 
