@@ -191,13 +191,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, deleteDoc, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, deleteDoc, onSnapshot, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
         const firebaseConfig = { apiKey: "AIzaSyA0ML0f4E-nAjUL5qaDcjzw8Ea8K94tjlQ", authDomain: "messenger-mas.firebaseapp.com", projectId: "messenger-mas", storageBucket: "messenger-mas.firebasestorage.app", messagingSenderId: "60936666061", appId: "1:60936666061:web:c5218d35e9e54f9ebee284" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); emailjs.init("popGxqPJLrqP3ySB4");
         
         let currentUserData = null, unsubscribeContacts = null, unsubscribeMessages = null, activeChatId = null, activeOtherUser = null, activeGroupData = null, activeChatType = null, pendingContact = null, pendingRenameContact = null, pendingEmailChange = null, pendingRegistrations = new Map(), activeMessageId = null, statusInterval = null;
         let notificationPermissionGranted = false;
+        let globalUnsubscribe = null;
         
         const emojiCategories = {
             "😀 Смайлы и эмоции": ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️","👽","👾","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾"],
@@ -206,6 +207,81 @@
             "⚽ Спорт и активность": ["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🪀","🏓","🏸","🏒","🏑","🥍","🏏","🪃","🥅","⛳","🪁","🏹","🎣","🤿","🥊","🥋","🎽","🛹","🛼","⛸️","🎿","⛷️","🏂","🪂","🏋️","🤼","🤸","⛹️","🤾","🏌️","🏇","🧘","🏄","🏊","🤽","🚣","🧗","🚵","🚴","💪","🦾","🦵","🦿","🦷","🦻","👀","👃","🧠","🫀","🫁","🦴"],
             "🚗 Транспорт и путешествия": ["🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🦯","🦽","🦼","🛴","🚲","🛵","🏍️","🛺","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩️","💺","🛰️","🚀","🛸","🚁","🛶","⛵","🚤","🛥️","🛳️","⛴️","🚢","⚓","🪝","🚦","🚥","🗺️","🧭","🏠","🏡","🏢","🏣","🏥","🏦","🏨","🏩","🏪","🏫","🏬","🏭","🏯","🏰","💒","🗼","🗽","⛲","🌋","🎠","🎡","🎢","🚂"]
         };
+        
+        // Глобальный слушатель для уведомлений
+        function setupGlobalNotificationsListener() {
+            if (!auth.currentUser) return;
+            
+            // Слушаем все личные чаты
+            const contacts = currentUserData?.contacts || [];
+            contacts.forEach(contact => {
+                if (contact.blocked) return;
+                const chatId = [auth.currentUser.uid, contact.uid].sort().join('_');
+                const msgsRef = collection(db, "chats", chatId, "messages");
+                
+                onSnapshot(msgsRef, (snapshot) => {
+                    snapshot.docChanges().forEach(async (change) => {
+                        if (change.type === "added") {
+                            const msg = change.doc.data();
+                            // Проверяем что сообщение не от текущего пользователя
+                            if (msg.senderId !== auth.currentUser.uid) {
+                                // Проверяем не прочитано ли уже
+                                if (!msg.status || msg.status !== 'read') {
+                                    // Проверяем что чат не открыт с этим пользователем
+                                    const isChatOpen = activeChatType === 'private' && 
+                                                     activeOtherUser?.uid === contact.uid && 
+                                                     document.getElementById('chatPage').classList.contains('active');
+                                    
+                                    if (!isChatOpen) {
+                                        const senderName = contact.firstName || contact.username;
+                                        sendNotification(
+                                            senderName,
+                                            msg.text || "📷 Фото",
+                                            currentUserData?.photoURL || "https://via.placeholder.com/128"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+            
+            // Слушаем все группы
+            const groups = currentUserData?.groups || [];
+            groups.forEach(group => {
+                const msgsRef = collection(db, "groups", group.id, "messages");
+                
+                onSnapshot(msgsRef, (snapshot) => {
+                    snapshot.docChanges().forEach(async (change) => {
+                        if (change.type === "added") {
+                            const msg = change.doc.data();
+                            if (msg.senderId !== auth.currentUser.uid) {
+                                // Проверяем время последнего прочтения
+                                const userGroupInfo = currentUserData.groups?.find(g => g.id === group.id);
+                                const lastReadTime = userGroupInfo?.lastReadTimestamp?.toDate() || new Date(0);
+                                const msgTime = msg.timestamp?.toDate() || new Date();
+                                
+                                if (msgTime > lastReadTime) {
+                                    // Проверяем что группа не открыта
+                                    const isGroupOpen = activeChatType === 'group' && 
+                                                      activeChatId === group.id && 
+                                                      document.getElementById('chatPage').classList.contains('active');
+                                    
+                                    if (!isGroupOpen) {
+                                        sendNotification(
+                                            `Группа: ${group.name}`,
+                                            `${msg.senderName || "Участник"}: ${msg.text || "📷 Фото"}`,
+                                            group.photoURL || "https://via.placeholder.com/128"
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+        }
         
         // Функция для подсчета непрочитанных сообщений в личном чате
         async function getPrivateUnreadCount(otherUid) {
@@ -254,6 +330,7 @@
             if (groupIndex !== -1) {
                 userGroups[groupIndex].lastReadTimestamp = new Date();
                 await updateDoc(doc(db, "users", auth.currentUser.uid), { groups: userGroups });
+                currentUserData.groups = userGroups;
             }
         }
         
@@ -279,11 +356,14 @@
                     
                     // Показываем тестовое уведомление
                     new Notification("Messenger MAS", {
-                        body: "Уведомления успешно включены!",
+                        body: "Уведомления успешно включены! Теперь вы будете получать уведомления о новых сообщениях.",
                         icon: "https://via.placeholder.com/128"
                     });
                     
-                    alert("Уведомления включены!");
+                    // Перезапускаем слушатели уведомлений
+                    if (currentUserData) {
+                        setupGlobalNotificationsListener();
+                    }
                 } else {
                     notificationPermissionGranted = false;
                     updateNotificationStatus();
@@ -312,7 +392,7 @@
                 btn.style.background = 'var(--success)';
                 notificationPermissionGranted = true;
             } else if (Notification.permission === "denied") {
-                statusDiv.innerHTML = '<span class="notification-disabled">❌ Уведомления заблокированы</span>';
+                statusDiv.innerHTML = '<span class="notification-disabled">❌ Уведомления заблокированы. Разрешите их в настройках браузера.</span>';
                 btn.textContent = '🔔 Разрешить уведомления';
                 btn.style.background = 'var(--accent)';
                 notificationPermissionGranted = false;
@@ -326,13 +406,21 @@
         
         // Функция для отправки уведомления
         function sendNotification(title, body, icon = "https://via.placeholder.com/128") {
+            if (!("Notification" in window)) return;
+            
             if (Notification.permission === "granted") {
                 try {
-                    new Notification(title, {
+                    const notification = new Notification(title, {
                         body: body,
                         icon: icon,
-                        silent: false
+                        silent: false,
+                        badge: icon
                     });
+                    
+                    notification.onclick = function() {
+                        window.focus();
+                        notification.close();
+                    };
                 } catch (error) {
                     console.error("Ошибка при отправке уведомления:", error);
                 }
@@ -545,11 +633,6 @@
                 
                 await markGroupMessagesAsRead();
                 
-                // Проверяем, активен ли чат
-                const isChatActive = document.getElementById('chatPage').classList.contains('active');
-                let newMessagesCount = 0;
-                let lastNewMessage = null;
-                
                 for(const docSnap of snapshot.docs){ 
                     const msg = docSnap.data(); 
                     const isMine = msg.senderId === currentUid; 
@@ -566,24 +649,9 @@
                     } 
                     div.innerHTML = `<div class="message-wrapper"><div class="message-bubble"><div><small style="opacity:0.7">${escapeHtml(senderName)}</small><br>${content}</div></div><div class="message-footer"><span>${time}</span></div></div><div class="delete-message-btn" onclick="event.stopPropagation(); deleteGroupMessage('${docSnap.id}')">🗑️</div>`; 
                     container.appendChild(div); 
-                    
-                    if (!isMine) {
-                        newMessagesCount++;
-                        lastNewMessage = msg;
-                    }
                 } 
                 container.scrollTop = container.scrollHeight; 
-                
-                // Отправляем уведомление только если чат не активен и есть новые сообщения
-                if (newMessagesCount > 0 && !isChatActive && lastNewMessage) {
-                    sendNotification(
-                        `Группа: ${activeGroupData.name}`,
-                        `${lastNewMessage.senderName || "Участник"}: ${lastNewMessage.text || "📷 Фото"}`,
-                        activeGroupData.photoURL || "https://via.placeholder.com/128"
-                    );
-                }
-                
-                renderChats(); // Обновляем список чатов для отображения непрочитанных
+                renderChats();
             }); 
         }
         
@@ -670,11 +738,6 @@
                 container.innerHTML = ""; 
                 const currentUid = auth.currentUser.uid; 
                 
-                // Проверяем, активен ли чат
-                const isChatActive = document.getElementById('chatPage').classList.contains('active');
-                let hasNewMessages = false;
-                let lastMessageFromOther = null;
-                
                 for(const docSnap of snapshot.docs) { 
                     const msg = docSnap.data(); 
                     const isMine = msg.senderId === currentUid; 
@@ -697,13 +760,6 @@
                     } 
                     div.innerHTML = `<div class="message-bubble">${content}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div><div class="delete-message-btn" onclick="event.stopPropagation(); deletePrivateMessage('${docSnap.id}')">🗑️</div>`; 
                     container.appendChild(div); 
-                    
-                    if (!isMine) {
-                        lastMessageFromOther = msg;
-                        if (!msg.status || (msg.status !== 'read' && msg.status !== 'seen')) {
-                            hasNewMessages = true;
-                        }
-                    }
                 } 
                 container.scrollTop = container.scrollHeight; 
                 
@@ -711,17 +767,8 @@
                 for(const docSnap of unreadMessages) { 
                     await updateDoc(doc(db,"chats",activeChatId,"messages",docSnap.id), { status: 'read' }); 
                 }
-        
-                // Отправляем уведомление ТОЛЬКО если сообщение от другого пользователя и чат НЕ активен
-                if (hasNewMessages && !isChatActive && lastMessageFromOther) {
-                    sendNotification(
-                        activeOtherUser?.username || "Новое сообщение",
-                        lastMessageFromOther.text || "📷 Фото",
-                        currentUserData?.photoURL || "https://via.placeholder.com/128"
-                    );
-                }
                 
-                renderChats(); // Обновляем список чатов
+                renderChats();
             }); 
         }
         
@@ -792,6 +839,7 @@
             closeModal('nameContactModal');
             await renderContacts(); 
             await renderChats(); 
+            setupGlobalNotificationsListener();
         };
         
         window.searchContact = async () => { 
@@ -828,6 +876,9 @@
             if(currentUserData.photoURL) document.getElementById('profileAvatar').src = currentUserData.photoURL; 
             
             updateNotificationStatus();
+            
+            // Настраиваем глобальные уведомления
+            setupGlobalNotificationsListener();
             
             await renderContacts(); 
             await renderChats(); 
