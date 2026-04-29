@@ -139,7 +139,7 @@
     .contact-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .notification-status { margin-top: 10px; padding: 10px; border-radius: 20px; background: var(--bg-input); }
     .large-chat-layout { display: none; gap: 0; height: calc(100vh - 100px); min-height: 600px; }
-    @media (min-width: 1000px) { .large-chat-layout { display: flex; } #mobileChatList { display: none; } }
+    @media (min-width: 1400px) { .large-chat-layout { display: flex; } #mobileChatList { display: none; } }
     .chat-list-panel { width: 380px; background: var(--bg-sidebar); border-radius: 28px 0 0 28px; padding: 20px; overflow-y: auto; border: 1px solid var(--border-color); border-right: 1px solid var(--border-color); flex-shrink: 0; }
     .chat-list-panel .chat-item { margin: 8px 0; padding: 14px 18px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .chat-list-panel .chat-item.active-chat { background: var(--active-chat-bg); border-color: var(--border-color); }
@@ -148,6 +148,7 @@
     .forward-checkbox { width: auto; margin-right: 10px; transform: scale(1.2); }
     #forwardList label { display: flex; align-items: center; padding: 8px; margin: 5px 0; cursor: pointer; border-radius: 8px; color: var(--text-primary); }
     #forwardList label:hover { background: var(--border-color); }
+    .large-create-group-btn { margin-bottom: 15px; width: 100%; }
   </style>
 </head>
 <body>
@@ -173,7 +174,9 @@
       <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
       <div id="chatsTab" class="tab-content" style="display:none">
         <div class="large-chat-layout" id="largeChatContainer">
-          <div class="chat-list-panel" id="largeChatList"></div>
+          <div class="chat-list-panel" id="largeChatList">
+            <button class="small large-create-group-btn" onclick="showCreateGroupModal()">➕ Создать группу</button>
+          </div>
           <div class="chat-window-panel" id="largeChatWindow"><div class="empty-chat-placeholder">Выберите чат для начала общения</div></div>
         </div>
         <div id="mobileChatList"><div class="section-title"><h2>💬 Чаты</h2><button class="small" onclick="showCreateGroupModal()">➕ Создать группу</button></div><div id="chatsList"></div></div>
@@ -248,7 +251,9 @@ window.scrollToPinnedMessage=()=>{if(!pinnedMessageId)return;const e=document.qu
 
 window.showContextMenu=(e,id,msg,isMine)=>{
   e.stopPropagation();e.preventDefault();closeAllMenus();
-  const menu=document.createElement('div');menu.className='context-menu';menu.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';menu.style.top=Math.min(e.clientY,window.innerHeight-200)+'px';
+  const menu=document.createElement('div');menu.className='context-menu';
+  menu.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
+  menu.style.top=Math.min(e.clientY,window.innerHeight-200)+'px';
   const items=[];
   if(isMine||isGroupAdmin())items.push({text:'🗑️ Удалить',cls:'danger',action:()=>{if(confirm('Удалить?')){const c=activeChatType==='group'?'groups':'chats';deleteDoc(doc(db,c,activeChatId,'messages',id));if(id===pinnedMessageId)unpinMessage();}}});
   if(isMine)items.push({text:'✏️ Редактировать',action:()=>{editingMessageId=id;document.getElementById('editMessageInput').value=msg.text||'';document.getElementById('editMessageModal').style.display='flex';}});
@@ -256,7 +261,9 @@ window.showContextMenu=(e,id,msg,isMine)=>{
   items.push({text:'↗️ Переслать',action:()=>{currentForwardMsg={text:msg.text,mediaBase64:msg.mediaBase64};document.getElementById('forwardModal').style.display='flex';renderForwardList();}});
   if(canPin())items.push({text:id===pinnedMessageId?'📌 Открепить':'📌 Закрепить',action:()=>id===pinnedMessageId?unpinMessage():pinMessage(id,msg)});
   items.forEach(i=>{const d=document.createElement('div');d.className='context-menu-item'+(i.cls?' '+i.cls:'');d.textContent=i.text;d.onclick=ev=>{ev.stopPropagation();i.action();menu.remove();};menu.appendChild(d);});
-  document.body.appendChild(menu);setTimeout(()=>document.addEventListener('click',c=>{if(!menu.contains(c.target))menu.remove();},{once:true}),10);
+  document.body.appendChild(menu);
+  const closeMenu=(ev)=>{if(!menu.contains(ev.target)){menu.remove();document.removeEventListener('click',closeMenu);}};
+  setTimeout(()=>document.addEventListener('click',closeMenu),10);
 };
 
 function renderForwardList(){const l=document.getElementById('forwardList');if(!l)return;let h='';(currentUserData?.groups||[]).forEach(g=>h+=`<label><input type="checkbox" class="forward-checkbox" value="group_${g.id}"> 👥 ${escapeHtml(g.name)}</label><br>`);(currentUserData?.contacts||[]).filter(c=>!c.blocked).forEach(c=>h+=`<label><input type="checkbox" class="forward-checkbox" value="private_${c.uid}"> 💬 ${escapeHtml(c.firstName||c.username)}</label><br>`);l.innerHTML=h||'Нет чатов';}
@@ -268,7 +275,7 @@ window.saveEditedMessage=async()=>{const t=document.getElementById('editMessageI
 
 function createMessageElement(msgId,msg,isMine){
   const div=document.createElement('div');div.className=`message ${isMine?'sent':'received'}`;div.setAttribute('data-msg-id',msgId);
-  div.onclick=e=>showContextMenu(e,msgId,msg,isMine);
+  div.addEventListener('click',function(e){showContextMenu(e,msgId,msg,isMine);});
   const time=msg.timestamp?.toDate?new Date(msg.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):"";
   let content=escapeHtml(msg.text||'');if(msg.mediaBase64)content+=`<br><img src="${msg.mediaBase64}" class="media-preview" onclick="event.stopPropagation();window.open('${msg.mediaBase64}','_blank')">`;
   let reactionsHtml='';if(msg.reactions&&Object.keys(msg.reactions).length>0){reactionsHtml='<div class="message-reactions">';Object.entries(msg.reactions).forEach(([emoji,users])=>{if(users?.length)reactionsHtml+=`<span class="reaction-badge ${users.includes(auth.currentUser?.uid)?'active':''}" onclick="event.stopPropagation();addReaction('${msgId}','${emoji}')">${emoji} ${users.length}</span>`;});reactionsHtml+='</div>';}
@@ -291,7 +298,8 @@ function loadMessages(collName){
       container.appendChild(createMessageElement(docSnap.id,msg,isMine));
     });
     container.scrollTop=container.scrollHeight;
-    const lc=document.getElementById('messagesContainerLarge');if(lc){lc.innerHTML=container.innerHTML;lc.scrollTop=lc.scrollHeight;}
+    const lc=document.getElementById('messagesContainerLarge');if(lc){lc.innerHTML=container.innerHTML;lc.scrollTop=lc.scrollHeight;
+    lc.querySelectorAll('.message').forEach(msgEl=>{const msgId=msgEl.getAttribute('data-msg-id');const isMine=msgEl.classList.contains('sent');msgEl.addEventListener('click',function(e){const msgData={text:msgEl.querySelector('.message-bubble')?.textContent||''};showContextMenu(e,msgId,msgData,isMine);});});}
     if(collName==='chats'){snapshot.docs.filter(d=>d.data().senderId!==auth.currentUser?.uid&&(!d.data().status||d.data().status!=='read')).forEach(async d=>{await updateDoc(doc(db,"chats",activeChatId,"messages",d.id),{status:'read'});});}
     renderChats();
   });
@@ -344,6 +352,7 @@ function embedLargeChat(){
   const panel=document.getElementById('largeChatWindow');if(!panel)return;
   panel.innerHTML=`<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;"><div class="chat-header" onclick="showChatProfile()"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status" id="chatHeaderStatusLarge">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div><div class="messages-area" id="messagesContainerLarge">${document.getElementById('messagesContainer')?.innerHTML||''}</div><div class="input-area"><input id="messageInputLarge" placeholder="Сообщение..."><button class="emoji-btn" onclick="showLargeEmoji()">😊</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div></div>`;
   document.getElementById('fileInputLarge').onchange=async()=>{const files=document.getElementById('fileInputLarge').files;if(files?.length){for(let f of files){if(f.type.startsWith('image/')){const r=new FileReader();r.onloadend=async()=>{await addDoc(collection(db,activeChatType==='group'?'groups':'chats',activeChatId,"messages"),{text:"📷 Фото",mediaBase64:r.result,mediaType:'image',senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});};r.readAsDataURL(f);}}document.getElementById('fileInputLarge').value='';}};
+  const lc=document.getElementById('messagesContainerLarge');if(lc){lc.querySelectorAll('.message').forEach(msgEl=>{const msgId=msgEl.getAttribute('data-msg-id');const isMine=msgEl.classList.contains('sent');msgEl.addEventListener('click',function(e){const msgData={text:msgEl.querySelector('.message-bubble')?.textContent||''};showContextMenu(e,msgId,msgData,isMine);});});}
   renderChats();
 }
 window.closeLargeChat=()=>{document.getElementById('largeChatWindow').innerHTML='<div class="empty-chat-placeholder">Выберите чат для начала общения</div>';if(statusInterval)clearInterval(statusInterval);renderChats();};
@@ -352,9 +361,14 @@ window.showLargeEmoji=()=>{const panel=document.createElement('div');panel.class
 
 async function renderChats(){
   const container=document.getElementById('chatsList'),largeList=document.getElementById('largeChatList');let html='',largeHtml='';
+  const largeCreateBtn=largeList?.querySelector('.large-create-group-btn');
   for(let g of(currentUserData?.groups||[])){const act=activeChatId===g.id&&activeChatType==='group';html+=`<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div class="contact-name">${escapeHtml(g.name)}</div></div>`;largeHtml+=`<div class="chat-item${act?' active-chat':''}" onclick="openGroupChat('${g.id}',true)"><div class="avatar-placeholder">👥</div><div class="contact-name">${escapeHtml(g.name)}</div></div>`;}
   for(let c of(currentUserData?.contacts||[]).filter(c=>!c.blocked)){const act=activeChatId===[auth.currentUser?.uid,c.uid].sort().join('_')&&activeChatType==='private';html+=`<div class="chat-item" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">💬</div><div class="contact-name">${escapeHtml(c.firstName||c.username)}</div></div>`;largeHtml+=`<div class="chat-item${act?' active-chat':''}" onclick="openChat('${c.uid}','${escapeHtml(c.username)}',true)"><div class="avatar-placeholder">💬</div><div class="contact-name">${escapeHtml(c.firstName||c.username)}</div></div>`;}
-  if(container)container.innerHTML=html||'<div class="empty-state">Нет чатов</div>';if(largeList)largeList.innerHTML=largeHtml||'<div class="empty-state">Нет чатов</div>';
+  if(container)container.innerHTML=html||'<div class="empty-state">Нет чатов</div>';
+  if(largeList){
+    if(largeCreateBtn)largeList.innerHTML=largeCreateBtn.outerHTML+largeHtml;else largeList.innerHTML=largeHtml;
+    if(!largeList.innerHTML.trim())largeList.innerHTML='<div class="empty-state">Нет чатов</div>';
+  }
 }
 
 async function renderContacts(){const container=document.getElementById('contactsList');const contacts=currentUserData?.contacts||[];if(!contacts.length){container.innerHTML='<div class="empty-state">📭 Нет контактов</div>';return;}container.innerHTML=contacts.map(c=>`<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${c.lastName?escapeHtml(c.lastName):''}</div><div class="contact-username">@${escapeHtml(c.username)}</div>${c.blocked?'<span class="blocked-badge">🔒 Заблокирован</span>':''}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation();editContact('${c.uid}')">✏️</button>${c.blocked?`<button class="icon-btn" onclick="event.stopPropagation();unblockContact('${c.uid}')">🔓 Разблок.</button>`:`<button class="icon-btn" onclick="event.stopPropagation();blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>`).join('');}
