@@ -202,6 +202,9 @@
   </div>
 </div>
 
+<!-- Модалка для пароля MAS -->
+<div id="masPasswordModal" class="modal" style="display:none"><div class="modal-content"><h3>🔐 Доступ к каналу MAS</h3><p>Введите пароль для отправки сообщений:</p><input type="password" id="masPasswordInput" placeholder="Пароль"><button onclick="checkMASPassword()">Подтвердить</button><button onclick="closeModal('masPasswordModal')" style="background:var(--bg-input);">Отмена</button></div></div>
+
 <div id="editMessageModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать сообщение</h3><input type="text" id="editMessageInput" placeholder="Текст сообщения"><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="saveEditedMessage()">Сохранить</button><button onclick="closeModal('editMessageModal')" style="background:var(--bg-input);">Отмена</button></div></div></div>
 <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
 <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeModal('renameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
@@ -223,7 +226,9 @@ let currentUserData=null,unsubscribeContacts=null,unsubscribeMessages=null,activ
 let pendingContact=null,pendingRenameContact=null,pendingEmailChange=null,pendingRegistrations=new Map(),statusInterval=null;
 let notificationPermissionGranted=false,pinnedMessageId=null,pinnedMessageData=null,editingMessageId=null,currentForwardMsg=null;
 let isArchiveViewLarge=false, isArchiveViewMobile=false;
+let masAuthorized = false; // флаг авторизации в MAS
 const MAS_CHAT_ID = "MAS_OFFICIAL_CHAT";
+const MAS_PASSWORD = "MAS007";
 const ALL_EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","😎","🥳","😏","😒","😞","😔","😟","😕","😣","😖","😫","😩","😢","😭","😤","😠","😡","🤬","😱","😨","😰","😥","😓","🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐒","🐔","🐧","🐦","🐤","🐴","🐺","🦋","🐌","🐞","🐜","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🍒","🍑","🥭","🍍","🥝","🍅","🍆","🥑","🥦","🥬","🥒","🌶️","🌽","🥕","⚽","🏀","🏈","🎾","🏐","🎱","🎮","🎵","🎸","👏","🎉","🔥","💯","✅","👀","🙏","💪","🤝","⭐"];
 
 function escapeHtml(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
@@ -320,6 +325,10 @@ function refreshMessageEvents(){
 }
 
 async function sendMessageInternal(inputId, fileInputId) {
+  if (activeChatType === 'mas' && !masAuthorized) {
+    document.getElementById('masPasswordModal').style.display='flex';
+    return;
+  }
   const text = document.getElementById(inputId)?.value.trim();
   const files = document.getElementById(fileInputId)?.files;
   let mediaBase64 = [];
@@ -327,6 +336,7 @@ async function sendMessageInternal(inputId, fileInputId) {
     for (let f of files) {
       if (f.type.startsWith('image/')) {
         const b64 = await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(f); });
+        if (b64.length > 900000) { alert('Файл слишком большой!'); continue; }
         mediaBase64.push(b64);
       }
     }
@@ -341,7 +351,7 @@ async function sendMessageInternal(inputId, fileInputId) {
       senderName: currentUserData?.username,
       timestamp: new Date(),
       reactions: {}
-    });
+    }).catch(() => alert('Ошибка отправки'));
     if (inputId === 'messageInput') document.getElementById('messageInput').value = '';
     else if (inputId === 'messageInputLarge') document.getElementById('messageInputLarge').value = '';
   }
@@ -351,10 +361,15 @@ window.sendMessage = () => sendMessageInternal('messageInput', 'fileInput');
 window.sendLargeMessage = () => sendMessageInternal('messageInputLarge', 'fileInputLarge');
 
 async function handleVoiceInternal(voiceInputId) {
+  if (activeChatType === 'mas' && !masAuthorized) {
+    document.getElementById('masPasswordModal').style.display='flex';
+    return;
+  }
   const file = document.getElementById(voiceInputId)?.files?.[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onloadend = async () => {
+    if (reader.result.length > 900000) { alert('Аудио слишком большое!'); return; }
     await addDoc(collection(db, 'chats', activeChatId, "messages"), {
       text: "🎤 Голосовое сообщение",
       mediaBase64: reader.result,
@@ -363,13 +378,28 @@ async function handleVoiceInternal(voiceInputId) {
       senderName: currentUserData?.username,
       timestamp: new Date(),
       reactions: {}
-    });
+    }).catch(() => alert('Ошибка отправки голосового'));
   };
   reader.readAsDataURL(file);
   document.getElementById(voiceInputId).value = '';
 }
 
 window.handleVoiceMessage = () => handleVoiceInternal('voiceInput');
+
+window.checkMASPassword = () => {
+  const pass = document.getElementById('masPasswordInput').value.trim();
+  if (pass === MAS_PASSWORD) {
+    masAuthorized = true;
+    closeModal('masPasswordModal');
+    if (activeChatId === MAS_CHAT_ID) {
+      document.getElementById('chatInputArea').style.display = 'flex';
+      if (document.getElementById('largeInputArea')) document.getElementById('largeInputArea').style.display = 'flex';
+    }
+    alert('Доступ разрешён');
+  } else {
+    alert('Неверный пароль');
+  }
+};
 
 window.openChat = async (uid, username, large = false) => {
   if (uid === auth.currentUser?.uid) { openSavedMessages(large); return; }
@@ -383,6 +413,7 @@ window.openChat = async (uid, username, large = false) => {
   document.getElementById('chatHeaderAvatar').src = c.photoURL || 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').innerHTML = '';
   document.getElementById('chatInputArea').style.display = 'flex';
+  masAuthorized = false;
   await loadPinned();
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages(); updateStatus(); statusInterval = setInterval(updateStatus, 5000);
@@ -395,6 +426,7 @@ window.openSavedMessages = (large = false) => {
   document.getElementById('chatHeaderAvatar').src = currentUserData?.photoURL || 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').textContent = '';
   document.getElementById('chatInputArea').style.display = 'flex';
+  masAuthorized = false;
   loadPinned();
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
@@ -406,26 +438,42 @@ window.openMASChat = (large = false) => {
   document.getElementById('chatHeaderName').textContent = '📢 MAS';
   document.getElementById('chatHeaderAvatar').src = 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').textContent = 'Официальный канал';
-  document.getElementById('chatInputArea').style.display = 'none';
+  if (!masAuthorized) {
+    document.getElementById('chatInputArea').style.display = 'none';
+  } else {
+    document.getElementById('chatInputArea').style.display = 'flex';
+  }
   loadPinned();
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
 };
 
 async function updateStatus(){
-  if(!activeOtherUser)return;const u=await getDoc(doc(db,"users",activeOtherUser.uid));
-  if(u.exists()){const s=formatLastSeen(u.data().lastSeen?.toDate());const el=document.getElementById('chatHeaderStatus');if(el)el.innerHTML=s==='В сети'?`<span class="online-status-dot"></span>${s}`:`🕐 ${s}`;}
+  if(!activeOtherUser)return;
+  const u=await getDoc(doc(db,"users",activeOtherUser.uid));
+  if(u.exists()){
+    const s=formatLastSeen(u.data().lastSeen?.toDate());
+    const elSmall = document.getElementById('chatHeaderStatus');
+    const elLarge = document.getElementById('chatHeaderStatusLarge');
+    const html = s==='В сети'?`<span class="online-status-dot"></span>${s}`:`🕐 ${s}`;
+    if(elSmall) elSmall.innerHTML = html;
+    if(elLarge) elLarge.innerHTML = html;
+  }
 }
 
 function embedLargeChat(){
   const panel = document.getElementById('largeChatWindow'); if (!panel) return;
   panel.innerHTML = `<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;">
-    <div class="chat-header"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div>
+    <div class="chat-header"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status" id="chatHeaderStatusLarge">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div>
     <div class="messages-area" id="messagesContainerLarge"></div>
     <div class="input-area" id="largeInputArea"><textarea id="messageInputLarge" placeholder="Сообщение..." rows="1"></textarea><button class="emoji-btn" onclick="showEmojiForInput('messageInputLarge')">😊</button><button class="voice-btn" onclick="document.getElementById('voiceInputLarge').click()">🎤</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="voiceInputLarge" accept="audio/*" style="display:none"><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div>
   </div>`;
   document.getElementById('voiceInputLarge').addEventListener('change', () => handleVoiceInternal('voiceInputLarge'));
-  if (activeChatType === 'mas') document.getElementById('largeInputArea').style.display = 'none';
+  if (activeChatType === 'mas' && !masAuthorized) {
+    document.getElementById('largeInputArea').style.display = 'none';
+  } else if (activeChatType === 'mas' && masAuthorized) {
+    document.getElementById('largeInputArea').style.display = 'flex';
+  }
   const mc = document.getElementById('messagesContainer');
   if (mc) {
     document.getElementById('messagesContainerLarge').innerHTML = mc.innerHTML;
