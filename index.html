@@ -195,7 +195,7 @@
       <button class="emoji-btn" id="emojiButton" type="button">😊</button>
       <button class="voice-btn" id="voiceButton" type="button">🎤</button>
       <button class="file-btn" id="fileButton" type="button">🖼️</button>
-      <input type="file" id="voiceInput" accept="audio/*" style="display:none" onchange="handleVoiceMessage()">
+      <input type="file" id="voiceInput" accept="audio/*" style="display:none">
       <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
       <button onclick="sendMessage()">📤</button>
     </div>
@@ -278,7 +278,6 @@ function createMessageElement(msgId,msg,isMine){
   let reactionsHtml='';if(msg.reactions&&Object.keys(msg.reactions).length>0){reactionsHtml='<div class="message-reactions">';Object.entries(msg.reactions).forEach(([emoji,users])=>{if(users?.length)reactionsHtml+=`<span class="reaction-badge ${users.includes(auth.currentUser?.uid)?'active':''}" onclick="event.stopPropagation();addReaction('${msgId}','${emoji}')">${emoji} ${users.length}</span>`;});reactionsHtml+='</div>';}
   let statusHtml='';if(isMine&&msg.status){if(msg.status==='read')statusHtml='✓✓';else if(msg.status==='sent')statusHtml='✓';else statusHtml='🕐';}
   div.innerHTML=`<div class="message-bubble">${content}${msg.edited?'<div class="edited-mark">изменено</div>':''}${reactionsHtml}${msgId===pinnedMessageId?'<div class="pin-mark">📌 Закреплено</div>':''}</div><div class="message-footer"><span>${time}</span><span class="message-status">${statusHtml}</span></div>`;
-  div.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); showContextMenu(e,msgId,msg,isMine); });
   return div;
 }
 
@@ -297,71 +296,119 @@ function loadMessages(){
     });
     localStorage.setItem(`unread_${activeChatId}`,JSON.stringify({count:0}));
     container.scrollTop=container.scrollHeight;
-    const lc=document.getElementById('messagesContainerLarge');if(lc){lc.innerHTML=container.innerHTML;lc.scrollTop=lc.scrollHeight;
-    lc.querySelectorAll('.message').forEach(msgEl=>{const msgId=msgEl.getAttribute('data-msg-id');const isMine=msgEl.classList.contains('sent');msgEl.addEventListener('click',function(e){const msgData={text:msgEl.querySelector('.message-bubble')?.textContent||''};showContextMenu(e,msgId,msgData,isMine);});});}
+    const lc=document.getElementById('messagesContainerLarge');if(lc){lc.innerHTML=container.innerHTML;lc.scrollTop=lc.scrollHeight;}
+    refreshMessageEvents();
     renderChats();
   });
 }
 
-window.handleVoiceMessage=async()=>{
-  const file=document.getElementById('voiceInput').files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onloadend=async()=>{await addDoc(collection(db,'chats',activeChatId,"messages"),{text:"🎤 Голосовое сообщение",mediaBase64:reader.result,mediaType:'audio',senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});};
-  reader.readAsDataURL(file);document.getElementById('voiceInput').value='';
-};
+function refreshMessageEvents(){
+  const targets = [document.getElementById('messagesContainer'), document.getElementById('messagesContainerLarge')];
+  targets.forEach(container => {
+    if(!container) return;
+    container.querySelectorAll('.message').forEach(msgEl => {
+      const msgId = msgEl.getAttribute('data-msg-id');
+      const isMine = msgEl.classList.contains('sent');
+      msgEl.onclick = null;
+      msgEl.addEventListener('click', function(e){
+        e.stopPropagation(); e.preventDefault();
+        const msgData = { text: msgEl.querySelector('.message-bubble')?.textContent || '' };
+        showContextMenu(e, msgId, msgData, isMine);
+      });
+    });
+  });
+}
 
-window.sendMessage=async()=>{
-  const text=document.getElementById('messageInput')?.value.trim();
-  const files=document.getElementById('fileInput')?.files;
-  let mediaBase64=[];
-  if(files?.length){for(let f of files){if(f.type.startsWith('image/')){const b64=await new Promise(res=>{const r=new FileReader();r.onloadend=()=>res(r.result);r.readAsDataURL(f);});mediaBase64.push(b64);}}document.getElementById('fileInput').value='';}
-  if(text||mediaBase64.length>0){
-    await addDoc(collection(db,'chats',activeChatId,"messages"),{text:text||(mediaBase64.length?'📷 Фото':''),mediaBase64:mediaBase64.length?mediaBase64:null,mediaType:mediaBase64.length?'image':null,senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});
-    document.getElementById('messageInput').value='';
+async function sendMessageInternal(inputId, fileInputId) {
+  const text = document.getElementById(inputId)?.value.trim();
+  const files = document.getElementById(fileInputId)?.files;
+  let mediaBase64 = [];
+  if (files?.length) {
+    for (let f of files) {
+      if (f.type.startsWith('image/')) {
+        const b64 = await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(f); });
+        mediaBase64.push(b64);
+      }
+    }
+    document.getElementById(fileInputId).value = '';
   }
-};
+  if (text || mediaBase64.length > 0) {
+    await addDoc(collection(db, 'chats', activeChatId, "messages"), {
+      text: text || (mediaBase64.length ? '📷 Фото' : ''),
+      mediaBase64: mediaBase64.length ? mediaBase64 : null,
+      mediaType: mediaBase64.length ? 'image' : null,
+      senderId: auth.currentUser.uid,
+      senderName: currentUserData?.username,
+      timestamp: new Date(),
+      reactions: {}
+    });
+    if (inputId === 'messageInput') document.getElementById('messageInput').value = '';
+    else if (inputId === 'messageInputLarge') document.getElementById('messageInputLarge').value = '';
+  }
+}
 
-window.showChatProfile=async()=>{
-  if(activeOtherUser){const u=await getDoc(doc(db,"users",activeOtherUser.uid));if(u.exists()){const d=u.data();document.getElementById('contactProfileAvatar').src=d.photoURL||'';document.getElementById('contactProfileName').textContent=d.username;document.getElementById('contactProfileStatus').textContent=formatLastSeen(d.lastSeen?.toDate());document.getElementById('contactProfileModal').style.display='flex';}}
-};
+window.sendMessage = () => sendMessageInternal('messageInput', 'fileInput');
+window.sendLargeMessage = () => sendMessageInternal('messageInputLarge', 'fileInputLarge');
 
-window.closeChat=()=>{if(unsubscribeMessages)unsubscribeMessages();if(statusInterval)clearInterval(statusInterval);showPage('mainApp');switchTab('chats');renderChats();document.getElementById('largeChatWindow').innerHTML='<div class="empty-chat-placeholder">Выберите чат</div>';};
-window.openChat=async(uid,username,large=false)=>{
-  if(uid===auth.currentUser?.uid){openSavedMessages(large);return;}
-  let c=currentUserData?.contacts?.find(c=>c.uid===uid);if(c?.blocked)return alert("Пользователь заблокирован!");
-  if(!c?.firstName){pendingContact={uid,username};document.getElementById('modalUsername').textContent=username;document.getElementById('nameContactModal').style.display='flex';return;}
-  if(statusInterval)clearInterval(statusInterval);
-  activeChatId=[auth.currentUser.uid,uid].sort().join('_');activeChatType='private';activeOtherUser={uid,username};
-  document.getElementById('chatHeaderName').textContent=c.firstName;
-  document.getElementById('chatHeaderAvatar').src=c.photoURL||'https://via.placeholder.com/44';
-  document.getElementById('chatHeaderStatus').innerHTML='';
-  document.getElementById('chatInputArea').style.display='flex';
+async function handleVoiceInternal(voiceInputId) {
+  const file = document.getElementById(voiceInputId)?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    await addDoc(collection(db, 'chats', activeChatId, "messages"), {
+      text: "🎤 Голосовое сообщение",
+      mediaBase64: reader.result,
+      mediaType: 'audio',
+      senderId: auth.currentUser.uid,
+      senderName: currentUserData?.username,
+      timestamp: new Date(),
+      reactions: {}
+    });
+  };
+  reader.readAsDataURL(file);
+  document.getElementById(voiceInputId).value = '';
+}
+
+window.handleVoiceMessage = () => handleVoiceInternal('voiceInput');
+
+window.openChat = async (uid, username, large = false) => {
+  if (uid === auth.currentUser?.uid) { openSavedMessages(large); return; }
+  let c = currentUserData?.contacts?.find(c => c.uid === uid);
+  if (c?.blocked) return alert("Пользователь заблокирован!");
+  if (!c?.firstName) { pendingContact = { uid, username }; document.getElementById('modalUsername').textContent = username; document.getElementById('nameContactModal').style.display = 'flex'; return; }
+  if (statusInterval) clearInterval(statusInterval);
+  activeChatId = [auth.currentUser.uid, uid].sort().join('_');
+  activeChatType = 'private'; activeOtherUser = { uid, username };
+  document.getElementById('chatHeaderName').textContent = c.firstName;
+  document.getElementById('chatHeaderAvatar').src = c.photoURL || 'https://via.placeholder.com/44';
+  document.getElementById('chatHeaderStatus').innerHTML = '';
+  document.getElementById('chatInputArea').style.display = 'flex';
   await loadPinned();
-  if(large)embedLargeChat();else showPage('chatPage');
-  loadMessages();updateStatus();statusInterval=setInterval(updateStatus,5000);
+  if (large) embedLargeChat(); else showPage('chatPage');
+  loadMessages(); updateStatus(); statusInterval = setInterval(updateStatus, 5000);
 };
 
-window.openSavedMessages=(large=false)=>{
-  if(statusInterval)clearInterval(statusInterval);
-  activeChatId=`saved_${auth.currentUser.uid}`;activeChatType='saved';activeOtherUser=null;
-  document.getElementById('chatHeaderName').textContent='⭐ Избранное';
-  document.getElementById('chatHeaderAvatar').src=currentUserData?.photoURL||'https://via.placeholder.com/44';
-  document.getElementById('chatHeaderStatus').textContent='';
-  document.getElementById('chatInputArea').style.display='flex';
+window.openSavedMessages = (large = false) => {
+  if (statusInterval) clearInterval(statusInterval);
+  activeChatId = `saved_${auth.currentUser.uid}`; activeChatType = 'saved'; activeOtherUser = null;
+  document.getElementById('chatHeaderName').textContent = '⭐ Избранное';
+  document.getElementById('chatHeaderAvatar').src = currentUserData?.photoURL || 'https://via.placeholder.com/44';
+  document.getElementById('chatHeaderStatus').textContent = '';
+  document.getElementById('chatInputArea').style.display = 'flex';
   loadPinned();
-  if(large)embedLargeChat(); else showPage('chatPage');
+  if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
 };
 
-window.openMASChat=(large=false)=>{
-  if(statusInterval)clearInterval(statusInterval);
-  activeChatId=MAS_CHAT_ID;activeChatType='mas';activeOtherUser=null;
-  document.getElementById('chatHeaderName').textContent='📢 MAS';
-  document.getElementById('chatHeaderAvatar').src='https://via.placeholder.com/44';
-  document.getElementById('chatHeaderStatus').textContent='Официальный канал';
-  document.getElementById('chatInputArea').style.display='none';
+window.openMASChat = (large = false) => {
+  if (statusInterval) clearInterval(statusInterval);
+  activeChatId = MAS_CHAT_ID; activeChatType = 'mas'; activeOtherUser = null;
+  document.getElementById('chatHeaderName').textContent = '📢 MAS';
+  document.getElementById('chatHeaderAvatar').src = 'https://via.placeholder.com/44';
+  document.getElementById('chatHeaderStatus').textContent = 'Официальный канал';
+  document.getElementById('chatInputArea').style.display = 'none';
   loadPinned();
-  if(large)embedLargeChat(); else showPage('chatPage');
+  if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
 };
 
@@ -371,21 +418,43 @@ async function updateStatus(){
 }
 
 function embedLargeChat(){
-  const panel=document.getElementById('largeChatWindow');if(!panel)return;
-  panel.innerHTML=`<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;"><div class="chat-header"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div><div class="messages-area" id="messagesContainerLarge"></div><div class="input-area" id="largeInputArea"><textarea id="messageInputLarge" placeholder="Сообщение..." rows="1"></textarea><button class="emoji-btn" onclick="showEmojiForInput('messageInputLarge')">😊</button><button class="voice-btn" onclick="document.getElementById('voiceInputLarge').click()">🎤</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="voiceInputLarge" accept="audio/*" style="display:none"><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div></div>`;
-  document.getElementById('voiceInputLarge').onchange=async()=>{const file=document.getElementById('voiceInputLarge').files[0];if(!file)return;const r=new FileReader();r.onloadend=async()=>{await addDoc(collection(db,'chats',activeChatId,"messages"),{text:"🎤 Голосовое",mediaBase64:r.result,mediaType:'audio',senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});};r.readAsDataURL(file);document.getElementById('voiceInputLarge').value='';};
-  if(activeChatType==='mas')document.getElementById('largeInputArea').style.display='none';
-  const mc=document.getElementById('messagesContainer');
-  if(mc){document.getElementById('messagesContainerLarge').innerHTML=mc.innerHTML;const lc=document.getElementById('messagesContainerLarge');lc.querySelectorAll('.message').forEach(msgEl=>{const msgId=msgEl.getAttribute('data-msg-id');const isMine=msgEl.classList.contains('sent');msgEl.addEventListener('click',function(e){const msgData={text:msgEl.querySelector('.message-bubble')?.textContent||''};showContextMenu(e,msgId,msgData,isMine);});});}
+  const panel = document.getElementById('largeChatWindow'); if (!panel) return;
+  panel.innerHTML = `<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;">
+    <div class="chat-header"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div>
+    <div class="messages-area" id="messagesContainerLarge"></div>
+    <div class="input-area" id="largeInputArea"><textarea id="messageInputLarge" placeholder="Сообщение..." rows="1"></textarea><button class="emoji-btn" onclick="showEmojiForInput('messageInputLarge')">😊</button><button class="voice-btn" onclick="document.getElementById('voiceInputLarge').click()">🎤</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="voiceInputLarge" accept="audio/*" style="display:none"><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div>
+  </div>`;
+  document.getElementById('voiceInputLarge').addEventListener('change', () => handleVoiceInternal('voiceInputLarge'));
+  if (activeChatType === 'mas') document.getElementById('largeInputArea').style.display = 'none';
+  const mc = document.getElementById('messagesContainer');
+  if (mc) {
+    document.getElementById('messagesContainerLarge').innerHTML = mc.innerHTML;
+    refreshMessageEvents();
+  }
   renderChats();
 }
-window.closeLargeChat=()=>{document.getElementById('largeChatWindow').innerHTML='<div class="empty-chat-placeholder">Выберите чат</div>';if(statusInterval)clearInterval(statusInterval);renderChats();};
-window.sendLargeMessage=async()=>{const t=document.getElementById('messageInputLarge')?.value.trim();const files=document.getElementById('fileInputLarge')?.files;let m=[];if(files?.length){for(let f of files){if(f.type.startsWith('image/')){const b=await new Promise(res=>{const r=new FileReader();r.onloadend=()=>res(r.result);r.readAsDataURL(f);});m.push(b);}}document.getElementById('fileInputLarge').value='';}if(t||m.length){await addDoc(collection(db,'chats',activeChatId,"messages"),{text:t||(m.length?'📷 Фото':''),mediaBase64:m.length?m:null,mediaType:m.length?'image':null,senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});document.getElementById('messageInputLarge').value='';}};
 
-window.showEmojiForInput=(inputId)=>{const inp=document.getElementById(inputId);if(!inp)return;let panel=document.getElementById('emojiPanel');if(panel){panel.remove();return;}panel=document.createElement('div');panel.id='emojiPanel';panel.className='emoji-panel';const cats={"😀":ALL_EMOJIS.slice(0,50),"🐶":ALL_EMOJIS.slice(50,80),"🍔":ALL_EMOJIS.slice(80,110),"⚽":ALL_EMOJIS.slice(110)};for(let[cn,ems]of Object.entries(cats)){let cd=document.createElement('div');cd.className='emoji-category';cd.innerHTML=`<div class="emoji-category-title">${cn}</div><div class="emoji-grid"></div>`;let grid=cd.querySelector('.emoji-grid');ems.forEach(em=>{let s=document.createElement('span');s.className='emoji-item';s.textContent=em;s.onclick=()=>{inp.value+=em;panel.remove();};grid.appendChild(s);});panel.appendChild(cd);}inp.parentNode.appendChild(panel);document.addEventListener('click',function cp(e){if(panel&&!panel.contains(e.target)){panel.remove();document.removeEventListener('click',cp);}});};
+window.closeLargeChat = () => { document.getElementById('largeChatWindow').innerHTML = '<div class="empty-chat-placeholder">Выберите чат</div>'; if (statusInterval) clearInterval(statusInterval); renderChats(); };
+window.closeChat = () => { if(unsubscribeMessages) unsubscribeMessages(); if(statusInterval) clearInterval(statusInterval); showPage('mainApp'); switchTab('chats'); renderChats(); document.getElementById('largeChatWindow').innerHTML='<div class="empty-chat-placeholder">Выберите чат</div>'; };
 
-window.showEmojiPicker=(e)=>{e.stopPropagation();showEmojiForInput('messageInput');};
-window.showLargeEmoji=()=>{showEmojiForInput('messageInputLarge');};
+window.showEmojiForInput = (inputId) => {
+  const inp = document.getElementById(inputId); if (!inp) return;
+  let panel = document.getElementById('emojiPanel'); if (panel) { panel.remove(); return; }
+  panel = document.createElement('div'); panel.id = 'emojiPanel'; panel.className = 'emoji-panel';
+  const cats = { "😀": ALL_EMOJIS.slice(0, 50), "🐶": ALL_EMOJIS.slice(50, 80), "🍔": ALL_EMOJIS.slice(80, 110), "⚽": ALL_EMOJIS.slice(110) };
+  for (let [cn, ems] of Object.entries(cats)) {
+    let cd = document.createElement('div'); cd.className = 'emoji-category';
+    cd.innerHTML = `<div class="emoji-category-title">${cn}</div><div class="emoji-grid"></div>`;
+    let grid = cd.querySelector('.emoji-grid');
+    ems.forEach(em => { let s = document.createElement('span'); s.className='emoji-item'; s.textContent=em; s.onclick=()=>{inp.value+=em; panel.remove();}; grid.appendChild(s); });
+    panel.appendChild(cd);
+  }
+  inp.parentNode.appendChild(panel);
+  document.addEventListener('click', function cp(e){ if(panel && !panel.contains(e.target)){ panel.remove(); document.removeEventListener('click', cp); } });
+};
+
+window.showEmojiPicker = (e) => { e.stopPropagation(); showEmojiForInput('messageInput'); };
+window.showLargeEmoji = () => { showEmojiForInput('messageInputLarge'); };
 
 function getUnreadCount(chatId){try{const s=localStorage.getItem(`unread_${chatId}`);if(s){const d=JSON.parse(s);return d.count||0;}}catch(e){}return 0;}
 
@@ -400,17 +469,12 @@ function buildAllChats(){
 
 window.toggleLargeArchive=()=>{isArchiveViewLarge=!isArchiveViewLarge;document.getElementById('largeArchiveIcon').textContent=isArchiveViewLarge?'📋':'📦';document.getElementById('largeArchiveText').textContent=isArchiveViewLarge?'Основные чаты':'Архив';renderChats();};
 window.toggleMobileArchive=()=>{isArchiveViewMobile=!isArchiveViewMobile;document.getElementById('mobileArchiveIcon').textContent=isArchiveViewMobile?'📋':'📦';document.getElementById('mobileArchiveText').textContent=isArchiveViewMobile?'Основные чаты':'Архив';renderChats();};
-
-window.toggleArchiveChat=(chatId)=>{
-  const key=`archived_${chatId}`; const cur=localStorage.getItem(key)==='1';
-  if(cur)localStorage.removeItem(key); else localStorage.setItem(key,'1');
-  renderChats();renderContacts();
-};
+window.toggleArchiveChat=(chatId)=>{const key=`archived_${chatId}`;const cur=localStorage.getItem(key)==='1';if(cur)localStorage.removeItem(key);else localStorage.setItem(key,'1');renderChats();renderContacts();};
 
 function filterChats(searchTerm,archived){
   buildAllChats();
   let result=allChatsCache.filter(c=>c.archived===archived);
-  if(searchTerm){const term=searchTerm.toLowerCase(); result=result.filter(c=>c.name.toLowerCase().includes(term));}
+  if(searchTerm){const term=searchTerm.toLowerCase();result=result.filter(c=>c.name.toLowerCase().includes(term));}
   return result;
 }
 
@@ -419,7 +483,7 @@ async function renderChats(){
   const largeContainer=document.getElementById('largeChatsContainer'),mobileContainer=document.getElementById('mobileChatsContainer');
   const searchLarge=document.getElementById('largeChatSearch')?.value||'',searchMobile=document.getElementById('mobileChatSearch')?.value||'';
   const filteredLarge=filterChats(searchLarge,isArchiveViewLarge),filteredMobile=filterChats(searchMobile,isArchiveViewMobile);
-  let largeHtml='', mobileHtml='';
+  let largeHtml='',mobileHtml='';
   for(let c of filteredMobile){
     const unread=getUnreadCount(c.id);const badge=unread>0?`<span class="unread-badge">${unread}</span>`:'';
     const av=c.photoURL||'https://via.placeholder.com/48';
@@ -431,8 +495,8 @@ async function renderChats(){
     const act=(activeChatId===c.id)||(c.type==='saved'&&activeChatId===`saved_${auth.currentUser?.uid}`)||(c.type==='mas'&&activeChatId===MAS_CHAT_ID);
     largeHtml+=`<div class="chat-item${act?' active-chat':''}" onclick="openChatByType('${c.id}','${c.type}',true)"><img class="chat-item-avatar" src="${av}" onerror="this.src='https://via.placeholder.com/48'"><div class="chat-item-info"><div class="chat-item-name">${escapeHtml(c.name)} ${badge}</div></div><button class="icon-btn" onclick="event.stopPropagation();toggleArchiveChat('${c.id}')">${c.archived?'📋':'📦'}</button></div>`;
   }
-  if(largeContainer) largeContainer.innerHTML=largeHtml||'<div class="empty-state">Нет чатов</div>';
-  if(mobileContainer) mobileContainer.innerHTML=mobileHtml||'<div class="empty-state">Нет чатов</div>';
+  if(largeContainer)largeContainer.innerHTML=largeHtml||'<div class="empty-state">Нет чатов</div>';
+  if(mobileContainer)mobileContainer.innerHTML=mobileHtml||'<div class="empty-state">Нет чатов</div>';
 }
 
 window.openChatByType=(id,type,large=false)=>{
