@@ -157,6 +157,12 @@
     .permission-checkboxes label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
     .permission-checkboxes input { width: auto; margin: 0; }
     .subscriber-count { font-size: 14px; color: var(--text-secondary); margin-left: 8px; }
+    .add-member-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+    .add-member-tab { flex: 1; padding: 10px; text-align: center; background: var(--bg-input); border-radius: 20px; cursor: pointer; font-weight: 500; }
+    .add-member-tab.active { background: var(--accent); color: white; }
+    .contact-select-list { max-height: 250px; overflow-y: auto; }
+    .contact-select-item { display: flex; align-items: center; gap: 10px; padding: 10px; cursor: pointer; border-radius: 12px; }
+    .contact-select-item:hover { background: var(--border-color); }
   </style>
 </head>
 <body>
@@ -190,7 +196,7 @@
         </div>
         <div id="mobileChatList"><div class="section-title"><h2>💬 Чаты</h2><button class="small" onclick="showCreateGroupModal()">➕ Создать группу</button><button class="small" onclick="showCreateChannelModal()" style="background:var(--warning); color:#000;">📢 Создать канал</button></div><div id="chatsList"></div></div>
       </div>
-      <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск контактов</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div><div class="section-title"><h2>👥 Группы</h2></div><div id="groupsListContacts"></div><div class="section-title"><h2>📢 Каналы</h2><button class="icon-btn" onclick="searchChannel()">🔍 Поиск канала</button></div><div id="channelsListContacts"></div></div>
+      <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск контактов</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div><div class="section-title"><h2>👥 Группы</h2></div><div id="groupsListContacts"></div><div class="section-title"><h2>📢 Каналы</h2></div><div class="card"><div style="display:flex; gap:10px;"><input type="text" id="searchChannelName" placeholder="Название канала"><button onclick="searchChannelInContacts()" style="width:auto;">🔍 Поиск</button></div><div id="channelSearchResultsInContacts"></div></div><div id="channelsListContacts"></div></div>
       <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div></div><div class="card"><h3>🔔 Уведомления</h3><div id="notificationStatus" class="notification-status">Проверка статуса...</div><button id="enableNotificationsBtn" onclick="requestNotificationPermission()">🔔 Разрешить уведомления</button></div></div>
     </div>
   </div>
@@ -218,7 +224,11 @@
   </div>
 </div>
 
-<div id="addMemberModal" class="modal" style="display:none"><div class="modal-content"><h3>➕ Добавить участника</h3><input type="text" id="addMemberInput" placeholder="Никнейм пользователя"><button onclick="confirmAddMember()">Добавить</button><button onclick="closeModal('addMemberModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
+<div id="addMemberModal" class="modal" style="display:none"><div class="modal-content"><h3>➕ Добавить участника</h3>
+  <div class="add-member-tabs"><div class="add-member-tab active" onclick="switchAddMemberTab('contacts')">Из контактов</div><div class="add-member-tab" onclick="switchAddMemberTab('username')">По нику</div></div>
+  <div id="addMemberContactsTab"><div class="contact-select-list" id="addMemberContactsList"></div></div>
+  <div id="addMemberUsernameTab" style="display:none;"><input type="text" id="addMemberByUsernameInput" placeholder="Никнейм"><button onclick="addMemberByUsername()">Добавить</button></div>
+  <button onclick="closeModal('addMemberModal')" style="background:var(--bg-input); color:var(--text-primary); margin-top:10px;">Закрыть</button></div></div>
 <div id="searchChannelModal" class="modal" style="display:none"><div class="modal-content"><h3>🔍 Поиск канала</h3><input type="text" id="searchChannelInput" placeholder="Название канала"><button onclick="performChannelSearch()">Найти</button><div id="channelSearchResults"></div><button onclick="closeModal('searchChannelModal')" style="background:var(--bg-input); color:var(--text-primary);">Закрыть</button></div></div>
 <div id="editMessageModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать сообщение</h3><input type="text" id="editMessageInput" placeholder="Текст сообщения"><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="saveEditedMessage()">Сохранить</button><button onclick="closeModal('editMessageModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div></div>
 <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input); color:var(--text-primary);">Отмена</button></div></div>
@@ -246,6 +256,7 @@ let currentUserData=null,unsubscribeContacts=null,unsubscribeMessages=null,activ
 let pendingContact=null,pendingRenameContact=null,pendingEmailChange=null,pendingRegistrations=new Map(),statusInterval=null;
 let notificationPermissionGranted=false,pinnedMessageId=null,pinnedMessageData=null,editingMessageId=null,currentForwardMsg=null;
 let pendingAdminTarget=null,pendingAdminChatId=null,pendingAdminChatType=null;
+let addMemberMode='contacts';
 
 const PERMISSION_LABELS = {
   canPost: '📝 Писать посты',
@@ -343,17 +354,45 @@ function loadMessages(collName){
   });
 }
 
-window.showAddMemberModal=()=>{document.getElementById('addMemberModal').style.display='flex';};
-window.confirmAddMember=async()=>{
-  const username=document.getElementById('addMemberInput').value.trim();
+window.switchAddMemberTab=(tab)=>{
+  addMemberMode=tab;
+  document.querySelectorAll('.add-member-tab').forEach(t=>t.classList.remove('active'));
+  if(tab==='contacts'){
+    document.getElementById('addMemberContactsTab').style.display='block';
+    document.getElementById('addMemberUsernameTab').style.display='none';
+    document.querySelector('.add-member-tab:nth-child(1)').classList.add('active');
+  }else{
+    document.getElementById('addMemberContactsTab').style.display='none';
+    document.getElementById('addMemberUsernameTab').style.display='block';
+    document.querySelector('.add-member-tab:nth-child(2)').classList.add('active');
+  }
+};
+
+window.showAddMemberModal=()=>{
+  document.getElementById('addMemberModal').style.display='flex';
+  const list=document.getElementById('addMemberContactsList');
+  const contacts=(currentUserData?.contacts||[]).filter(c=>!c.blocked&&c.firstName);
+  list.innerHTML=contacts.map(c=>`<div class="contact-select-item" onclick="addMemberFromContact('${c.uid}')"><div class="avatar-placeholder">👤</div><div>${escapeHtml(c.firstName)} ${c.lastName||''} (@${escapeHtml(c.username)})</div></div>`).join('')||'<div class="empty-state">Нет контактов</div>';
+  switchAddMemberTab('contacts');
+};
+
+window.addMemberFromContact=async(uid)=>{
+  await addMemberToChat(uid);
+  closeModal('addMemberModal');
+};
+
+window.addMemberByUsername=async()=>{
+  const username=document.getElementById('addMemberByUsernameInput').value.trim();
   if(!username)return alert("Введите никнейм");
   const q=query(collection(db,"users"),where("username","==",username));
   const snap=await getDocs(q);
   if(snap.empty)return alert("Пользователь не найден");
   const targetUid=snap.docs[0].id;
   await addMemberToChat(targetUid);
+  document.getElementById('addMemberByUsernameInput').value='';
   closeModal('addMemberModal');
 };
+
 async function addMemberToChat(targetUid){
   const coll=activeChatType==='group'?doc(db,'groups',activeChatId):doc(db,'channels',activeChatId);
   const snap=await getDoc(coll);if(!snap.exists())return;
@@ -378,8 +417,8 @@ async function addMemberToChat(targetUid){
 }
 
 window.showChatProfile=async()=>{
-  if(activeChatType==='group'){const g=await getDoc(doc(db,"groups",activeChatId));if(g.exists()){const d=g.data();activeGroupData=d;document.getElementById('groupProfileAvatar').src=d.photoURL||'';document.getElementById('groupProfileName').textContent=d.name;document.getElementById('groupProfileDesc').textContent=d.description||'';const mDiv=document.getElementById('groupMembersList');mDiv.innerHTML='<h4>Участники:</h4>';for(let m of d.members){const u=await getDoc(doc(db,"users",m.uid));mDiv.innerHTML+=`<div class="member-row"><span>${escapeHtml(u.exists()?u.data().username:'Unknown')} ${m.role==='creator'?'👑':m.role==='admin'?'⭐':''} ${m.canWrite===false?'🔇':''}</span>${(isGroupOwner()||isGroupAdmin())?`<div><button class="icon-btn" onclick="toggleMemberWrite('${m.uid}','${activeChatId}','group')">${m.canWrite===false?'🔊 Разрешить':'🔇 Запретить'} писать</button>${m.role!=='creator'?`<button class="icon-btn" onclick="promoteToAdmin('${m.uid}','${activeChatId}','group')">⭐ Админ</button>`:''}</div>`:''}</div>`;}document.getElementById('groupManageActions').innerHTML=`${canAddMembersInChat()?`<button onclick="showAddMemberModal()">➕ Добавить участника</button>`:''}${isGroupOwner()?`<button onclick="toggleAllWrite('${activeChatId}','group')">${d.allMembersCanWrite===false?'🔊 Разрешить всем писать':'🔇 Запретить всем писать'}</button>`:''}`;document.getElementById('groupProfileModal').style.display='flex';}}
-  else if(activeChatType==='channel'){const g=await getDoc(doc(db,"channels",activeChatId));if(g.exists()){const d=g.data();activeGroupData=d;document.getElementById('channelProfileAvatar').src=d.photoURL||'';document.getElementById('channelProfileName').textContent=d.name;document.getElementById('channelProfileDesc').textContent=d.description||'';document.getElementById('channelSubscriberCount').textContent=`Подписчиков: ${d.members?.length||0}`;const mDiv=document.getElementById('channelMembersList');mDiv.innerHTML='<h4>Администрация:</h4>';for(let m of d.members.filter(m=>m.role==='creator'||m.role==='admin')){const u=await getDoc(doc(db,"users",m.uid));mDiv.innerHTML+=`<div class="member-row"><span>${escapeHtml(u.exists()?u.data().username:'Unknown')} ${m.role==='creator'?'👑':'⭐'}</span>${isChannelOwner()&&m.uid!==auth.currentUser?.uid?`<div><button class="icon-btn" onclick="editAdminPermissions('${m.uid}','${activeChatId}','channel')">⚙️ Права</button><button class="icon-btn" onclick="transferOwnership('${m.uid}','${activeChatId}','channel')">👑 Передать</button></div>`:''}</div>`;}document.getElementById('channelManageActions').innerHTML=`${canAddMembersInChat()?`<button onclick="showAddMemberModal()">➕ Добавить участника</button>`:''}${isChannelOwner()?`<button onclick="toggleChannelPublic('${activeChatId}')">${d.isPublic?'🔒 Сделать закрытым':'🌐 Сделать публичным'}</button><button onclick="promoteToAdmin('','${activeChatId}','channel')">⭐ Добавить админа</button>`:''}`;document.getElementById('channelProfileModal').style.display='flex';}}
+  if(activeChatType==='group'){const g=await getDoc(doc(db,"groups",activeChatId));if(g.exists()){const d=g.data();activeGroupData=d;document.getElementById('groupProfileAvatar').src=d.photoURL||'';document.getElementById('groupProfileName').textContent=d.name;document.getElementById('groupProfileDesc').textContent=d.description||'';const mDiv=document.getElementById('groupMembersList');mDiv.innerHTML='<h4>Участники:</h4>';for(let m of d.members){const u=await getDoc(doc(db,"users",m.uid));mDiv.innerHTML+=`<div class="member-row"><span>${escapeHtml(u.exists()?u.data().username:'Unknown')} ${m.role==='creator'?'👑':m.role==='admin'?'⭐':''} ${m.canWrite===false?'🔇':''}</span>${(isGroupOwner()||isGroupAdmin())&&m.uid!==auth.currentUser?.uid?`<div><button class="icon-btn" onclick="toggleMemberWrite('${m.uid}','${activeChatId}','group')">${m.canWrite===false?'🔊 Разрешить':'🔇 Запретить'} писать</button>${m.role!=='creator'?`<button class="icon-btn" onclick="promoteToAdmin('${m.uid}','${activeChatId}','group')">⭐ Админ</button>`:''}</div>`:`${m.uid===auth.currentUser?.uid?'<span style="font-size:11px;opacity:0.6;">Это вы</span>':''}`}</div>`;}document.getElementById('groupManageActions').innerHTML=`${canAddMembersInChat()?`<button onclick="showAddMemberModal()">➕ Добавить участника</button>`:''}${isGroupOwner()?`<button onclick="toggleAllWrite('${activeChatId}','group')">${d.allMembersCanWrite===false?'🔊 Разрешить всем писать':'🔇 Запретить всем писать'}</button>`:''}`;document.getElementById('groupProfileModal').style.display='flex';}}
+  else if(activeChatType==='channel'){const g=await getDoc(doc(db,"channels",activeChatId));if(g.exists()){const d=g.data();activeGroupData=d;document.getElementById('channelProfileAvatar').src=d.photoURL||'';document.getElementById('channelProfileName').textContent=d.name;document.getElementById('channelProfileDesc').textContent=d.description||'';document.getElementById('channelSubscriberCount').textContent=`Подписчиков: ${d.members?.length||0}`;const mDiv=document.getElementById('channelMembersList');mDiv.innerHTML='<h4>Все участники:</h4>';for(let m of d.members){const u=await getDoc(doc(db,"users",m.uid));const isOwner=isChannelOwner();mDiv.innerHTML+=`<div class="member-row"><span>${escapeHtml(u.exists()?u.data().username:'Unknown')} ${m.role==='creator'?'👑':m.role==='admin'?'⭐':''}</span>${isOwner&&m.uid!==auth.currentUser?.uid?`<div>${m.role!=='creator'?`<button class="icon-btn" onclick="editAdminPermissions('${m.uid}','${activeChatId}','channel')">⚙️ Права</button><button class="icon-btn" onclick="transferOwnership('${m.uid}','${activeChatId}','channel')">👑 Передать</button>`:''}${m.role!=='admin'&&m.role!=='creator'?`<button class="icon-btn" onclick="promoteToAdmin('${m.uid}','${activeChatId}','channel')">⭐ Админ</button>`:''}</div>`:`${m.uid===auth.currentUser?.uid?'<span style="font-size:11px;opacity:0.6;">Это вы</span>':''}`}</div>`;}document.getElementById('channelManageActions').innerHTML=`${canAddMembersInChat()?`<button onclick="showAddMemberModal()">➕ Добавить участника</button>`:''}${isChannelOwner()?`<button onclick="toggleChannelPublic('${activeChatId}')">${d.isPublic?'🔒 Сделать закрытым':'🌐 Сделать публичным'}</button>`:''}`;document.getElementById('channelProfileModal').style.display='flex';}}
   else if(activeOtherUser){const u=await getDoc(doc(db,"users",activeOtherUser.uid));if(u.exists()){const d=u.data();document.getElementById('contactProfileAvatar').src=d.photoURL||'';document.getElementById('contactProfileName').textContent=d.username;document.getElementById('contactProfileStatus').textContent=formatLastSeen(d.lastSeen?.toDate());document.getElementById('contactProfileModal').style.display='flex';}}
 };
 
@@ -387,14 +426,26 @@ window.toggleChannelPublic=async(chatId)=>{
   const snap=await getDoc(doc(db,'channels',chatId));
   if(!snap.exists())return;
   const d=snap.data();
-  await updateDoc(doc(db,'channels',chatId),{isPublic:!d.isPublic});
-  alert(d.isPublic?'Канал стал закрытым':'Канал стал публичным');
+  const newVal=!d.isPublic;
+  await updateDoc(doc(db,'channels',chatId),{isPublic:newVal});
+  activeGroupData={...d,isPublic:newVal};
+  alert(newVal?'Канал стал публичным':'Канал стал закрытым');
+  document.getElementById('channelProfileModal').style.display='none';
+  setTimeout(()=>showChatProfile(),100);
 };
-window.toggleMemberWrite=async(uid,chatId,type)=>{const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const ms=d.members.map(m=>m.uid===uid?{...m,canWrite:m.canWrite===false?true:false}:m);await updateDoc(coll,{members:ms});activeGroupData={...d,members:ms};};
-window.toggleAllWrite=async(chatId,type)=>{const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const nv=d.allMembersCanWrite===false?true:false;await updateDoc(coll,{allMembersCanWrite:nv});activeGroupData={...d,allMembersCanWrite:nv};};
+window.toggleMemberWrite=async(uid,chatId,type)=>{
+  if(uid===auth.currentUser?.uid)return alert("Нельзя изменить права самому себе");
+  const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const ms=d.members.map(m=>m.uid===uid?{...m,canWrite:m.canWrite===false?true:false}:m);await updateDoc(coll,{members:ms});activeGroupData={...d,members:ms};
+  document.getElementById('groupProfileModal').style.display='none';
+  setTimeout(()=>showChatProfile(),100);
+};
+window.toggleAllWrite=async(chatId,type)=>{const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const nv=d.allMembersCanWrite===false?true:false;await updateDoc(coll,{allMembersCanWrite:nv});activeGroupData={...d,allMembersCanWrite:nv};
+  document.getElementById('groupProfileModal').style.display='none';
+  setTimeout(()=>showChatProfile(),100);
+};
 
-window.promoteToAdmin=async(targetUid,chatId,type)=>{pendingAdminTarget=targetUid;pendingAdminChatId=chatId;pendingAdminChatType=type;document.getElementById('adminTargetName').textContent='Выберите права для администратора';const pl=document.getElementById('adminPermissionsList');const perms=Object.keys(PERMISSION_LABELS);pl.innerHTML=perms.map(p=>`<label><input type="checkbox" class="admin-perm-check" value="${p}"> ${PERMISSION_LABELS[p]}</label>`).join('');document.getElementById('adminPermissionsModal').style.display='flex';};
-window.confirmSetAdmin=async()=>{const checks=document.querySelectorAll('.admin-perm-check:checked');const perms=Array.from(checks).map(c=>c.value);const coll=pendingAdminChatType==='group'?doc(db,'groups',pendingAdminChatId):doc(db,'channels',pendingAdminChatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const ms=d.members.map(m=>m.uid===pendingAdminTarget?{...m,role:'admin',permissions:perms.reduce((o,k)=>({...o,[k]:true}),{})}:m);if(!pendingAdminTarget){const u=prompt("Введите UID пользователя для назначения админом:");if(!u)return;ms.push({uid:u,role:'admin',permissions:perms.reduce((o,k)=>({...o,[k]:true}),{})});}await updateDoc(coll,{members:ms});activeGroupData={...d,members:ms};closeModal('adminPermissionsModal');pendingAdminTarget=null;alert('Админ назначен!');};
+window.promoteToAdmin=async(targetUid,chatId,type)=>{pendingAdminTarget=targetUid;pendingAdminChatId=chatId;pendingAdminChatType=type;document.getElementById('adminTargetName').textContent='Выберите права для администратора';const pl=document.getElementById('adminPermissionsList');const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);const d=snap.data();const existing=d.members.find(m=>m.uid===targetUid);const perms=Object.keys(PERMISSION_LABELS);pl.innerHTML=perms.map(p=>`<label><input type="checkbox" class="admin-perm-check" value="${p}" ${existing?.permissions?.[p]?'checked':''}> ${PERMISSION_LABELS[p]}</label>`).join('');document.getElementById('adminPermissionsModal').style.display='flex';};
+window.confirmSetAdmin=async()=>{const checks=document.querySelectorAll('.admin-perm-check:checked');const perms=Array.from(checks).map(c=>c.value);const coll=pendingAdminChatType==='group'?doc(db,'groups',pendingAdminChatId):doc(db,'channels',pendingAdminChatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const ms=d.members.map(m=>m.uid===pendingAdminTarget?{...m,role:'admin',permissions:perms.reduce((o,k)=>({...o,[k]:true}),{})}:m);await updateDoc(coll,{members:ms});activeGroupData={...d,members:ms};closeModal('adminPermissionsModal');pendingAdminTarget=null;alert('Админ назначен!');};
 window.editAdminPermissions=async(targetUid,chatId,type)=>{pendingAdminTarget=targetUid;pendingAdminChatId=chatId;pendingAdminChatType=type;const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);const d=snap.data();const m=d.members.find(m=>m.uid===targetUid);document.getElementById('adminTargetName').textContent=`Права: ${m?.role}`;const pl=document.getElementById('adminPermissionsList');const perms=Object.keys(PERMISSION_LABELS);pl.innerHTML=perms.map(p=>`<label><input type="checkbox" class="admin-perm-check" value="${p}" ${m?.permissions?.[p]?'checked':''}> ${PERMISSION_LABELS[p]}</label>`).join('');document.getElementById('adminPermissionsModal').style.display='flex';};
 window.transferOwnership=async(targetUid,chatId,type)=>{if(!confirm('Передать права владельца? Это нельзя отменить!'))return;const coll=type==='group'?doc(db,'groups',chatId):doc(db,'channels',chatId);const snap=await getDoc(coll);if(!snap.exists())return;const d=snap.data();const ms=d.members.map(m=>m.uid===targetUid?{...m,role:'creator'}:m.uid===auth.currentUser.uid?{...m,role:'admin'}:m);await updateDoc(coll,{creatorId:targetUid,members:ms});activeGroupData={...d,creatorId:targetUid,members:ms};alert('Владельство передано!');};
 
@@ -504,8 +555,26 @@ async function renderChats(){
 
 async function renderContacts(){const container=document.getElementById('contactsList');const contacts=currentUserData?.contacts||[];if(!contacts.length){container.innerHTML='<div class="empty-state">📭 Нет контактов</div>';return;}container.innerHTML=contacts.map(c=>`<div class="contact-item"><div class="contact-info" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><div class="avatar-placeholder">👤</div><div><div class="contact-name">${escapeHtml(c.firstName||c.username)} ${c.lastName?escapeHtml(c.lastName):''}</div><div class="contact-username">@${escapeHtml(c.username)}</div>${c.blocked?'<span class="blocked-badge">🔒 Заблокирован</span>':''}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation();editContact('${c.uid}')">✏️</button>${c.blocked?`<button class="icon-btn" onclick="event.stopPropagation();unblockContact('${c.uid}')">🔓 Разблок.</button>`:`<button class="icon-btn" onclick="event.stopPropagation();blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>`).join('');}
 async function renderGroupsInContacts(){const container=document.getElementById('groupsListContacts');if(!container)return;const groups=currentUserData?.groups||[];container.innerHTML=groups.map(g=>`<div class="group-item" onclick="openGroupChat('${g.id}')"><div class="avatar-placeholder">👥</div><div><div class="contact-name">${escapeHtml(g.name)}</div></div></div>`).join('')||'<div class="empty-state">Нет групп</div>';}
-async function renderChannelsInContacts(){const container=document.getElementById('channelsListContacts');if(!container)return;const channels=currentUserData?.channels||[];container.innerHTML=channels.map(ch=>`<div class="channel-item" onclick="openChannelChat('${ch.id}')"><div class="avatar-placeholder">📢</div><div><div class="contact-name">${escapeHtml(ch.name)}</div><div class="subscriber-count">${ch.subscriberCount||0} подписчиков</div></div></div>`).join('')||'<div class="empty-state">Нет каналов</div>';}
+async function renderChannelsInContacts(){const container=document.getElementById('channelsListContacts');if(!container)return;const channels=currentUserData?.channels||[];container.innerHTML=channels.map(ch=>`<div class="channel-item" onclick="openChannelChat('${ch.id}')"><div class="avatar-placeholder">📢</div><div><div class="contact-name">${escapeHtml(ch.name)}</div><div class="subscriber-count">${ch.subscriberCount||ch.members?.length||0} подписчиков</div></div></div>`).join('')||'<div class="empty-state">Нет каналов</div>';}
 
+window.searchChannelInContacts=async()=>{
+  const name=document.getElementById('searchChannelName').value.trim();
+  const results=document.getElementById('channelSearchResultsInContacts');
+  if(!name){results.innerHTML='';return;}
+  const q=query(collection(db,"channels"),where("name",">=",name),where("name","<=",name+"\uf8ff"));
+  const snap=await getDocs(q);
+  results.innerHTML="";
+  let found=false;
+  snap.forEach(d=>{
+    const data=d.data();
+    if(data.isPublic){
+      found=true;
+      const isSubscribed=data.members?.some(m=>m.uid===auth.currentUser?.uid);
+      results.innerHTML+=`<button onclick="${isSubscribed?`openChannelChat('${d.id}')`:`subscribeToChannel('${d.id}')`}">${isSubscribed?'💬':'➕'} ${escapeHtml(data.name)} (${data.members?.length||0} подписчиков)</button>`;
+    }
+  });
+  if(!found)results.innerHTML='<div class="empty-state">Публичные каналы не найдены</div>';
+};
 window.searchChannel=()=>{document.getElementById('searchChannelModal').style.display='flex';document.getElementById('channelSearchResults').innerHTML='';};
 window.performChannelSearch=async()=>{
   const name=document.getElementById('searchChannelInput').value.trim();
@@ -530,7 +599,7 @@ window.subscribeToChannel=async(cid)=>{
   if(!snap.exists())return;
   const d=snap.data();
   if(d.members.some(m=>m.uid===auth.currentUser.uid))return alert("Вы уже подписаны");
-  await updateDoc(coll,{members:[...d.members,{uid:auth.currentUser.uid,role:'member'}],subscriberCount:(d.subscriberCount||0)+1});
+  await updateDoc(coll,{members:[...d.members,{uid:auth.currentUser.uid,role:'member'}],subscriberCount:(d.subscriberCount||d.members.length||0)+1});
   const ur=doc(db,"users",auth.currentUser.uid);
   const ud=await getDoc(ur);
   let chs=ud.data()?.channels||[];
@@ -538,6 +607,8 @@ window.subscribeToChannel=async(cid)=>{
   await updateDoc(ur,{channels:chs});
   alert("Вы подписались на канал!");
   closeModal('searchChannelModal');
+  renderChats();
+  renderChannelsInContacts();
 };
 
 window.editContact=(uid)=>{pendingRenameContact=currentUserData.contacts.find(c=>c.uid===uid);document.getElementById('renameFirstName').value=pendingRenameContact.firstName||'';document.getElementById('renameLastName').value=pendingRenameContact.lastName||'';document.getElementById('renameContactModal').style.display='flex';};
