@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit-cover, maximum-scale=1.5">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, maximum-scale=1.5">
   <title>Messenger MAS | Вход и регистрация</title>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
@@ -32,11 +32,11 @@
     button { background:var(--accent); color:white; cursor:pointer; font-weight:bold; }
     button:hover { opacity:0.9; }
     .icon-btn { width:auto; padding:6px 12px; margin:0 2px; background:var(--bg-input); border-radius:30px; font-size:12px; cursor:pointer; color:var(--text-primary); border:1px solid var(--border-color); display:inline-flex; align-items:center; gap:4px; }
-    .chat-item { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--bg-card); margin:8px 0; border-radius:60px; cursor:pointer; border:1px solid var(--border-color); }
+    .chat-item { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--bg-card); margin:8px 0; border-radius:60px; cursor:pointer; border:1px solid var(--border-color); position:relative; }
     .chat-item:hover { background:var(--border-color); }
     .chat-item-avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--accent); }
     .chat-item-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-    .chat-item-name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chat-item-name { font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:8px; }
     .chat-item-username { font-size:11px; color:var(--text-secondary); }
     .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; z-index:1000; padding:16px; }
     .modal-content { background:var(--bg-sidebar); border-radius:28px; padding:24px; max-width:600px; width:100%; max-height:85vh; overflow-y:auto; }
@@ -86,7 +86,7 @@
     .emoji-item:hover { background:var(--border-color); transform:scale(1.2); }
     .media-preview { max-width:180px; max-height:180px; border-radius:16px; margin:4px; cursor:pointer; object-fit:cover; display:inline-block; }
     .media-preview-grid { display:flex; flex-wrap:wrap; gap:4px; }
-    .unread-badge { background:var(--unread-badge-bg); color:var(--unread-badge-text); padding:2px 8px; border-radius:20px; font-size:12px; margin-left:8px; display:inline-block; font-weight:bold; }
+    .unread-badge { background:var(--unread-badge-bg); color:var(--unread-badge-text); padding:2px 8px; border-radius:20px; font-size:12px; font-weight:bold; flex-shrink:0; }
     .chat-search-row { display:flex; gap:8px; margin-bottom:12px; }
     .chat-search-row input { flex:1; margin:0; }
     .chat-search-row button { width:auto; padding:10px 16px; margin:0; }
@@ -157,7 +157,7 @@
         </div>
       </div>
       <div id="contactsTab" class="tab-content" style="display:none"><h2>🔍 Поиск контактов</h2><div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div><h2>📋 Мои контакты</h2><div id="contactsList"></div></div>
-      <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div></div><div class="card"><h3>🔔 Уведомления</h3><div id="notificationStatus" class="notification-status">Проверка статуса...</div><button id="enableNotificationsBtn" onclick="requestNotificationPermission()">🔔 Разрешить уведомления</button></div></div>
+      <div id="settingsTab" class="tab-content" style="display:none"><h2>⚙️ Настройки</h2><div class="card"><h3>🎨 Оформление</h3><div class="settings-row"><label>Тема:</label><select id="themeSelect"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div></div><div class="card"><h3>🔔 Уведомления</h3><div id="notificationStatus" class="notification-status">Проверка статуса...</div><button id="enableNotificationsBtn" onclick="requestNotificationPermission()">🔔 Разрешить уведомления</button><div class="settings-row" style="margin-top:10px;"><label>Вибрация:</label><input type="checkbox" id="vibrationCheckbox" style="width:auto;" checked></div></div></div>
     </div>
   </div>
 </div>
@@ -197,7 +197,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, onSnapshot, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, onSnapshot, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const fbConfig = { apiKey:"AIzaSyA0ML0f4E-nAjUL5qaDcjzw8Ea8K94tjlQ", authDomain:"messenger-mas.firebaseapp.com", projectId:"messenger-mas", storageBucket:"messenger-mas.firebasestorage.app", messagingSenderId:"60936666061", appId:"1:60936666061:web:c5218d35e9e54f9ebee284" };
 const app = initializeApp(fbConfig); const auth = getAuth(app); const db = getFirestore(app);
@@ -361,6 +361,8 @@ window.showEmojiPicker=e=>{e.stopPropagation();showEmojiForInput('messageInput')
 window.showLargeEmoji=()=>showEmojiForInput('messageInputLarge');
 
 function getUnreadCount(chatId){try{const s=localStorage.getItem(`unread_${chatId}`);if(s){const d=JSON.parse(s);return d.count||0;}}catch(e){}return 0;}
+function setUnreadCount(chatId,count){localStorage.setItem(`unread_${chatId}`,JSON.stringify({count}));}
+
 let allChatsCache=[];
 function buildAllChats(){let chats=[];chats.push({id:`saved_${auth.currentUser?.uid}`,name:'⭐ Избранное',type:'saved',photoURL:currentUserData?.photoURL||'',archived:localStorage.getItem(`archived_saved_${auth.currentUser?.uid}`)==='1'});chats.push({id:MAS_CHAT_ID,name:'📢 MAS',type:'mas',photoURL:'',archived:localStorage.getItem(`archived_${MAS_CHAT_ID}`)==='1'});(currentUserData?.contacts||[]).filter(c=>!c.blocked).forEach(c=>{const chatId=[auth.currentUser?.uid,c.uid].sort().join('_');chats.push({id:chatId,name:c.firstName||c.username,type:'private',photoURL:c.photoURL||'',uid:c.uid,archived:localStorage.getItem(`archived_${chatId}`)==='1'});});allChatsCache=chats;}
 window.toggleLargeArchive=()=>{isArchiveViewLarge=!isArchiveViewLarge;document.getElementById('largeArchiveIcon').textContent=isArchiveViewLarge?'📋':'📦';document.getElementById('largeArchiveText').textContent=isArchiveViewLarge?'Основные чаты':'Архив';renderChats();};
@@ -409,14 +411,51 @@ function switchTab(tab){document.querySelectorAll('.tab-content').forEach(t=>t.s
 
 async function ensureMASChat(){const snap=await getDoc(doc(db,'chats',MAS_CHAT_ID));if(!snap.exists()){await setDoc(doc(db,'chats',MAS_CHAT_ID),{createdAt:new Date(),type:'mas'});}}
 
+function startMessageListeners(){
+  if(!currentUserData) return;
+  const chatIds = new Set();
+  chatIds.add(`saved_${auth.currentUser.uid}`);
+  chatIds.add(MAS_CHAT_ID);
+  (currentUserData.contacts||[]).filter(c=>!c.blocked).forEach(c=> chatIds.add([auth.currentUser.uid, c.uid].sort().join('_')));
+  chatIds.forEach(chatId => {
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'desc'), limit(1));
+    onSnapshot(q, (snap) => {
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added' && chatId !== activeChatId) {
+          const msg = change.doc.data();
+          if (msg.senderId !== auth.currentUser?.uid) {
+            const cur = getUnreadCount(chatId);
+            setUnreadCount(chatId, cur + 1);
+            renderChats();
+            sendNotification('Новое сообщение', `${msg.senderName||'Кто-то'}: ${(msg.text||'Фото').substring(0,30)}`);
+          }
+        }
+      });
+    });
+  });
+}
+
+function sendNotification(title, body) {
+  if (notificationPermissionGranted) {
+    if (document.hidden) {
+      new Notification(title, { body, icon: 'https://via.placeholder.com/48' });
+    }
+    if (document.getElementById('vibrationCheckbox')?.checked) {
+      navigator.vibrate?.([200, 100, 200]);
+    }
+  }
+}
+
 async function loadMainApp(user){
   await ensureMASChat();const d=await getDoc(doc(db,"users",user.uid));if(!d.exists())return;
   currentUserData={uid:user.uid,...d.data(),contacts:d.data().contacts||[]};masAuthorized=currentUserData.masAuthorized===true||localStorage.getItem('masAuthorized')==='1';
   document.getElementById('profileEmail').textContent=currentUserData.email;document.getElementById('profileUsername').textContent=currentUserData.username;
   if(currentUserData.photoURL)document.getElementById('profileAvatar').src=currentUserData.photoURL;
-  updateNotificationStatus();await renderContacts();await renderChats();
+  updateNotificationStatus();loadSettings();
+  await renderContacts();await renderChats();
+  startMessageListeners();
   if(unsubscribeContacts)unsubscribeContacts();unsubscribeContacts=onSnapshot(doc(db,"users",user.uid),snap=>{if(snap.exists()){currentUserData.contacts=snap.data().contacts||[];renderContacts();renderChats();}});
-  showPage('mainApp');switchTab('profile');document.querySelectorAll('.nav-menu-item[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.getAttribute('data-tab')));loadSettings();
+  showPage('mainApp');switchTab('profile');document.querySelectorAll('.nav-menu-item[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.getAttribute('data-tab')));
   document.getElementById('emojiButton')?.addEventListener('click',showEmojiPicker);document.getElementById('voiceButton')?.addEventListener('click',()=>document.getElementById('voiceInput').click());
   document.getElementById('fileButton')?.addEventListener('click',()=>document.getElementById('fileInput').click());
   document.getElementById('messageInput')?.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
