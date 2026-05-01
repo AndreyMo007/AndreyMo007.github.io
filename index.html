@@ -678,13 +678,15 @@
             background: var(--accent);
             color: white;
         }
-        .folder-chat-checkbox {
+        .folder-chat-checkbox,
+        .group-member-checkbox {
             width: auto;
             margin-right: 10px;
             transform: scale(1.3);
             accent-color: var(--accent);
         }
-        #folderChatList label {
+        #folderChatList label,
+        #groupMemberList label {
             display: flex;
             align-items: center;
             padding: 10px 14px;
@@ -696,7 +698,8 @@
             border: 1px solid var(--border-color);
             gap: 10px;
         }
-        #folderChatList label:hover {
+        #folderChatList label:hover,
+        #groupMemberList label:hover {
             background: var(--border-color);
         }
         @media (max-width:900px) {
@@ -893,6 +896,119 @@
             max-height: 95%;
             border-radius: 16px;
         }
+        .member-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            margin: 4px 0;
+            border-radius: 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .member-item .member-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .member-item .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .member-item .member-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .member-item .member-role {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .member-item .member-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .action-btn {
+            width: auto;
+            padding: 8px 14px;
+            margin: 4px;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .action-btn.danger {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+        .action-btn:hover {
+            opacity: 0.85;
+        }
+        .rights-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .rights-grid label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        .rights-grid label:hover {
+            background: var(--border-color);
+        }
+        .rights-grid input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.3);
+            accent-color: var(--accent);
+        }
+        .confirm-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-sidebar);
+            border-radius: 24px;
+            padding: 24px;
+            z-index: 12000;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .confirm-dialog h3 {
+            margin-bottom: 12px;
+        }
+        .confirm-dialog .confirm-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -956,6 +1072,8 @@
                     <div class="card"><input type="text" id="searchNickname" placeholder="Никнейм"><button onclick="searchContact()">Найти</button><div id="searchResults"></div></div>
                     <h2>📋 Мои контакты</h2>
                     <div id="contactsList"></div>
+                    <div class="section-title"><h2>👥 Группы</h2><button class="small" onclick="showCreateGroupModal()">➕ Создать группу</button></div>
+                    <div id="groupsList"></div>
                     <div class="section-title"><h2>📁 Папки</h2><button class="small" onclick="showCreateFolderModal()">➕ Создать папку</button></div>
                     <div id="foldersList"></div>
                 </div>
@@ -1002,14 +1120,57 @@
     <div id="editMessageModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать сообщение</h3><input type="text" id="editMessageInput" placeholder="Текст сообщения"><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="saveEditedMessage()">Сохранить</button><button onclick="closeModal('editMessageModal')" style="background:var(--bg-input);">Отмена</button></div></div></div>
     <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
     <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeModal('renameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
-    <div id="contactProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px"><h3 id="contactProfileName"></h3><p id="contactProfileStatus"></p><button onclick="closeModal('contactProfileModal')">Закрыть</button></div></div>
+    <div id="contactProfileModal" class="modal" style="display:none">
+        <div class="modal-content" style="max-width:500px;">
+            <img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px;">
+            <h3 id="contactProfileName"></h3>
+            <p id="contactProfileUsername" style="color:var(--text-secondary);font-size:14px;margin-bottom:8px;"></p>
+            <p id="contactProfileStatus"></p>
+            <div id="contactProfileActions" style="margin-top:15px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+            <button onclick="closeModal('contactProfileModal')" style="margin-top:12px;">Закрыть</button>
+        </div>
+    </div>
+    <div id="groupProfileModal" class="modal" style="display:none">
+        <div class="modal-content" style="max-width:550px;">
+            <img id="groupProfileAvatar" class="profile-avatar" style="width:100px;height:100px;cursor:pointer;" title="Нажмите, чтобы изменить аватарку (если есть права)">
+            <input type="file" id="groupAvatarInput" accept="image/*" style="display:none" onchange="updateGroupAvatar()">
+            <h3 id="groupProfileName"></h3>
+            <p id="groupProfileDescription" style="color:var(--text-secondary);font-size:13px;margin-bottom:4px;cursor:pointer;" title="Нажмите, чтобы изменить описание (если есть права)"></p>
+            <input type="text" id="groupDescriptionInput" placeholder="Описание группы" style="display:none;margin-bottom:8px;">
+            <button id="groupDescSaveBtn" onclick="saveGroupDescription()" style="display:none;margin-bottom:8px;">💾 Сохранить описание</button>
+            <p style="font-size:13px;"><strong>Участников:</strong> <span id="groupProfileMemberCount"></span></p>
+            <div style="max-height:200px;overflow-y:auto;margin:10px 0;" id="groupProfileMemberList"></div>
+            <div id="groupProfileActions" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+            <button onclick="closeModal('groupProfileModal')" style="margin-top:12px;">Закрыть</button>
+        </div>
+    </div>
+    <div id="addGroupMembersModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3>➕ Добавить участников</h3>
+            <div id="addGroupMembersList" style="max-height:300px;overflow-y:auto;margin:10px 0;"></div>
+            <button onclick="confirmAddGroupMembers()">Добавить выбранных</button>
+            <button onclick="closeModal('addGroupMembersModal')" style="background:var(--bg-input);">Отмена</button>
+        </div>
+    </div>
+    <div id="memberRightsModal" class="modal" style="display:none">
+        <div class="modal-content">
+            <h3>🔑 Права участника</h3>
+            <p><strong id="memberRightsUsername"></strong></p>
+            <div class="rights-grid" id="memberRightsGrid"></div>
+            <button onclick="saveMemberRights()">💾 Сохранить</button>
+            <button onclick="closeModal('memberRightsModal')" style="background:var(--bg-input);">Отмена</button>
+        </div>
+    </div>
     <div id="confirmLogoutModal" class="modal" style="display:none"><div class="modal-content"><h3>Выход из аккаунта</h3><p>Вы уверены?</p><div style="display:flex; gap:10px;"><button onclick="logout()" style="background:var(--danger)">Да</button><button onclick="closeModal('confirmLogoutModal')" style="background:var(--bg-input);">Нет</button></div></div></div>
     <div id="forwardModal" class="modal" style="display:none"><div class="modal-content"><h3>📨 Переслать</h3><div id="forwardList" style="max-height:300px; overflow-y:auto;"></div><button onclick="forwardSelected()">Отправить</button><button onclick="closeModal('forwardModal')" style="background:var(--bg-input);">Отмена</button></div></div>
+    <div id="createGroupModal" class="modal" style="display:none">
+        <div class="modal-content"><h3>👥 Новая группа</h3><input type="text" id="groupNameInput" placeholder="Название группы"><p style="font-size:13px;color:var(--text-secondary);">Выберите участников:</p><div id="groupMemberList" style="max-height:250px;overflow-y:auto;margin:10px 0;"></div><button onclick="createGroup()">Создать</button><button onclick="closeModal('createGroupModal')" style="background:var(--bg-input);">Отмена</button></div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, onAuthStateChanged, fetchSignInMethodsForEmail, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, onSnapshot, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, onSnapshot, addDoc, orderBy, limit, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const fbConfig = { apiKey: "AIzaSyA0ML0f4E-nAjUL5qaDcjzw8Ea8K94tjlQ", authDomain: "messenger-mas.firebaseapp.com", projectId: "messenger-mas", storageBucket: "messenger-mas.firebasestorage.app", messagingSenderId: "60936666061", appId: "1:60936666061:web:c5218d35e9e54f9ebee284" };
         const app = initializeApp(fbConfig);
@@ -1040,6 +1201,9 @@
         let messageListenersCleanups = [];
         let activeFolderId = 'main';
         let editingFolderId = null;
+        let currentGroupProfileId = null;
+        let currentMemberRightsUid = null;
+        let confirmLeaveCallback = null;
         const MAS_CHAT_ID = "MAS_OFFICIAL_CHAT",
             MAS_PASSWORD_CHECK = "MAS007";
         const ALL_EMOJIS = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋",
@@ -1049,13 +1213,22 @@
             "🍅", "🍆", "🥑", "🥦", "🥬", "🥒", "🌶️", "🌽", "🥕", "⚽", "🏀", "🏈", "🎾", "🏐", "🎱", "🎮", "🎵", "🎸", "👏", "🎉", "🔥", "💯",
             "✅", "👀", "🙏", "💪", "🤝", "⭐"
         ];
+        const ALL_RIGHTS = ['write', 'manage_members', 'add_members', 'manage_profile', 'manage_rights'];
+        const RIGHT_LABELS = {
+            'write': '✍️ Писать в группу',
+            'manage_members': '👢 Удалять участников',
+            'add_members': '➕ Добавлять участников',
+            'manage_profile': '🖼️ Изменять профиль группы',
+            'manage_rights': '👑 Назначать админом / изменять права'
+        };
 
-        function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+        function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[
+                m])); }
 
         function getDateSeparator(d) { const t = new Date(),
-                y = new Date(t); y.setDate(y.getDate() - 1); const m = new Date(d); if (m.toDateString() === t.toDateString())
-                return "Сегодня"; if (m.toDateString() === y.toDateString()) return "Вчера"; return m.toLocaleDateString('ru-RU', { day: 'numeric',
-                month: 'long' }); }
+                y = new Date(); y.setDate(y.getDate() - 1); const m = new Date(d); if (m.toDateString() === t.toDateString())
+                return "Сегодня"; if (m.toDateString() === y.toDateString()) return "Вчера"; return m.toLocaleDateString('ru-RU',
+                { day: 'numeric', month: 'long' }); }
 
         function formatLastSeen(d) { if (!d) return "Не в сети"; const n = new Date(),
                 diff = n - new Date(d),
@@ -1065,6 +1238,21 @@
                 day = Math.floor(h / 24); if (s < 60) return "В сети"; if (m < 1) return "Только что"; if (m < 60)
             return `${m} мин. назад`; if (h < 24) return `${h} ч. назад`; if (day < 7)
             return `${day} дн. назад`; return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }); }
+
+        function getUserRightsInGroup(group, uid) { if (!group || !uid) return []; const member = group.members?.find(m => m
+                .uid === uid); return member?.rights || ['write']; }
+
+        function isGroupAdmin(group, uid) { const rights = getUserRightsInGroup(group, uid); return rights.some(r => r !==
+                'write'); }
+
+        function isGroupCreator(group, uid) { return group?.createdBy === uid; }
+
+        function canManageMember(group, actorUid, targetUid) { if (isGroupCreator(group, targetUid)) return false; if (isGroupCreator(
+                    group, actorUid)) return true; const actorRights = getUserRightsInGroup(group, actorUid); if (!actorRights
+                .includes('manage_members') && !actorRights.includes('manage_rights')) return false; const targetRights =
+                getUserRightsInGroup(group, targetUid);
+            const targetIsAdmin = targetRights.some(r => r !== 'write'); if (targetIsAdmin && !isGroupCreator(group, actorUid))
+                return false; return true; }
 
         function getFolders() {
             try {
@@ -1134,10 +1322,12 @@
                 h?.classList.add('show');
                 b?.classList.add('show'); } else { h?.classList.remove('show');
                 b?.classList.remove('show'); } }
+
         async function savePinned() { const cd = doc(db, 'chats', activeChatId); try { await updateDoc(cd, {
                 pinnedMessageId,
                 pinnedMessageData }); } catch (e) { await setDoc(cd, { pinnedMessageId, pinnedMessageData,
                 createdAt: new Date() }); } }
+
         async function loadPinned() { const cd = doc(db, 'chats', activeChatId); const snap = await getDoc(cd); if (snap
             .exists() && snap.data().pinnedMessageId) { pinnedMessageId = snap.data().pinnedMessageId;
                 pinnedMessageData = snap.data().pinnedMessageData; } else { const local = localStorage.getItem(
@@ -1238,11 +1428,13 @@
                 ?.contacts || []).filter(c => !c.blocked).forEach(c => h +=
                 `<label><input type="checkbox" class="forward-checkbox" value="${c.uid}"> 💬 ${escapeHtml(c.firstName||c.username)}</label><br>`
                 );
+            (currentUserData?.groups || []).forEach(g => h +=
+                `<label><input type="checkbox" class="forward-checkbox" value="group_${g.id}"> 👥 ${escapeHtml(g.name)}</label><br>`);
             l.innerHTML = h || 'Нет чатов'; }
         window.forwardSelected = async () => { if (!currentForwardMsg) return; const checks = document.querySelectorAll(
                 '.forward-checkbox:checked'); if (!checks.length) return alert('Выберите чат'); for (let cb of checks) { try { const
                     val = cb.value; let chatId; if (val === 'saved') chatId = `saved_${auth.currentUser.uid}`; else if (val ===
-                        'mas') chatId = MAS_CHAT_ID; else chatId = [auth.currentUser.uid, val].sort().join('_'); const fwdMsg = {
+                        'mas') chatId = MAS_CHAT_ID; else if (val.startsWith('group_')) chatId = val; else chatId = [auth.currentUser.uid, val].sort().join('_'); const fwdMsg = {
                         text: currentForwardMsg.text || '', mediaBase64: currentForwardMsg.mediaBase64 || null, mediaType: currentForwardMsg
                             .mediaType || null, senderId: auth.currentUser.uid, senderName: currentUserData?.username, timestamp: new
                         Date(), reactions: {} }; await addDoc(collection(db, 'chats', chatId, 'messages'),
@@ -1329,10 +1521,12 @@
                         showContextMenu(e, msgId, msgData, isMine); }); }); }); }
 
         async function sendMessageInternal(inputId, fileInputId) { if (activeChatType === 'mas' && !masAuthorized) { alert(
-                'Нет прав для отправки в MAS.'); return; } const text = document.getElementById(inputId)?.value.trim(); const
-            files = document.getElementById(fileInputId)?.files; let mediaBase64 = []; if (files?.length) { for (let f of
-                files) { if (f.type.startsWith('image/')) { const b64 = await new Promise(res => { const r = new
-                    FileReader();
+                'Нет прав для отправки в MAS.'); return; } if (activeChatType === 'group') { const g = currentUserData?.groups
+                ?.find(g => g.id === activeChatId.replace('group_', '')); if (g) { const rights = getUserRightsInGroup(g, auth
+                    .currentUser?.uid); if (!rights.includes('write')) { alert('Нет прав для отправки сообщений в эту группу.');
+                    return; } } } const text = document.getElementById(inputId)?.value.trim(); const files = document
+            .getElementById(fileInputId)?.files; let mediaBase64 = []; if (files?.length) { for (let f of files) { if (f.type
+                    .startsWith('image/')) { const b64 = await new Promise(res => { const r = new FileReader();
                     r.onloadend = () => res(r.result);
                     r.readAsDataURL(f); }); if (b64.length > 900000) { alert('Файл слишком большой!'); continue; }
                     mediaBase64.push(b64); } }
@@ -1364,18 +1558,240 @@
 
         window.showChatProfile = async () => { if (activeChatType === 'private' && activeOtherUser) { const u = await getDoc(
                 doc(db, "users", activeOtherUser.uid)); if (u.exists()) { const d = u.data();
-                document.getElementById('contactProfileAvatar').src = d.photoURL || '';
-                document.getElementById('contactProfileName').textContent = d.username;
-                document.getElementById('contactProfileStatus').textContent = formatLastSeen(d.lastSeen?.toDate());
+                document.getElementById('contactProfileAvatar').src = d.photoURL ||
+                    'https://via.placeholder.com/100';
+                document.getElementById('contactProfileName').textContent = d.firstName || d.username;
+                document.getElementById('contactProfileUsername').textContent = '@' + d.username;
+                document.getElementById('contactProfileStatus').textContent = formatLastSeen(d.lastSeen?.toDate()); const
+                actionsDiv = document.getElementById('contactProfileActions');
+                actionsDiv.innerHTML = `
+                    <button class="action-btn" onclick="clearChatHistory('self')">🧹 Очистить у себя</button>
+                    <button class="action-btn" onclick="clearChatHistory('all')">🗑️ Очистить у всех</button>
+                    <button class="action-btn" onclick="editContactFromProfile('${activeOtherUser.uid}')">✏️ Изменить контакт</button>
+                    <button class="action-btn danger" onclick="blockContactFromProfile('${activeOtherUser.uid}')">🚫 Заблокировать</button>
+                    <button class="action-btn danger" onclick="blockAndDeleteContact('${activeOtherUser.uid}')">⛔ Удалить и заблокировать</button>
+                `;
                 document.getElementById('contactProfileModal').style.display = 'flex'; } } else if (activeChatType ===
-                'saved') { document.getElementById('contactProfileAvatar').src = currentUserData?.photoURL || '';
+                'saved') { document.getElementById('contactProfileAvatar').src = currentUserData?.photoURL ||
+                'https://via.placeholder.com/100';
             document.getElementById('contactProfileName').textContent = '⭐ Избранное';
+            document.getElementById('contactProfileUsername').textContent = '';
             document.getElementById('contactProfileStatus').textContent = 'Ваш личный чат';
+            document.getElementById('contactProfileActions').innerHTML =
+                `<button class="action-btn" onclick="clearChatHistory('self')">🧹 Очистить у себя</button>`;
             document.getElementById('contactProfileModal').style.display = 'flex'; } else if (activeChatType === 'mas') {
                 document.getElementById('contactProfileAvatar').src = 'https://via.placeholder.com/100';
                 document.getElementById('contactProfileName').textContent = '📢 MAS';
+                document.getElementById('contactProfileUsername').textContent = '';
                 document.getElementById('contactProfileStatus').textContent = 'Официальный канал мессенджера';
-                document.getElementById('contactProfileModal').style.display = 'flex'; } };
+                document.getElementById('contactProfileActions').innerHTML = '';
+                document.getElementById('contactProfileModal').style.display = 'flex'; } else if (activeChatType === 'group') { const
+                g = currentUserData?.groups?.find(g => g.id === activeChatId.replace('group_', '')); if (g) openGroupProfile(g
+                    .id); } };
+
+        window.openGroupProfile = (groupId) => { const g = currentUserData?.groups?.find(g => g.id === groupId); if (!g)
+            return;
+            currentGroupProfileId = groupId;
+            document.getElementById('groupProfileAvatar').src = g.photoURL || 'https://via.placeholder.com/100';
+            document.getElementById('groupProfileName').textContent = '👥 ' + g.name;
+            document.getElementById('groupProfileDescription').textContent = g.description || 'Нет описания';
+            document.getElementById('groupProfileMemberCount').textContent = g.members?.length || 0; const canManageProfile =
+                getUserRightsInGroup(g, auth.currentUser?.uid).includes('manage_profile') || isGroupCreator(g, auth.currentUser
+                    ?.uid);
+            document.getElementById('groupProfileAvatar').style.cursor = canManageProfile ? 'pointer' : 'default';
+            document.getElementById('groupProfileDescription').style.cursor = canManageProfile ? 'pointer' : 'default';
+            document.getElementById('groupProfileDescription').onclick = canManageProfile ? () => { document.getElementById(
+                    'groupDescriptionInput').style.display = 'block';
+                document.getElementById('groupDescriptionInput').value = g.description || '';
+                document.getElementById('groupDescSaveBtn').style.display = 'block'; } : null;
+            document.getElementById('groupDescriptionInput').style.display = 'none';
+            document.getElementById('groupDescSaveBtn').style.display = 'none';
+            renderGroupMemberList(g); const actionsDiv = document.getElementById('groupProfileActions');
+            actionsDiv.innerHTML = ''; if (getUserRightsInGroup(g, auth.currentUser?.uid).includes('add_members') ||
+                isGroupCreator(g, auth.currentUser?.uid)) { actionsDiv.innerHTML +=
+                `<button class="action-btn" onclick="showAddGroupMembersModal()">➕ Добавить участника</button>`; }
+            actionsDiv.innerHTML +=
+                `<button class="action-btn danger" onclick="leaveGroupWithConfirm('${groupId}')">🚪 Покинуть группу</button>`;
+            document.getElementById('groupProfileModal').style.display = 'flex';
+            document.getElementById('contactProfileModal').style.display = 'none';
+        };
+
+        function renderGroupMemberList(g) { const container = document.getElementById('groupProfileMemberList'); if (!container)
+                return; const myUid = auth.currentUser?.uid; const sorted = [...(g.members || [])].sort((a, b) => { const aIsAdmin =
+                    isGroupAdmin(g, a.uid) || isGroupCreator(g, a.uid); const bIsAdmin = isGroupAdmin(g, b.uid) || isGroupCreator(
+                    g, b.uid); if (aIsAdmin && !bIsAdmin) return -1; if (!aIsAdmin && bIsAdmin) return 1; return 0; });
+            container.innerHTML = sorted.map(m => { const isCreator = isGroupCreator(g, m.uid); const isAdmin = isGroupAdmin(
+                    g, m.uid) || isCreator; const roleLabel = isCreator ? '👑 Создатель' : (isAdmin ? '⭐ Админ' :
+                    '👤 Участник'); const canManage = canManageMember(g, myUid, m.uid); const canManageRights = (getUserRightsInGroup(
+                        g, myUid).includes('manage_rights') || isGroupCreator(g, myUid)) && !isCreator; const canKick = (
+                        getUserRightsInGroup(g, myUid).includes('manage_members') || isGroupCreator(g, myUid)) && !isCreator &&
+                    m.uid !== myUid; const contact = currentUserData?.contacts?.find(c => c.uid === m.uid); const displayName =
+                    contact?.firstName || m.uid; const photoURL = contact?.photoURL || 'https://via.placeholder.com/36'; return `
+                <div class="member-item">
+                    <div class="member-info">
+                        <img class="member-avatar" src="${photoURL}" onerror="this.src='https://via.placeholder.com/36'">
+                        <span class="member-name">${escapeHtml(displayName)}</span>
+                        <span class="member-role">${roleLabel}</span>
+                    </div>
+                    <div class="member-actions">
+                        ${canManageRights ? `<button class="icon-btn" onclick="showMemberRightsModal('${g.id}','${m.uid}')">🔑 Права</button>` : ''}
+                        ${canKick ? `<button class="icon-btn danger" onclick="kickMember('${g.id}','${m.uid}')">👢 Выгнать</button>` : ''}
+                    </div>
+                </div>`; }).join(''); }
+
+        window.showMemberRightsModal = (groupId, uid) => { const g = currentUserData?.groups?.find(g => g.id === groupId); if (!g)
+                return; if (!canManageMember(g, auth.currentUser?.uid, uid) && !isGroupCreator(g, auth.currentUser?.uid))
+                return alert('Нет прав на изменение прав этого участника!'); if (isGroupCreator(g, uid)) return alert(
+                'Нельзя изменить права создателя группы!');
+            currentMemberRightsUid = uid;
+            currentGroupProfileId = groupId; const rights = getUserRightsInGroup(g, uid); const contact = currentUserData
+                ?.contacts?.find(c => c.uid === uid);
+            document.getElementById('memberRightsUsername').textContent = contact?.firstName || uid; const grid = document
+                .getElementById('memberRightsGrid');
+            grid.innerHTML = ALL_RIGHTS.map(r => { const checked = rights.includes(r) ? 'checked' : ''; const disabled = (r ===
+                    'write') ? 'disabled' : ''; return `
+                <label>
+                    <input type="checkbox" class="member-right-checkbox" value="${r}" ${checked} ${disabled}>
+                    ${RIGHT_LABELS[r]} ${r==='write'?'(всегда)':''}
+                </label>`; }).join('');
+            document.getElementById('memberRightsModal').style.display = 'flex'; };
+
+        window.saveMemberRights = async () => { if (!currentMemberRightsUid || !currentGroupProfileId) return; const g =
+                currentUserData?.groups?.find(g => g.id === currentGroupProfileId); if (!g) return; const checks = document
+                .querySelectorAll('.member-right-checkbox:checked'); const newRights = ['write', ...Array.from(checks).map(cb => cb
+                    .value).filter(r => r !== 'write')]; const updatedMembers = g.members.map(m => m.uid === currentMemberRightsUid ?
+                    { ...m, rights: [...new Set(newRights)] } : m); const updatedGroup = { ...g, members: updatedMembers };
+            currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); await updateDoc(doc(db,
+                'users', auth.currentUser.uid), { groups: currentUserData.groups });
+            closeModal('memberRightsModal');
+            currentMemberRightsUid = null;
+            openGroupProfile(currentGroupProfileId);
+            renderGroups(); };
+
+        window.kickMember = async (groupId, uid) => { const g = currentUserData?.groups?.find(g => g.id === groupId); if (!g)
+                return; if (!canManageMember(g, auth.currentUser?.uid, uid)) return alert(
+                'Нет прав на удаление этого участника!'); if (!confirm('Выгнать этого участника из группы?')) return; const
+            updatedMembers = g.members.filter(m => m.uid !== uid); const updatedGroup = { ...g, members: updatedMembers };
+            currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); await updateDoc(doc(db,
+                'users', auth.currentUser.uid), { groups: currentUserData.groups });
+            openGroupProfile(groupId);
+            renderGroups();
+            renderChats(); };
+
+        window.showAddGroupMembersModal = () => { const g = currentUserData?.groups?.find(g => g.id ===
+            currentGroupProfileId); if (!g) return; const existingUids = new Set(g.members.map(m => m.uid)); const contacts =
+                currentUserData?.contacts?.filter(c => !c.blocked && !existingUids.has(c.uid)) || []; const list = document
+                .getElementById('addGroupMembersList'); if (!list) return;
+            list.innerHTML = contacts.length ? contacts.map(c => `
+                <label><input type="checkbox" class="add-group-member-checkbox" value="${c.uid}"> ${escapeHtml(c.firstName||c.username)}</label>
+            `).join('') : '<div class="empty-state">Нет доступных контактов для добавления</div>';
+            document.getElementById('addGroupMembersModal').style.display = 'flex'; };
+
+        window.confirmAddGroupMembers = async () => { if (!currentGroupProfileId) return; const g = currentUserData?.groups
+                ?.find(g => g.id === currentGroupProfileId); if (!g) return; const checks = document.querySelectorAll(
+                    '.add-group-member-checkbox:checked'); const newUids = Array.from(checks).map(cb => cb.value); if (!newUids
+                    .length) return alert('Выберите хотя бы одного участника!'); const existingUids = new Set(g.members.map(m => m
+                    .uid)); const updatedMembers = [...g.members, ...newUids.filter(uid => !existingUids.has(uid)).map(uid => ({ uid,
+                    rights: ['write'] }))]; const updatedGroup = { ...g, members: updatedMembers };
+            currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); await updateDoc(doc(db,
+                'users', auth.currentUser.uid), { groups: currentUserData.groups });
+            closeModal('addGroupMembersModal');
+            openGroupProfile(currentGroupProfileId);
+            renderGroups();
+            renderChats(); };
+
+        window.leaveGroupWithConfirm = (groupId) => { confirmLeaveCallback = () => leaveGroup(groupId);
+            showConfirmDialog('Покинуть группу?', 'Вы уверены, что хотите покинуть эту группу? Это действие нельзя отменить.'); };
+
+        window.leaveGroup = async (groupId) => { const g = currentUserData?.groups?.find(g => g.id === groupId); if (!g) return;
+            const updatedMembers = g.members.filter(m => m.uid !== auth.currentUser?.uid); if (updatedMembers.length === 0) {
+                currentUserData.groups = currentUserData.groups.filter(gr => gr.id !== groupId); } else { const updatedGroup = { ...g,
+                    members: updatedMembers }; if (isGroupCreator(g, auth.currentUser?.uid) && updatedMembers.length > 0) {
+                    updatedGroup.createdBy = updatedMembers[0].uid;
+                    updatedGroup.members = updatedGroup.members.map(m => m.uid === updatedGroup.createdBy ? { ...m, rights: ['write',
+                            'manage_members', 'add_members', 'manage_profile', 'manage_rights'
+                    ] } : m); }
+                currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); } await updateDoc(
+                doc(db, 'users', auth.currentUser.uid), { groups: currentUserData.groups });
+            document.getElementById('groupProfileModal').style.display = 'none'; if (activeChatId === 'group_' + groupId)
+            closeChat();
+            renderGroups();
+            renderChats(); };
+
+        window.clearChatHistory = async (scope) => { if (!activeChatId) return; const msg = scope === 'all' ?
+                'Очистить историю переписки у всех участников?' : 'Очистить историю переписки только у себя?'; if (!confirm(msg))
+                return; if (scope === 'all') { const snap = await getDocs(collection(db, 'chats', activeChatId, 'messages'));
+                    const batch = writeBatch(db);
+                    snap.forEach(d => batch.delete(d.ref)); await batch.commit(); } else { localStorage.setItem(
+                    `cleared_${activeChatId}`, new Date().toISOString()); if (unsubscribeMessages) unsubscribeMessages();
+                loadMessages(); }
+            document.getElementById('contactProfileModal').style.display = 'none';
+            if (document.getElementById('messagesContainer')) document.getElementById('messagesContainer').innerHTML =
+                ''; if (document.getElementById('messagesContainerLarge')) document.getElementById('messagesContainerLarge')
+                .innerHTML = ''; };
+
+        window.editContactFromProfile = (uid) => { const c = currentUserData?.contacts?.find(c => c.uid === uid); if (!c)
+                return;
+            pendingRenameContact = c;
+            document.getElementById('renameFirstName').value = c.firstName || '';
+            document.getElementById('renameLastName').value = c.lastName || '';
+            document.getElementById('renameContactModal').style.display = 'flex';
+            document.getElementById('contactProfileModal').style.display = 'none'; };
+
+        window.blockContactFromProfile = async (uid) => { if (!confirm('Заблокировать контакт?')) return; const u =
+                currentUserData.contacts.map(c => c.uid === uid ? { ...c, blocked: true } : c); await updateDoc(doc(db, "users",
+                    auth.currentUser.uid), { contacts: u });
+            document.getElementById('contactProfileModal').style.display = 'none';
+            if (activeChatId && activeChatId.includes(uid)) closeChat(); };
+
+        window.blockAndDeleteContact = async (uid) => { if (!confirm(
+                'Удалить контакт и заблокировать? Вы больше не сможете получать сообщения от этого пользователя.')) return; const
+            u = currentUserData.contacts.filter(c => c.uid !== uid);
+            u.push({ uid, username: activeOtherUser?.username || '', firstName: '', lastName: '', blocked: true, photoURL: '' });
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { contacts: u });
+            document.getElementById('contactProfileModal').style.display = 'none'; if (activeChatId && activeChatId.includes(
+                uid)) closeChat(); };
+
+        window.updateGroupAvatar = async () => { const g = currentUserData?.groups?.find(g => g.id ===
+            currentGroupProfileId); if (!g) return; if (!getUserRightsInGroup(g, auth.currentUser?.uid).includes(
+                'manage_profile') && !isGroupCreator(g, auth.currentUser?.uid)) return alert(
+                'Нет прав на изменение аватарки группы!'); const file = document.getElementById('groupAvatarInput').files[0]; if (
+                !file) return; const reader = new FileReader();
+            reader.onload = async (e) => { const url = e.target.result; const updatedGroup = { ...g, photoURL: url };
+                currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); await updateDoc(
+                    doc(db, 'users', auth.currentUser.uid), { groups: currentUserData.groups });
+                document.getElementById('groupProfileAvatar').src = url;
+                renderGroups();
+                renderChats(); };
+            reader.readAsDataURL(file); };
+
+        window.saveGroupDescription = async () => { const g = currentUserData?.groups?.find(g => g.id ===
+            currentGroupProfileId); if (!g) return; if (!getUserRightsInGroup(g, auth.currentUser?.uid).includes(
+                'manage_profile') && !isGroupCreator(g, auth.currentUser?.uid)) return alert(
+                'Нет прав на изменение описания группы!'); const desc = document.getElementById('groupDescriptionInput').value
+            .trim(); const updatedGroup = { ...g, description: desc };
+            currentUserData.groups = currentUserData.groups.map(gr => gr.id === g.id ? updatedGroup : gr); await updateDoc(doc(db,
+                'users', auth.currentUser.uid), { groups: currentUserData.groups });
+            document.getElementById('groupProfileDescription').textContent = desc || 'Нет описания';
+            document.getElementById('groupDescriptionInput').style.display = 'none';
+            document.getElementById('groupDescSaveBtn').style.display = 'none';
+            renderGroups(); };
+
+        function showConfirmDialog(title, message) { const existing = document.querySelector('.confirm-dialog'); if (existing)
+                existing.remove(); const dialog = document.createElement('div');
+            dialog.className = 'confirm-dialog';
+            dialog.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="confirm-actions">
+                    <button onclick="document.querySelector('.confirm-dialog').remove();" style="background:var(--bg-input);">Отмена</button>
+                    <button id="confirmDialogOk" class="danger">Подтвердить</button>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+            document.getElementById('confirmDialogOk').onclick = () => { dialog.remove(); if (confirmLeaveCallback)
+                confirmLeaveCallback();
+                confirmLeaveCallback = null; }; }
 
         window.openChat = async (uid, username, large = false) => { if (uid === auth.currentUser?.uid) { openSavedMessages(
                 large); return; } let c = currentUserData?.contacts?.find(c => c.uid === uid); if (c?.blocked) return alert(
@@ -1386,7 +1802,7 @@
             activeChatId = [auth.currentUser.uid, uid].sort().join('_');
             activeChatType = 'private';
             activeOtherUser = { uid, username };
-            document.getElementById('chatHeaderName').textContent = c.firstName;
+            document.getElementById('chatHeaderName').textContent = c.firstName + (c.lastName ? ' ' + c.lastName : '');
             document.getElementById('chatHeaderAvatar').src = c.photoURL || 'https://via.placeholder.com/44';
             document.getElementById('chatHeaderStatus').innerHTML = '';
             document.getElementById('chatInputArea').style.display = 'flex'; await loadPinned(); if (large) embedLargeChat(); else
@@ -1415,6 +1831,17 @@
             document.getElementById('chatInputArea').style.display = masAuthorized ? 'flex' : 'none';
             loadPinned(); if (large) embedLargeChat(); else showPage('chatPage');
             loadMessages(); };
+        window.openGroupChat = (groupId, large = false) => { if (statusInterval) clearInterval(statusInterval);
+            activeChatId = 'group_' + groupId;
+            activeChatType = 'group';
+            activeOtherUser = null; const g = currentUserData?.groups?.find(g => g.id === groupId);
+            document.getElementById('chatHeaderName').textContent = '👥 ' + (g?.name || 'Группа');
+            document.getElementById('chatHeaderAvatar').src = g?.photoURL || 'https://via.placeholder.com/44';
+            document.getElementById('chatHeaderStatus').textContent = 'Участников: ' + (g?.members?.length || 0); const rights =
+                getUserRightsInGroup(g, auth.currentUser?.uid);
+            document.getElementById('chatInputArea').style.display = rights.includes('write') ? 'flex' : 'none';
+            loadPinned(); if (large) embedLargeChat(); else showPage('chatPage');
+            loadMessages(); };
 
         async function updateStatus() { if (!activeOtherUser) return; const u = await getDoc(doc(db, "users", activeOtherUser
                 .uid)); if (u.exists()) { const s = formatLastSeen(u.data().lastSeen?.toDate()); const html = s === 'В сети' ?
@@ -1427,8 +1854,12 @@
                 `<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;"><div class="chat-header" onclick="showChatProfile()"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status" id="chatHeaderStatusLarge">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div><div class="pinned-header-indicator" id="pinnedHeaderIndicatorLarge" onclick="scrollToPinnedMessage()">📌 <span id="pinnedHeaderTextLarge"></span></div></div><div class="pinned-banner" id="pinnedBannerLarge" onclick="scrollToPinnedMessage()"><span>📌</span><span id="pinnedBannerTextLarge"></span></div><div class="messages-area" id="messagesContainerLarge"></div><div class="input-area" id="largeInputArea"><textarea id="messageInputLarge" placeholder="Сообщение..." rows="1"></textarea><button class="emoji-btn" onclick="showEmojiForInput('messageInputLarge')">😊</button><button class="voice-btn" onclick="document.getElementById('voiceInputLarge').click()">🎤</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="voiceInputLarge" accept="audio/*" style="display:none"><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div></div>`;
             document.getElementById('voiceInputLarge').addEventListener('change', () => handleVoiceInternal('voiceInputLarge')); if (
                 activeChatType === 'mas' && !masAuthorized) document.getElementById('largeInputArea').style.display =
-                'none'; else document.getElementById('largeInputArea').style.display = 'flex'; const mc = document.getElementById(
-                'messagesContainer'); if (mc) { document.getElementById('messagesContainerLarge').innerHTML = mc.innerHTML;
+                'none'; else if (activeChatType === 'group') { const g = currentUserData?.groups?.find(g => g.id ===
+                    activeChatId.replace('group_', '')); if (g && !getUserRightsInGroup(g, auth.currentUser?.uid).includes(
+                    'write')) document.getElementById('largeInputArea').style.display = 'none'; else document.getElementById(
+                    'largeInputArea').style.display = 'flex'; } else document.getElementById('largeInputArea').style.display =
+                'flex'; const mc = document.getElementById('messagesContainer'); if (mc) { document.getElementById(
+                    'messagesContainerLarge').innerHTML = mc.innerHTML;
                 setTimeout(refreshMessageEvents, 100); }
             updatePinnedUI();
             renderChats(); }
@@ -1483,6 +1914,9 @@
                 c => { const chatId = [auth.currentUser?.uid, c.uid].sort().join('_');
                     chats.push({ id: chatId, name: c.firstName || c.username, type: 'private', photoURL: c.photoURL ||
                             '', uid: c.uid, archived: localStorage.getItem(`archived_${chatId}`) === '1' }); });
+            (currentUserData?.groups || []).forEach(g => { const chatId = 'group_' + g.id;
+                chats.push({ id: chatId, name: '👥 ' + g.name, type: 'group', photoURL: g.photoURL || '', groupId: g.id,
+                    archived: localStorage.getItem(`archived_${chatId}`) === '1' }); });
             allChatsCache = chats; }
 
         window.toggleLargeArchive = () => { isArchiveViewLarge = !isArchiveViewLarge;
@@ -1499,6 +1933,7 @@
             '1'; if (cur) localStorage.removeItem(key); else localStorage.setItem(key, '1');
             renderChats();
             renderContacts();
+            renderGroups();
             renderFolderTabs(); };
 
         function filterChats(searchTerm, folderId) { buildAllChats(); let result = getChatsForFolder(folderId); if (searchTerm) { const
@@ -1543,14 +1978,16 @@
                 let c of filteredLarge) { const unread = getUnreadCount(c.id); const badge = unread > 0 ?
                     `<span class="unread-badge">${unread}</span>` : ''; const av = c.photoURL ||
                     'https://via.placeholder.com/48'; const act = (activeChatId === c.id) || (c.type === 'saved' &&
-                    activeChatId === `saved_${auth.currentUser?.uid}`) || (c.type === 'mas' && activeChatId === MAS_CHAT_ID);
+                    activeChatId === `saved_${auth.currentUser?.uid}`) || (c.type === 'mas' && activeChatId === MAS_CHAT_ID) || (c
+                    .type === 'group' && activeChatId === c.id);
                 largeHtml +=
                     `<div class="chat-item${act?' active-chat':''}" onclick="openChatByType('${c.id}','${c.type}',true)"><img class="chat-item-avatar" src="${av}" onerror="this.src='https://via.placeholder.com/48'"><div class="chat-item-info"><div class="chat-item-name">${escapeHtml(c.name)} ${badge}</div></div><button class="icon-btn" onclick="event.stopPropagation();toggleArchiveChat('${c.id}')">${c.archived?'📋':'📦'}</button></div>`; } if (
                 largeContainer) largeContainer.innerHTML = largeHtml || '<div class="empty-state">Нет чатов</div>'; if (
                 mobileContainer) mobileContainer.innerHTML = mobileHtml || '<div class="empty-state">Нет чатов</div>'; }
         window.openChatByType = (id, type, large = false) => { if (type === 'saved') openSavedMessages(large); else if (type ===
-                'mas') openMASChat(large); else if (type === 'private') { const uids = id.split('_'); const other = uids.find(
-                u => u !== auth.currentUser.uid); if (other) openChat(other, '', large); } };
+                'mas') openMASChat(large); else if (type === 'group') openGroupChat(id.replace('group_', ''), large); else if (
+                type === 'private') { const uids = id.split('_'); const other = uids.find(u => u !== auth.currentUser.uid); if (
+                    other) openChat(other, '', large); } };
 
         async function renderContacts() { const container = document.getElementById('contactsList'); const contacts =
                 currentUserData?.contacts || []; if (!contacts.length) { container.innerHTML =
@@ -1559,6 +1996,43 @@
                     archived = localStorage.getItem(`archived_${chatId}`) === '1'; return `
                 <div class="chat-item" onclick="openChat('${c.uid}','${escapeHtml(c.username)}')"><img class="chat-item-avatar" src="${c.photoURL||'https://via.placeholder.com/48'}" onerror="this.src='https://via.placeholder.com/48'"><div class="chat-item-info"><div class="chat-item-name">${escapeHtml(c.firstName||c.username)} ${c.lastName?escapeHtml(c.lastName):''}</div><div class="chat-item-username">@${escapeHtml(c.username)}</div>${c.blocked?'<span class="blocked-badge">🔒 Заблокирован</span>':''}</div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation();toggleArchiveChat('${chatId}')">${archived?'📋':'📦'}</button><button class="icon-btn" onclick="event.stopPropagation();editContact('${c.uid}')">✏️</button>${c.blocked?`<button class="icon-btn" onclick="event.stopPropagation();unblockContact('${c.uid}')">🔓 Разблок.</button>`:`<button class="icon-btn" onclick="event.stopPropagation();blockContact('${c.uid}')">🚫 Блок.</button>`}</div></div>` }).join(
                 ''); }
+
+        async function renderGroups() { const container = document.getElementById('groupsList'); const groups =
+                currentUserData?.groups || []; if (!groups.length) { container.innerHTML =
+                '<div class="empty-state">👥 Нет групп</div>'; return; }
+            container.innerHTML = groups.map(g => { const chatId = 'group_' + g.id; const archived = localStorage.getItem(
+                    `archived_${chatId}`) === '1'; const canManage = isGroupCreator(g, auth.currentUser?.uid) ||
+                    getUserRightsInGroup(g, auth.currentUser?.uid).includes('manage_profile'); return `
+                <div class="chat-item" onclick="openGroupChat('${g.id}')"><img class="chat-item-avatar" src="${g.photoURL||'https://via.placeholder.com/48'}" onerror="this.src='https://via.placeholder.com/48'"><div class="chat-item-info"><div class="chat-item-name">👥 ${escapeHtml(g.name)}</div><div class="chat-item-username">Участников: ${g.members?.length||0}</div></div><div class="contact-actions"><button class="icon-btn" onclick="event.stopPropagation();toggleArchiveChat('${chatId}')">${archived?'📋':'📦'}</button>${canManage?`<button class="icon-btn" onclick="event.stopPropagation();openGroupProfile('${g.id}')">✏️</button>`:''}<button class="icon-btn danger" onclick="event.stopPropagation();leaveGroupWithConfirm('${g.id}')">🚪</button></div></div>` }).join(
+                ''); }
+
+        window.showCreateGroupModal = () => {
+            document.getElementById('groupNameInput').value = '';
+            document.getElementById('groupMemberList').innerHTML = ''; const contacts = currentUserData?.contacts?.filter(c => !
+                c.blocked) || []; let html = '';
+            contacts.forEach(c => { html +=
+                `<label><input type="checkbox" class="group-member-checkbox" value="${c.uid}"> ${escapeHtml(c.firstName||c.username)}</label>`; });
+            document.getElementById('groupMemberList').innerHTML = html ||
+                '<div class="empty-state">Нет доступных контактов</div>';
+            document.getElementById('createGroupModal').style.display = 'flex';
+        };
+
+        window.createGroup = async () => { const name = document.getElementById('groupNameInput').value.trim(); if (!name)
+                return alert('Введите название группы!'); const checks = document.querySelectorAll('.group-member-checkbox:checked');
+            const memberUids = Array.from(checks).map(cb => cb.value); const members = memberUids.map(uid => ({ uid,
+                rights: ['write'] }));
+            members.push({ uid: auth.currentUser.uid, rights: ['write', 'manage_members', 'add_members', 'manage_profile',
+                    'manage_rights'
+                ] }); const groupRef = doc(collection(db, 'groups')); await setDoc(groupRef, { name,
+                createdBy: auth.currentUser.uid, members: [...new Map(members.map(m => [m.uid, m])).values()],
+                photoURL: '', description: '', createdAt: new Date() }); const groupData = { id: groupRef.id, name,
+                createdBy: auth.currentUser.uid, members: [...new Map(members.map(m => [m.uid, m])).values()],
+                photoURL: '', description: '' }; if (!currentUserData.groups) currentUserData.groups = [];
+            currentUserData.groups.push(groupData); await updateDoc(doc(db, 'users', auth.currentUser.uid), { groups: currentUserData
+                    .groups });
+            closeModal('createGroupModal');
+            renderGroups();
+            renderChats(); };
 
         window.showCreateFolderModal = () => {
             document.getElementById('folderNameInput').value = '';
@@ -1749,7 +2223,7 @@
                     return alert("Неверный код!"); const uc = await createUserWithEmailAndPassword(auth, email, p.password); let
                 photoURL = ""; const setUserData = async (photoURL) => { await updateProfile(uc.user, { displayName: p
                         .username, photoURL }); await setDoc(doc(db, "users", uc.user.uid), { username: p.username,
-                        email, photoURL, contacts: [], createdAt: new Date(), lastSeen: new Date(), masAuthorized: p
+                        email, photoURL, contacts: [], groups: [], createdAt: new Date(), lastSeen: new Date(), masAuthorized: p
                         .isMas }); if (p.isMas) setMasAuthorized(true); else setMasAuthorized(false); }; if (p
                     .avatarFile) { const r = new FileReader();
                     r.onload = async function(e) { await setUserData(e.target.result);
@@ -1813,6 +2287,7 @@
             document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active'));
             document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active'); if (tab === 'chats') { renderChats();
                 renderFolderTabs(); } if (tab === 'contacts') { renderContacts();
+                renderGroups();
                 renderFolders(); } }
 
         async function ensureMASChat() { const snap = await getDoc(doc(db, 'chats', MAS_CHAT_ID)); if (!snap.exists()) { await
@@ -1823,7 +2298,8 @@
             chatIds.add(`saved_${auth.currentUser.uid}`);
             chatIds.add(MAS_CHAT_ID); (currentUserData.contacts || []).filter(c => !c.blocked).forEach(c => chatIds.add([auth
                 .currentUser.uid, c.uid
-            ].sort().join('_'))); const initialLoads = {};
+            ].sort().join('_'))); (currentUserData.groups || []).forEach(g => chatIds.add('group_' + g.id)); const initialLoads =
+                {};
             chatIds.forEach(chatId => { const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp',
                     'desc'), limit(1)); const unsub = onSnapshot(q, (snap) => { if (!initialLoads[chatId]) {
                         initialLoads[chatId] = true; return; }
@@ -1843,38 +2319,46 @@
                     'vibrationCheckbox')?.checked) { navigator.vibrate?.([200, 100, 200]); } } }
 
         async function loadMainApp(user) {
-            await ensureMASChat();
-            const d = await getDoc(doc(db, "users", user.uid)); if (!d.exists()) return;
-            currentUserData = { uid: user.uid, ...d.data(), contacts: d.data().contacts || [] };
-            masAuthorized = currentUserData.masAuthorized === true || localStorage.getItem('masAuthorized') === '1';
-            document.getElementById('profileEmail').textContent = currentUserData.email;
-            document.getElementById('profileUsername').textContent = currentUserData.username; if (currentUserData.photoURL)
-                document.getElementById('profileAvatar').src = currentUserData.photoURL;
-            updateNotificationStatus();
-            loadSettings();
-            ensureSystemFolders();
-            activeFolderId = 'main';
-            isArchiveViewLarge = false;
-            isArchiveViewMobile = false; await renderContacts(); await renderChats(); await renderFolders();
-            renderFolderTabs();
-            startMessageListeners(); if (unsubscribeContacts) unsubscribeContacts();
-            unsubscribeContacts = onSnapshot(doc(db, "users", user.uid), snap => { if (snap.exists()) { currentUserData
-                    .contacts = snap.data().contacts || [];
-                    renderContacts();
-                    renderChats(); } });
-            showPage('mainApp');
-            switchTab('profile');
-            document.querySelectorAll('.nav-menu-item[data-tab]').forEach(b => b.onclick = () => switchTab(b.getAttribute(
-                'data-tab')));
-            document.getElementById('emojiButton')?.addEventListener('click', showEmojiPicker);
-            document.getElementById('voiceButton')?.addEventListener('click', () => document.getElementById('voiceInput')
-            .click());
-            document.getElementById('fileButton')?.addEventListener('click', () => document.getElementById('fileInput').click());
-            document.getElementById('messageInput')?.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e
-                    .shiftKey) { e.preventDefault();
-                    sendMessage(); } });
-            setInterval(async () => { if (auth.currentUser) await updateDoc(doc(db, "users", auth.currentUser.uid), { lastSeen: new
-                        Date() }); }, 30000); }
+                await ensureMASChat();
+                const d = await getDoc(doc(db, "users", user.uid)); if (!d.exists()) return;
+                currentUserData = { uid: user.uid, ...d.data(), contacts: d.data().contacts || [], groups: (d.data().groups || []).map(
+                        g => ({ ...g, members: g.members || [], description: g.description || '', photoURL: g.photoURL || '',
+                            createdBy: g.createdBy || '' })) };
+                masAuthorized = currentUserData.masAuthorized === true || localStorage.getItem('masAuthorized') === '1';
+                document.getElementById('profileEmail').textContent = currentUserData.email;
+                document.getElementById('profileUsername').textContent = currentUserData.username; if (currentUserData.photoURL)
+                    document.getElementById('profileAvatar').src = currentUserData.photoURL;
+                updateNotificationStatus();
+                loadSettings();
+                ensureSystemFolders();
+                activeFolderId = 'main';
+                isArchiveViewLarge = false;
+                isArchiveViewMobile = false; await renderContacts(); await renderGroups(); await renderChats(); await renderFolders();
+                renderFolderTabs();
+                startMessageListeners(); if (unsubscribeContacts) unsubscribeContacts();
+                unsubscribeContacts = onSnapshot(doc(db, "users", user.uid), snap => { if (snap.exists()) { currentUserData
+                        .contacts = snap.data().contacts || [];
+                        currentUserData.groups = snap.data().groups || [];
+                        renderContacts();
+                        renderGroups();
+                        renderChats(); } });
+                showPage('mainApp');
+                switchTab('profile');
+                document.querySelectorAll('.nav-menu-item[data-tab]').forEach(b => b.onclick = () => switchTab(b.getAttribute(
+                    'data-tab')));
+                document.getElementById('emojiButton')?.addEventListener('click', showEmojiPicker);
+                document.getElementById('voiceButton')?.addEventListener('click', () => document.getElementById('voiceInput')
+                .click());
+                document.getElementById('fileButton')?.addEventListener('click', () => document.getElementById('fileInput').click());
+                document.getElementById('messageInput')?.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e
+                        .shiftKey) { e.preventDefault();
+                        sendMessage(); } });
+                setInterval(async () => { if (auth.currentUser) await updateDoc(doc(db, "users", auth.currentUser.uid), { lastSeen: new
+                            Date() }); }, 30000);
+                document.getElementById('groupProfileAvatar')?.addEventListener('click', () => { const g = currentUserData?.groups
+                    ?.find(g => g.id === currentGroupProfileId); if (g && (getUserRightsInGroup(g, auth.currentUser?.uid)
+                        .includes('manage_profile') || isGroupCreator(g, auth.currentUser?.uid))) document.getElementById(
+                        'groupAvatarInput').click(); }); }
 
         function loadSettings() { if (document.getElementById('themeSelect')) { document.getElementById('themeSelect').value =
                 localStorage.getItem('theme') || 'dark';
