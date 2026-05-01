@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, maximum-scale=1.5">
   <title>Messenger MAS | Вход и регистрация</title>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">
+  </script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; transition:background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease; }
     :root {
@@ -78,7 +79,7 @@
     .reaction-picker { position:fixed; background:var(--bg-card); border-radius:24px; padding:12px; z-index:9999; border:1px solid var(--border-color); box-shadow:0 8px 25px rgba(0,0,0,0.4); display:flex; gap:8px; flex-wrap:wrap; max-width:350px; }
     .reaction-emoji { font-size:24px; cursor:pointer; padding:6px 8px; border-radius:8px; }
     .reaction-emoji:hover { background:var(--border-color); transform:scale(1.2); }
-    .input-area { display:flex; gap:8px; padding:14px; background:var(--bg-card); border-top:1px solid var(--border-color); flex-shrink:0; align-items:flex-end; flex-wrap:wrap; }
+    .input-area { display:flex; gap:8px; padding:14px; background:var(--bg-card); border-top:1px solid var(--border-color); flex-shrink:0; align-items:flex-end; flex-wrap:wrap; position:relative; }
     .input-area textarea { flex:1; margin:0; min-width:120px; }
     .input-area button { width:auto; padding:10px 16px; }
     .emoji-btn,.file-btn,.voice-btn { background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); font-size:22px; padding:8px 12px; margin:0; cursor:pointer; border-radius:40px; display:inline-flex; align-items:center; justify-content:center; }
@@ -123,6 +124,7 @@
     #forwardList label:hover { background:var(--border-color); }
     .full-image-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; align-items:center; justify-content:center; z-index:11000; cursor:pointer; }
     .full-image-modal img { max-width:95%; max-height:95%; border-radius:16px; }
+    .password-reveal { margin-top:10px; padding:12px; background:var(--bg-input); border-radius:20px; text-align:center; font-size:20px; letter-spacing:3px; }
   </style>
 </head>
 <body>
@@ -145,7 +147,7 @@
       <div class="nav-menu-item logout-btn" onclick="confirmLogout()">🚪 Выйти</div>
     </div>
     <div class="content-area">
-      <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="password" id="oldPasswordInput" placeholder="Старый пароль"><input type="password" id="newPasswordInput" placeholder="Новый пароль (мин.6)"><input type="password" id="confirmPasswordInput" placeholder="Повторите новый пароль"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button></div></div></div></div>
+      <div id="profileTab" class="tab-content"><div style="max-width:500px; margin:0 auto;"><img id="profileAvatar" class="profile-avatar" src="https://via.placeholder.com/120"><input type="file" id="newAvatarInput" accept="image/*" style="display:none" onchange="updateProfileAvatar()"><div class="card"><p><strong>📧 Почта:</strong> <span id="profileEmail">—</span> <button class="icon-btn" onclick="showChangeEmail()">✏️ Сменить</button></p><div id="changeEmailSection" style="display:none; margin-top:15px;"><input type="email" id="newEmailInput" placeholder="Новая почта"><button onclick="sendEmailChangeCode()">Отправить код</button><div id="emailCodeSection" style="display:none; margin-top:10px;"><input type="text" id="emailCodeInput" placeholder="Код из письма"><button onclick="confirmEmailChange()">Подтвердить</button></div></div><p><strong>👤 Ник:</strong> <span id="profileUsername">—</span> <button class="icon-btn" onclick="editUsername()">✏️</button></p><div id="editUsernameSection" style="display:none"><div style="display:flex; gap:8px; flex-wrap:wrap;"><input type="text" id="newUsernameInput" placeholder="Новый ник"><button onclick="updateUsername()">✅</button><button onclick="cancelEditUsername()" style="background:var(--bg-input)">❌</button></div></div></div><div class="card"><button onclick="showChangePassword()">Сменить пароль</button><div id="changePasswordSection" style="display:none; margin-top:15px;"><input type="text" id="newPasswordInput" placeholder="Новый пароль (мин.6)" autocomplete="off"><input type="text" id="confirmNewPasswordInput" placeholder="Повторите новый пароль" autocomplete="off"><button onclick="confirmChangePassword()">Изменить пароль</button><button onclick="cancelChangePassword()" style="background:var(--bg-input)">Отмена</button><div id="passwordChangeResult" style="margin-top:10px; font-weight:bold;"></div></div><button onclick="revealPassword()" style="background:var(--bg-input); color:var(--text-primary); margin-top:10px;">👁️ Показать пароль</button><div id="passwordRevealArea" class="password-reveal" style="display:none;"></div></div></div></div>
       <div id="chatsTab" class="tab-content" style="display:none">
         <div class="large-chat-layout" id="largeChatContainer">
           <div class="chat-list-panel" id="largeChatList">
@@ -186,9 +188,7 @@
         <div class="chat-header-name" id="chatHeaderName">...</div>
         <div class="chat-header-status" id="chatHeaderStatus"></div>
       </div>
-      <div class="pinned-header-indicator" id="pinnedHeaderIndicator" onclick="scrollToPinnedMessage()">📌 <span id="pinnedHeaderText"></span></div>
     </div>
-    <div class="pinned-banner" id="pinnedBanner" onclick="scrollToPinnedMessage()"><span>📌</span><span id="pinnedBannerText"></span></div>
     <div class="messages-area" id="messagesContainer"></div>
     <div class="input-area" id="chatInputArea">
       <textarea id="messageInput" placeholder="Сообщение..." rows="1"></textarea>
@@ -202,15 +202,12 @@
   </div>
 </div>
 
-<!-- Модалка для пароля MAS -->
-<div id="masPasswordModal" class="modal" style="display:none"><div class="modal-content"><h3>🔐 Доступ к каналу MAS</h3><p>Введите пароль для отправки сообщений:</p><input type="password" id="masPasswordInput" placeholder="Пароль"><button onclick="checkMASPassword()">Подтвердить</button><button onclick="closeModal('masPasswordModal')" style="background:var(--bg-input);">Отмена</button></div></div>
-
 <div id="editMessageModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать сообщение</h3><input type="text" id="editMessageInput" placeholder="Текст сообщения"><div style="display:flex; gap:10px; margin-top:15px;"><button onclick="saveEditedMessage()">Сохранить</button><button onclick="closeModal('editMessageModal')" style="background:var(--bg-input);">Отмена</button></div></div></div>
 <div id="nameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Добавить имя контакту</h3><p><strong id="modalUsername"></strong></p><input type="text" id="contactFirstName" placeholder="Имя *"><input type="text" id="contactLastName" placeholder="Фамилия"><button onclick="confirmAddContact()">Сохранить</button><button onclick="closeModal('nameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
 <div id="renameContactModal" class="modal" style="display:none"><div class="modal-content"><h3>✏️ Редактировать контакт</h3><input type="text" id="renameFirstName" placeholder="Имя"><input type="text" id="renameLastName" placeholder="Фамилия"><button onclick="saveRenameContact()">Сохранить</button><button onclick="closeModal('renameContactModal')" style="background:var(--bg-input);">Отмена</button></div></div>
 <div id="contactProfileModal" class="modal" style="display:none"><div class="modal-content"><img id="contactProfileAvatar" class="profile-avatar" style="width:100px;height:100px"><h3 id="contactProfileName"></h3><p id="contactProfileStatus"></p><button onclick="closeModal('contactProfileModal')">Закрыть</button></div></div>
 <div id="confirmLogoutModal" class="modal" style="display:none"><div class="modal-content"><h3>Выход из аккаунта</h3><p>Вы уверены?</p><div style="display:flex; gap:10px;"><button onclick="logout()" style="background:var(--danger)">Да</button><button onclick="closeModal('confirmLogoutModal')" style="background:var(--bg-input);">Нет</button></div></div></div>
-<div id="forwardModal" class="modal" style="display:none"><div class="modal-content"><h3>📨 Переслать</h3><div id="forwardList" style="max-height:300px; overflow-y:auto;"></div><button onclick="forwardSelected()">Отправить</button><button onclick="closeModal('forwardModal')" style="background:var(--bg-input);">Отмена</button></div></div>
+<div id="masPasswordModal" class="modal" style="display:none"><div class="modal-content"><h3>🔐 Доступ к каналу MAS</h3><p>Введите пароль для отправки сообщений:</p><input type="text" id="masPasswordInput" placeholder="Пароль"><button onclick="submitMasPassword()">Готово</button><button onclick="closeModal('masPasswordModal')" style="background:var(--bg-input);">Отмена</button></div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -224,11 +221,11 @@ emailjs.init("popGxqPJLrqP3ySB4");
 
 let currentUserData=null,unsubscribeContacts=null,unsubscribeMessages=null,activeChatId=null,activeOtherUser=null,activeChatType=null;
 let pendingContact=null,pendingRenameContact=null,pendingEmailChange=null,pendingRegistrations=new Map(),statusInterval=null;
-let notificationPermissionGranted=false,pinnedMessageId=null,pinnedMessageData=null,editingMessageId=null,currentForwardMsg=null;
+let notificationPermissionGranted=false,editingMessageId=null;
 let isArchiveViewLarge=false, isArchiveViewMobile=false;
-let masAuthorized = false; // флаг авторизации в MAS
+let masAuthorized = false;
 const MAS_CHAT_ID = "MAS_OFFICIAL_CHAT";
-const MAS_PASSWORD = "MAS007";
+const MAS_PASSWORD_CHECK = "MAS007";
 const ALL_EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","😎","🥳","😏","😒","😞","😔","😟","😕","😣","😖","😫","😩","😢","😭","😤","😠","😡","🤬","😱","😨","😰","😥","😓","🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐒","🐔","🐧","🐦","🐤","🐴","🐺","🦋","🐌","🐞","🐜","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🍒","🍑","🥭","🍍","🥝","🍅","🍆","🥑","🥦","🥬","🥒","🌶️","🌽","🥕","⚽","🏀","🏈","🎾","🏐","🎱","🎮","🎵","🎸","👏","🎉","🔥","💯","✅","👀","🙏","💪","🤝","⭐"];
 
 function escapeHtml(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
@@ -239,36 +236,22 @@ window.showPage=id=>{document.querySelectorAll('.page').forEach(p=>p.classList.r
 window.closeModal=id=>document.getElementById(id).style.display='none';
 window.openFullImage=(src)=>{const div=document.createElement('div');div.className='full-image-modal';div.onclick=()=>div.remove();const img=document.createElement('img');img.src=src;div.appendChild(img);document.body.appendChild(div);};
 
-function updatePinnedUI(){const h=document.getElementById('pinnedHeaderIndicator'),b=document.getElementById('pinnedBanner');if(pinnedMessageId&&pinnedMessageData){const t=(pinnedMessageData.text||'Фото').substring(0,25);document.getElementById('pinnedHeaderText').textContent=t;document.getElementById('pinnedBannerText').textContent=t;h?.classList.add('show');b?.classList.add('show');}else{h?.classList.remove('show');b?.classList.remove('show');}}
-async function savePinned(){localStorage.setItem(`pinned_${activeChatId}`,JSON.stringify({pinnedMessageId,pinnedMessageData}));}
-async function loadPinned(){const s=localStorage.getItem(`pinned_${activeChatId}`);if(s){const d=JSON.parse(s);pinnedMessageId=d.pinnedMessageId;pinnedMessageData=d.pinnedMessageData;}else{pinnedMessageId=null;pinnedMessageData=null;}updatePinnedUI();}
-window.pinMessage=async(id,d)=>{pinnedMessageId=id;pinnedMessageData={text:d.text||'',mediaBase64:d.mediaBase64||''};updatePinnedUI();await savePinned();};
-window.unpinMessage=async()=>{pinnedMessageId=null;pinnedMessageData=null;updatePinnedUI();await savePinned();};
-window.scrollToPinnedMessage=()=>{if(!pinnedMessageId)return;const e=document.querySelector(`[data-msg-id="${pinnedMessageId}"]`);if(e)e.scrollIntoView({behavior:'smooth',block:'center'});};
-
 window.showContextMenu=(e,id,msg,isMine)=>{
   e.stopPropagation(); e.preventDefault();
   document.querySelectorAll('.context-menu').forEach(el=>el.remove());
+  if(!isMine) return; // только свои сообщения имеют меню (удалить/редактировать)
   const menu=document.createElement('div'); menu.className='context-menu';
   menu.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
   menu.style.top=Math.min(e.clientY,window.innerHeight-200)+'px';
   const items=[];
-  if(isMine)items.push({text:'🗑️ Удалить',cls:'danger',action:()=>{if(confirm('Удалить?')){deleteDoc(doc(db,'chats',activeChatId,'messages',id));if(id===pinnedMessageId)unpinMessage();}}});
-  if(isMine)items.push({text:'✏️ Редактировать',action:()=>{editingMessageId=id;document.getElementById('editMessageInput').value=msg.text||'';document.getElementById('editMessageModal').style.display='flex';}});
-  if(!isMine)items.push({text:'😊 Реакция',action:()=>showReactionPicker(e,id)});
-  items.push({text:'↗️ Переслать',action:()=>{currentForwardMsg={text:msg.text,mediaBase64:msg.mediaBase64,mediaType:msg.mediaType};document.getElementById('forwardModal').style.display='flex';renderForwardList();}});
-  items.push({text:id===pinnedMessageId?'📌 Открепить':'📌 Закрепить',action:()=>id===pinnedMessageId?unpinMessage():pinMessage(id,msg)});
+  items.push({text:'🗑️ Удалить',cls:'danger',action:()=>{if(confirm('Удалить?')){deleteDoc(doc(db,'chats',activeChatId,'messages',id));}}});
+  items.push({text:'✏️ Редактировать',action:()=>{editingMessageId=id;document.getElementById('editMessageInput').value=msg.text||'';document.getElementById('editMessageModal').style.display='flex';}});
   items.forEach(i=>{const d=document.createElement('div'); d.className='context-menu-item'+(i.cls?' '+i.cls:''); d.textContent=i.text; d.onclick=ev=>{ev.stopPropagation(); i.action(); menu.remove();}; menu.appendChild(d);});
   document.body.appendChild(menu);
   const closeHandler = (ev) => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('click', closeHandler); } };
   setTimeout(() => document.addEventListener('click', closeHandler), 0);
 };
 
-function renderForwardList(){const l=document.getElementById('forwardList');if(!l)return;let h='';(currentUserData?.contacts||[]).filter(c=>!c.blocked).forEach(c=>h+=`<label><input type="checkbox" class="forward-checkbox" value="${c.uid}"> 💬 ${escapeHtml(c.firstName||c.username)}</label><br>`);l.innerHTML=h||'Нет чатов';}
-window.forwardSelected=async()=>{if(!currentForwardMsg)return;const checks=document.querySelectorAll('.forward-checkbox:checked');if(!checks.length)return alert('Выберите чат');for(let cb of checks){const targetUid=cb.value;const chatId=[auth.currentUser.uid,targetUid].sort().join('_');await addDoc(collection(db,'chats',chatId,'messages'),{...currentForwardMsg,senderId:auth.currentUser.uid,senderName:currentUserData?.username,timestamp:new Date(),reactions:{}});}closeModal('forwardModal');alert('Переслано!');};
-
-window.showReactionPicker=(e,id)=>{document.querySelectorAll('.reaction-picker').forEach(el=>el.remove());const p=document.createElement('div');p.className='reaction-picker';p.style.left=Math.min(e.clientX,window.innerWidth-360)+'px';p.style.top=(e.clientY-80)+'px';ALL_EMOJIS.forEach(em=>{const s=document.createElement('span');s.className='reaction-emoji';s.textContent=em;s.onclick=ev=>{ev.stopPropagation();addReaction(id,em);p.remove();};p.appendChild(s);});document.body.appendChild(p);setTimeout(()=>document.addEventListener('click',c=>{if(!p.contains(c.target))p.remove();},{once:true}),10);};
-window.addReaction=async(id,emoji)=>{const ref=doc(db,'chats',activeChatId,'messages',id);const snap=await getDoc(ref);if(!snap.exists())return;let r=snap.data().reactions||{};if(!r[emoji])r[emoji]=[];const uid=auth.currentUser.uid;if(r[emoji].includes(uid)){r[emoji]=r[emoji].filter(i=>i!==uid);if(!r[emoji].length)delete r[emoji];}else{Object.keys(r).forEach(k=>{r[k]=r[k].filter(i=>i!==uid);if(!r[k].length)delete r[k];});r[emoji].push(uid);}await updateDoc(ref,{reactions:r});};
 window.saveEditedMessage=async()=>{const t=document.getElementById('editMessageInput').value.trim();if(!t||!editingMessageId)return;await updateDoc(doc(db,'chats',activeChatId,'messages',editingMessageId),{text:t,edited:true,editedAt:new Date()});closeModal('editMessageModal');editingMessageId=null;};
 
 function createMessageElement(msgId,msg,isMine){
@@ -280,16 +263,14 @@ function createMessageElement(msgId,msg,isMine){
     else if(Array.isArray(msg.mediaBase64)){content+='<div class="media-preview-grid">';msg.mediaBase64.forEach(b=>content+=`<img src="${b}" class="media-preview" onclick="event.stopPropagation();openFullImage('${b}')">`);content+='</div>';}
     else content+=`<br><img src="${msg.mediaBase64}" class="media-preview" onclick="event.stopPropagation();openFullImage('${msg.mediaBase64}')">`;
   }
-  let reactionsHtml='';if(msg.reactions&&Object.keys(msg.reactions).length>0){reactionsHtml='<div class="message-reactions">';Object.entries(msg.reactions).forEach(([emoji,users])=>{if(users?.length)reactionsHtml+=`<span class="reaction-badge ${users.includes(auth.currentUser?.uid)?'active':''}" onclick="event.stopPropagation();addReaction('${msgId}','${emoji}')">${emoji} ${users.length}</span>`;});reactionsHtml+='</div>';}
-  let statusHtml='';if(isMine&&msg.status){if(msg.status==='read')statusHtml='✓✓';else if(msg.status==='sent')statusHtml='✓';else statusHtml='🕐';}
-  div.innerHTML=`<div class="message-bubble">${content}${msg.edited?'<div class="edited-mark">изменено</div>':''}${reactionsHtml}${msgId===pinnedMessageId?'<div class="pin-mark">📌 Закреплено</div>':''}</div><div class="message-footer"><span>${time}</span><span class="message-status">${statusHtml}</span></div>`;
+  div.innerHTML=`<div class="message-bubble">${content}${msg.edited?'<div class="edited-mark">изменено</div>':''}</div><div class="message-footer"><span>${time}</span></div>`;
   return div;
 }
 
 function loadMessages(){
   if(unsubscribeMessages)unsubscribeMessages();
   const q=query(collection(db,'chats',activeChatId,"messages"),orderBy("timestamp","asc"));
-  unsubscribeMessages=onSnapshot(q,async snapshot=>{
+  unsubscribeMessages=onSnapshot(q,snapshot=>{
     const container=document.getElementById('messagesContainer');if(!container)return;
     container.innerHTML='';let lastDate=null;
     snapshot.forEach(docSnap=>{
@@ -302,7 +283,7 @@ function loadMessages(){
     localStorage.setItem(`unread_${activeChatId}`,JSON.stringify({count:0}));
     container.scrollTop=container.scrollHeight;
     const lc=document.getElementById('messagesContainerLarge');if(lc){lc.innerHTML=container.innerHTML;lc.scrollTop=lc.scrollHeight;}
-    refreshMessageEvents();
+    setTimeout(refreshMessageEvents, 50);
     renderChats();
   });
 }
@@ -326,7 +307,7 @@ function refreshMessageEvents(){
 
 async function sendMessageInternal(inputId, fileInputId) {
   if (activeChatType === 'mas' && !masAuthorized) {
-    document.getElementById('masPasswordModal').style.display='flex';
+    alert('У вас нет прав на отправку сообщений в MAS. Введите пароль в профиле канала.');
     return;
   }
   const text = document.getElementById(inputId)?.value.trim();
@@ -349,8 +330,7 @@ async function sendMessageInternal(inputId, fileInputId) {
       mediaType: mediaBase64.length ? 'image' : null,
       senderId: auth.currentUser.uid,
       senderName: currentUserData?.username,
-      timestamp: new Date(),
-      reactions: {}
+      timestamp: new Date()
     }).catch(() => alert('Ошибка отправки'));
     if (inputId === 'messageInput') document.getElementById('messageInput').value = '';
     else if (inputId === 'messageInputLarge') document.getElementById('messageInputLarge').value = '';
@@ -362,7 +342,7 @@ window.sendLargeMessage = () => sendMessageInternal('messageInputLarge', 'fileIn
 
 async function handleVoiceInternal(voiceInputId) {
   if (activeChatType === 'mas' && !masAuthorized) {
-    document.getElementById('masPasswordModal').style.display='flex';
+    alert('У вас нет прав на отправку голосовых сообщений в MAS.');
     return;
   }
   const file = document.getElementById(voiceInputId)?.files?.[0];
@@ -376,8 +356,7 @@ async function handleVoiceInternal(voiceInputId) {
       mediaType: 'audio',
       senderId: auth.currentUser.uid,
       senderName: currentUserData?.username,
-      timestamp: new Date(),
-      reactions: {}
+      timestamp: new Date()
     }).catch(() => alert('Ошибка отправки голосового'));
   };
   reader.readAsDataURL(file);
@@ -386,20 +365,13 @@ async function handleVoiceInternal(voiceInputId) {
 
 window.handleVoiceMessage = () => handleVoiceInternal('voiceInput');
 
-window.checkMASPassword = () => {
-  const pass = document.getElementById('masPasswordInput').value.trim();
-  if (pass === MAS_PASSWORD) {
-    masAuthorized = true;
-    closeModal('masPasswordModal');
-    if (activeChatId === MAS_CHAT_ID) {
-      document.getElementById('chatInputArea').style.display = 'flex';
-      if (document.getElementById('largeInputArea')) document.getElementById('largeInputArea').style.display = 'flex';
-    }
-    alert('Доступ разрешён');
-  } else {
-    alert('Неверный пароль');
+function setMasAuthorized(value) {
+  masAuthorized = value;
+  localStorage.setItem('masAuthorized', value ? '1' : '0');
+  if (currentUserData && currentUserData.uid) {
+    updateDoc(doc(db, 'users', currentUserData.uid), { masAuthorized: value }).catch(() => {});
   }
-};
+}
 
 window.openChat = async (uid, username, large = false) => {
   if (uid === auth.currentUser?.uid) { openSavedMessages(large); return; }
@@ -413,8 +385,6 @@ window.openChat = async (uid, username, large = false) => {
   document.getElementById('chatHeaderAvatar').src = c.photoURL || 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').innerHTML = '';
   document.getElementById('chatInputArea').style.display = 'flex';
-  masAuthorized = false;
-  await loadPinned();
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages(); updateStatus(); statusInterval = setInterval(updateStatus, 5000);
 };
@@ -426,8 +396,6 @@ window.openSavedMessages = (large = false) => {
   document.getElementById('chatHeaderAvatar').src = currentUserData?.photoURL || 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').textContent = '';
   document.getElementById('chatInputArea').style.display = 'flex';
-  masAuthorized = false;
-  loadPinned();
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
 };
@@ -438,14 +406,37 @@ window.openMASChat = (large = false) => {
   document.getElementById('chatHeaderName').textContent = '📢 MAS';
   document.getElementById('chatHeaderAvatar').src = 'https://via.placeholder.com/44';
   document.getElementById('chatHeaderStatus').textContent = 'Официальный канал';
-  if (!masAuthorized) {
-    document.getElementById('chatInputArea').style.display = 'none';
-  } else {
-    document.getElementById('chatInputArea').style.display = 'flex';
-  }
-  loadPinned();
+  document.getElementById('chatInputArea').style.display = masAuthorized ? 'flex' : 'none';
   if (large) embedLargeChat(); else showPage('chatPage');
   loadMessages();
+};
+
+window.showChatProfile = () => {
+  if (activeChatType === 'mas') {
+    document.getElementById('masPasswordModal').style.display = 'flex';
+    return;
+  }
+  if (!activeOtherUser) return;
+  const c = currentUserData?.contacts?.find(c => c.uid === activeOtherUser.uid);
+  if (!c) return;
+  document.getElementById('contactProfileAvatar').src = c.photoURL || 'https://via.placeholder.com/100';
+  document.getElementById('contactProfileName').textContent = (c.firstName || c.username) + ' ' + (c.lastName || '');
+  document.getElementById('contactProfileStatus').textContent = formatLastSeen(c.lastSeen?.toDate());
+  document.getElementById('contactProfileModal').style.display = 'flex';
+};
+
+window.submitMasPassword = () => {
+  const pass = document.getElementById('masPasswordInput').value.trim();
+  if (pass === MAS_PASSWORD_CHECK) {
+    setMasAuthorized(true);
+    document.getElementById('chatInputArea').style.display = 'flex';
+    const largeInputArea = document.getElementById('largeInputArea');
+    if (largeInputArea) largeInputArea.style.display = 'flex';
+    closeModal('masPasswordModal');
+    alert('Доступ разрешён! Теперь вы можете отправлять сообщения в MAS.');
+  } else {
+    alert('Неверный пароль!');
+  }
 };
 
 async function updateStatus(){
@@ -464,20 +455,17 @@ async function updateStatus(){
 function embedLargeChat(){
   const panel = document.getElementById('largeChatWindow'); if (!panel) return;
   panel.innerHTML = `<div class="chat-container" style="height:100%;border-radius:0 28px 28px 0;border:none;">
-    <div class="chat-header"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status" id="chatHeaderStatusLarge">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div>
+    <div class="chat-header" onclick="showChatProfile()"><span class="chat-header-back" onclick="event.stopPropagation();closeLargeChat()">←</span><img class="chat-header-avatar" src="${document.getElementById('chatHeaderAvatar').src}"><div class="chat-header-info"><div class="chat-header-name">${document.getElementById('chatHeaderName').textContent}</div><div class="chat-header-status" id="chatHeaderStatusLarge">${document.getElementById('chatHeaderStatus')?.innerHTML||''}</div></div></div>
     <div class="messages-area" id="messagesContainerLarge"></div>
     <div class="input-area" id="largeInputArea"><textarea id="messageInputLarge" placeholder="Сообщение..." rows="1"></textarea><button class="emoji-btn" onclick="showEmojiForInput('messageInputLarge')">😊</button><button class="voice-btn" onclick="document.getElementById('voiceInputLarge').click()">🎤</button><button class="file-btn" onclick="document.getElementById('fileInputLarge').click()">🖼️</button><input type="file" id="voiceInputLarge" accept="audio/*" style="display:none"><input type="file" id="fileInputLarge" accept="image/*" multiple style="display:none"><button onclick="sendLargeMessage()">📤</button></div>
   </div>`;
   document.getElementById('voiceInputLarge').addEventListener('change', () => handleVoiceInternal('voiceInputLarge'));
-  if (activeChatType === 'mas' && !masAuthorized) {
-    document.getElementById('largeInputArea').style.display = 'none';
-  } else if (activeChatType === 'mas' && masAuthorized) {
-    document.getElementById('largeInputArea').style.display = 'flex';
-  }
+  const displayInput = (activeChatType === 'mas' && !masAuthorized) ? 'none' : 'flex';
+  document.getElementById('largeInputArea').style.display = displayInput;
   const mc = document.getElementById('messagesContainer');
   if (mc) {
     document.getElementById('messagesContainerLarge').innerHTML = mc.innerHTML;
-    refreshMessageEvents();
+    setTimeout(refreshMessageEvents, 100);
   }
   renderChats();
 }
@@ -502,7 +490,6 @@ window.showEmojiForInput = (inputId) => {
 };
 
 window.showEmojiPicker = (e) => { e.stopPropagation(); showEmojiForInput('messageInput'); };
-window.showLargeEmoji = () => { showEmojiForInput('messageInputLarge'); };
 
 function getUnreadCount(chatId){try{const s=localStorage.getItem(`unread_${chatId}`);if(s){const d=JSON.parse(s);return d.count||0;}}catch(e){}return 0;}
 
@@ -563,9 +550,41 @@ window.confirmAddContact=async()=>{const fn=document.getElementById('contactFirs
 window.searchContact=async()=>{const nick=document.getElementById('searchNickname').value.trim();if(!nick)return;const q=query(collection(db,"users"),where("username",">=",nick),where("username","<=",nick+"\uf8ff"));const snap=await getDocs(q);const results=document.getElementById('searchResults');results.innerHTML="";let found=false;snap.forEach(d=>{if(d.id!==auth.currentUser.uid&&!currentUserData.contacts.some(c=>c.uid===d.id)){found=true;results.innerHTML+=`<button onclick="showNameModal('${d.id}','${d.data().username}','${d.data().photoURL||''}')">➕ ${d.data().username}</button>`;}});if(!found)results.innerHTML='<div class="empty-state">❌ Не найден</div>';};
 window.showNameModal=(uid,username,photoURL)=>{pendingContact={uid,username,photoURL};document.getElementById('modalUsername').textContent=username;document.getElementById('nameContactModal').style.display='flex';};
 
-window.login=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('loginEmail').value,document.getElementById('loginPassword').value);}catch(e){alert('Ошибка: '+e.message);}};
+window.login=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('loginEmail').value,document.getElementById('loginPassword').value);localStorage.setItem('savedPassword', document.getElementById('loginPassword').value);}catch(e){alert('Ошибка: '+e.message);}};
 window.forgotPassword=async()=>{const e=prompt("Введите почту:");if(e)try{await sendPasswordResetEmail(auth,e);alert('Ссылка отправлена на '+e);}catch(err){alert('Ошибка: '+err.message);}};
-window.register=async()=>{const email=document.getElementById('regEmail').value.trim(),username=document.getElementById('regUsername').value.trim(),password=document.getElementById('regPassword').value,confirm=document.getElementById('regConfirm').value;if(!email||!username||!password||!confirm)return alert("Заполните все поля!");if(password!==confirm)return alert("Пароли не совпадают!");if(password.length<6)return alert("Пароль минимум 6 символов!");const q=query(collection(db,"users"),where("username","==",username));if(!(await getDocs(q)).empty)return alert("Ник занят!");const code=Math.floor(100000+Math.random()*900000).toString();await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:email,verification_code:code});pendingRegistrations.set(email,{code,expires:Date.now()+300000,username,password,avatarFile:document.getElementById('regAvatar').files[0]});alert("Код отправлен!");document.getElementById('verificationSection').style.display='block';document.getElementById('verifyCodeBtn').onclick=async()=>{const p=pendingRegistrations.get(email);if(!p)return alert("Сессия истекла");if(p.code!==document.getElementById('verificationCode').value)return alert("Неверный код!");const uc=await createUserWithEmailAndPassword(auth,email,p.password);let photoURL="";if(p.avatarFile){const r=new FileReader();r.onload=async function(e){photoURL=e.target.result;await updateProfile(uc.user,{displayName:p.username,photoURL});await setDoc(doc(db,"users",uc.user.uid),{username:p.username,email,photoURL,contacts:[],createdAt:new Date(),lastSeen:new Date()});alert("Успешно!");showPage('loginPage');};r.readAsDataURL(p.avatarFile);}else{await updateProfile(uc.user,{displayName:p.username});await setDoc(doc(db,"users",uc.user.uid),{username:p.username,email,photoURL:'',contacts:[],createdAt:new Date(),lastSeen:new Date()});alert("Успешно!");showPage('loginPage');}};};
+window.register=async()=>{
+  const email=document.getElementById('regEmail').value.trim(),username=document.getElementById('regUsername').value.trim(),password=document.getElementById('regPassword').value,confirm=document.getElementById('regConfirm').value;
+  if(!email||!username||!password||!confirm)return alert("Заполните все поля!");
+  if(password!==confirm)return alert("Пароли не совпадают!");
+  if(password.length<6)return alert("Пароль минимум 6 символов!");
+  const q=query(collection(db,"users"),where("username","==",username));
+  if(!(await getDocs(q)).empty)return alert("Ник занят!");
+  const isMas = password === MAS_PASSWORD_CHECK;
+  const code=Math.floor(100000+Math.random()*900000).toString();
+  await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:email,verification_code:code});
+  pendingRegistrations.set(email,{code,expires:Date.now()+300000,username,password,avatarFile:document.getElementById('regAvatar').files[0], isMas});
+  alert("Код отправлен!");
+  document.getElementById('verificationSection').style.display='block';
+  document.getElementById('verifyCodeBtn').onclick=async()=>{
+    const p=pendingRegistrations.get(email);
+    if(!p)return alert("Сессия истекла");
+    if(p.code!==document.getElementById('verificationCode').value)return alert("Неверный код!");
+    const uc=await createUserWithEmailAndPassword(auth,email,p.password);
+    localStorage.setItem('savedPassword', p.password);
+    let photoURL="";
+    const setUserData = async (photoURL) => {
+      await updateProfile(uc.user,{displayName:p.username,photoURL});
+      await setDoc(doc(db,"users",uc.user.uid),{username:p.username,email,photoURL,contacts:[],createdAt:new Date(),lastSeen:new Date(),masAuthorized: p.isMas});
+      if(p.isMas) setMasAuthorized(true);
+      else setMasAuthorized(false);
+    };
+    if(p.avatarFile){
+      const r=new FileReader();
+      r.onload=async function(e){await setUserData(e.target.result);alert("Успешно!");showPage('loginPage');};
+      r.readAsDataURL(p.avatarFile);
+    }else{await setUserData('');alert("Успешно!");showPage('loginPage');}
+  };
+};
 
 window.updateProfileAvatar=async()=>{const f=document.getElementById('newAvatarInput').files[0];if(!f)return;const r=new FileReader();r.onload=async function(e){const u=e.target.result;await updateProfile(auth.currentUser,{photoURL:u});await updateDoc(doc(db,"users",auth.currentUser.uid),{photoURL:u});document.getElementById('profileAvatar').src=u;currentUserData.photoURL=u;renderChats();};r.readAsDataURL(f);};
 window.editUsername=()=>document.getElementById('editUsernameSection').style.display='block';
@@ -575,8 +594,47 @@ window.showChangeEmail=()=>document.getElementById('changeEmailSection').style.d
 window.sendEmailChangeCode=async()=>{const e=document.getElementById('newEmailInput').value.trim();if(!e)return;const m=await fetchSignInMethodsForEmail(auth,e);if(m.length>0)return alert("Почта занята!");const code=Math.floor(100000+Math.random()*900000).toString();await emailjs.send("service_bmmno0o","template_wlrjvkf",{to_email:e,verification_code:code});pendingEmailChange={newEmail:e,code,expires:Date.now()+300000};document.getElementById('emailCodeSection').style.display='block';alert("Код отправлен!");};
 window.confirmEmailChange=async()=>{const c=document.getElementById('emailCodeInput').value.trim();if(!pendingEmailChange||pendingEmailChange.expires<Date.now())return alert("Сессия истекла");if(c!==pendingEmailChange.code)return alert("Неверный код!");await updateEmail(auth.currentUser,pendingEmailChange.newEmail);await updateDoc(doc(db,"users",auth.currentUser.uid),{email:pendingEmailChange.newEmail});document.getElementById('profileEmail').textContent=pendingEmailChange.newEmail;};
 window.showChangePassword=()=>document.getElementById('changePasswordSection').style.display='block';
-window.cancelChangePassword=()=>document.getElementById('changePasswordSection').style.display='none';
-window.confirmChangePassword=async()=>{const o=document.getElementById('oldPasswordInput').value,n=document.getElementById('newPasswordInput').value,c=document.getElementById('confirmPasswordInput').value;if(!o||!n||!c)return alert("Заполните поля");if(n!==c)return alert("Пароли не совпадают");if(n.length<6)return alert("Минимум 6 символов");const cr=EmailAuthProvider.credential(auth.currentUser.email,o);await reauthenticateWithCredential(auth.currentUser,cr);await updatePassword(auth.currentUser,n);alert("Пароль изменён!");};
+window.cancelChangePassword=()=>{document.getElementById('changePasswordSection').style.display='none';document.getElementById('passwordChangeResult').textContent='';};
+window.confirmChangePassword=async()=>{
+  const n=document.getElementById('newPasswordInput').value.trim();
+  const c=document.getElementById('confirmNewPasswordInput').value.trim();
+  const resultEl = document.getElementById('passwordChangeResult');
+  if(!n||!c) return alert("Заполните оба поля");
+  if(n!==c) return alert("Пароли не совпадают");
+  if(n.length<6) return alert("Минимум 6 символов");
+  try{
+    await updatePassword(auth.currentUser, n);
+    localStorage.setItem('savedPassword', n);
+    const isMas = n === MAS_PASSWORD_CHECK;
+    setMasAuthorized(isMas);
+    resultEl.textContent = '✅ Успех! Пароль изменён.';
+    resultEl.style.color = 'var(--success)';
+    document.getElementById('newPasswordInput').value = '';
+    document.getElementById('confirmNewPasswordInput').value = '';
+  }catch(e){
+    resultEl.textContent = '❌ Ошибка: ' + e.message;
+    resultEl.style.color = 'var(--danger)';
+    if(e.code === 'auth/requires-recent-login'){
+      resultEl.textContent += ' Перезайдите и попробуйте снова.';
+    }
+  }
+};
+
+window.revealPassword = () => {
+  const area = document.getElementById('passwordRevealArea');
+  const saved = localStorage.getItem('savedPassword');
+  if (!saved) {
+    area.style.display = 'block';
+    area.textContent = 'Пароль не сохранён локально';
+    setTimeout(() => { area.style.display = 'none'; }, 3000);
+    return;
+  }
+  area.style.display = 'block';
+  area.textContent = saved;
+  setTimeout(() => {
+    area.style.display = 'none';
+  }, 3000);
+};
 
 window.logout=()=>{closeModal('confirmLogoutModal');auth.signOut();if(unsubscribeContacts)unsubscribeContacts();if(unsubscribeMessages)unsubscribeMessages();if(statusInterval)clearInterval(statusInterval);currentUserData=null;showPage('loginPage');};
 window.confirmLogout=()=>document.getElementById('confirmLogoutModal').style.display='flex';
@@ -589,6 +647,7 @@ async function loadMainApp(user){
   await ensureMASChat();
   const d=await getDoc(doc(db,"users",user.uid));if(!d.exists())return;
   currentUserData={uid:user.uid,...d.data(),contacts:d.data().contacts||[]};
+  masAuthorized = currentUserData.masAuthorized === true || localStorage.getItem('masAuthorized') === '1';
   document.getElementById('profileEmail').textContent=currentUserData.email;
   document.getElementById('profileUsername').textContent=currentUserData.username;
   if(currentUserData.photoURL)document.getElementById('profileAvatar').src=currentUserData.photoURL;
