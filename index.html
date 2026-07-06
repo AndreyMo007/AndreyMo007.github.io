@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#000000">
   <meta name="screen-orientation" content="landscape">
   <title>3D Brawl Arena</title>
@@ -12,78 +12,64 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;height:100vh;width:100vw;font-family:Arial,sans-serif;position:fixed}
+    @media(orientation:portrait){body{transform:rotate(90deg);transform-origin:center center;width:100vh;height:100vw}}
     .screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh}
     .screen.active{display:flex}
-    #installScreen{flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a0033,#0a0a2e);color:#fff;text-align:center;z-index:200}
-    #installScreen .logo{font-size:80px;animation:bounce 1.5s infinite}
-    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-25px)}}
-    #installScreen h1{font-size:2.5rem;background:linear-gradient(45deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:15px 0}
-    .install-btn{background:#ff6b6b;color:#fff;padding:18px 50px;border-radius:50px;font-size:1.2rem;font-weight:700;cursor:pointer;border:none;animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{box-shadow:0 8px 25px rgba(255,107,107,0.4)}50%{box-shadow:0 8px 45px rgba(255,107,107,0.8)}}
-    #nickScreen{flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a0a2e,#1a0033);color:#fff;z-index:199}
-    #nickScreen h2{font-size:2rem;margin-bottom:20px}
+    #installScreen{flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a0033,#0a0a2e);color:#fff;text-align:center;z-index:999}
+    #installScreen h1{font-size:2.5rem;background:linear-gradient(45deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .install-btn{background:#ff6b6b;color:#fff;padding:18px 50px;border-radius:50px;font-size:1.2rem;font-weight:700;cursor:pointer;border:none;margin-top:20px}
+    #nickScreen{flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a0a2e,#1a0033);color:#fff;z-index:998}
     #nickScreen input{width:280px;padding:15px;border-radius:15px;border:2px solid #4d96ff;background:rgba(255,255,255,0.1);color:#fff;font-size:18px;text-align:center;outline:none}
     #nickScreen button{margin-top:15px;padding:14px 40px;border-radius:50px;background:#6bcb77;color:#fff;font-size:1.1rem;font-weight:700;border:none;cursor:pointer}
     #lobbyScreen{flex-direction:column;align-items:center;background:linear-gradient(180deg,#1a3a5c,#0a1a2e 50%,#1a0033);z-index:100;padding:20px}
-    .lobby-top{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:20px}
-    .nick-display{color:#ffd93d;font-size:22px;font-weight:700}
-    .trophy-display{color:#fff;font-size:18px}
-    .lobby-center{flex:1;display:flex;align-items:center;justify-content:center}
-    .character-display{width:180px;height:180px;border-radius:50%;background:rgba(68,136,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid rgba(68,136,255,0.5);font-size:80px}
-    .play-btn{padding:20px 60px;background:linear-gradient(135deg,#ffd93d,#ff8800);color:#000;border-radius:16px;font-size:1.4rem;font-weight:800;border:none;cursor:pointer;letter-spacing:3px;margin-top:30px}
-    #collectionScreen{flex-direction:column;background:linear-gradient(180deg,#0a0a2e,#1a0033);color:#fff;z-index:150;overflow-y:auto;padding:20px}
-    .collection-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .back-btn{padding:10px 20px;background:rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;font-size:14px}
-    .brawlers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-    .brawler-card{background:rgba(255,255,255,0.1);border-radius:20px;padding:15px;text-align:center;cursor:pointer;border:2px solid transparent}
-    .brawler-card.selected{border-color:#ffd93d;background:rgba(255,217,61,0.15)}
-    .brawler-icon{font-size:60px;margin-bottom:10px}
-    .brawler-name{font-weight:700;font-size:14px}
+    .lobby-top{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:10px}
+    .nick-display{color:#ffd93d;font-size:20px;font-weight:700}
+    .play-btn{padding:18px 55px;background:linear-gradient(135deg,#ffd93d,#ff8800);color:#000;border-radius:14px;font-size:1.3rem;font-weight:800;border:none;cursor:pointer;letter-spacing:2px;margin-top:15px}
+    #collectionScreen{flex-direction:column;background:#0a0a2e;color:#fff;z-index:150;overflow-y:auto;padding:20px}
+    .brawlers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .brawler-card{background:rgba(255,255,255,0.08);border-radius:16px;padding:12px;text-align:center;cursor:pointer;border:2px solid transparent}
+    .brawler-card.selected{border-color:#ffd93d}
     #gameScreen{z-index:50}
     canvas{display:block;width:100%;height:100%}
-    .countdown-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;font-size:100px;color:#ffd93d;font-weight:900;pointer-events:none;text-shadow:0 0 50px rgba(255,217,61,0.8)}
-    .joystick{position:absolute;bottom:100px;width:110px;height:110px;z-index:20}
-    #moveJoystick{left:25px}
-    #attackJoystick{right:25px}
-    #moveJoystick .js-base{width:100%;height:100%;background:rgba(68,136,255,0.12);border-radius:50%;border:3px solid rgba(68,136,255,0.4);position:relative}
-    #attackJoystick .js-base{width:100%;height:100%;background:rgba(255,68,68,0.12);border-radius:50%;border:3px solid rgba(255,68,68,0.4);position:relative}
-    .js-thumb{width:45px;height:45px;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
-    #moveJoystick .js-thumb{background:rgba(68,136,255,0.6);border:2px solid #4488ff;box-shadow:0 0 12px rgba(68,136,255,0.4)}
-    #attackJoystick .js-thumb{background:rgba(255,68,68,0.6);border:2px solid #ff4444;box-shadow:0 0 12px rgba(255,68,68,0.4)}
-    .js-label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;text-transform:uppercase}
-    #moveJoystick .js-label{color:rgba(68,136,255,0.7)}
-    #attackJoystick .js-label{color:rgba(255,68,68,0.7)}
+    .countdown-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;font-size:90px;color:#ffd93d;font-weight:900;pointer-events:none}
+    .joystick{position:absolute;bottom:80px;width:100px;height:100px;z-index:20}
+    #moveJoystick{left:20px}#attackJoystick{right:20px}
+    #moveJoystick .js-base{width:100%;height:100%;background:rgba(68,136,255,0.1);border-radius:50%;border:3px solid rgba(68,136,255,0.3);position:relative}
+    #attackJoystick .js-base{width:100%;height:100%;background:rgba(255,68,68,0.1);border-radius:50%;border:3px solid rgba(255,68,68,0.3);position:relative}
+    .js-thumb{width:40px;height:40px;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+    #moveJoystick .js-thumb{background:rgba(68,136,255,0.5);border:2px solid #4488ff}
+    #attackJoystick .js-thumb{background:rgba(255,68,68,0.5);border:2px solid #ff4444}
+    .js-label{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;text-transform:uppercase}
     .game-over-overlay{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;flex-direction:column;align-items:center;justify-content:center;color:#fff}
-    .game-over-overlay h2{font-size:2.5rem;margin-bottom:10px}
     .game-over-overlay button{margin-top:15px;padding:14px 35px;background:#6bcb77;color:#fff;border-radius:50px;font-size:1.1rem;font-weight:700;border:none;cursor:pointer}
     .hidden{display:none!important}
-    .game-ui-top{position:absolute;top:10px;right:10px;pointer-events:none;z-index:10;color:#fff;font-size:16px;font-weight:700;background:rgba(0,0,0,0.5);padding:5px 12px;border-radius:10px}
   </style>
 </head>
 <body>
-<div id="installScreen" class="screen"><div class="logo">⚔️</div><h1>3D Brawl Arena</h1><p style="opacity:0.7;margin-bottom:25px">Установите приложение чтобы играть</p><button class="install-btn" id="installBtn" onclick="installApp()">📲 Установить игру</button></div>
-<div id="nickScreen" class="screen"><h2>Введите ваш ник</h2><input type="text" id="nickInput" placeholder="Ваш ник..." maxlength="16"><button onclick="saveNick()">Продолжить</button></div>
-<div id="lobbyScreen" class="screen"><div class="lobby-top"><span class="nick-display" id="lobbyNick">Игрок</span><span class="trophy-display" id="lobbyTrophies">🏆 0</span></div><div class="lobby-center"><div class="character-display" id="selectedBrawler" onclick="openCollection()">🔫</div></div><button class="play-btn" onclick="startBattle()">⚔️ ИГРАТЬ</button></div>
-<div id="collectionScreen" class="screen"><div class="collection-header"><span class="back-btn" onclick="closeCollection()">← Назад</span><h2>Коллекция</h2><span></span></div><div class="brawlers-grid" id="brawlersGrid"></div></div>
-<div id="gameScreen" class="screen"><div class="game-ui-top"><span id="timer">2:00</span> | 🏆 <span id="scoreDisplay">0</span></div><div class="countdown-overlay" id="countdownOverlay">3</div>
-<div class="joystick" id="moveJoystick"><div class="js-label">ДВИЖЕНИЕ</div><div class="js-base" id="moveBase"><div class="js-thumb" id="moveThumb"></div></div></div>
+
+<div id="installScreen" class="screen"><h1>⚔️ 3D Brawl Arena</h1><p style="opacity:0.7;margin:15px 0">Установите приложение чтобы играть</p><button class="install-btn" id="installBtn" onclick="installApp()">📲 Установить</button></div>
+<div id="nickScreen" class="screen"><h2 style="margin-bottom:20px">Введите ник</h2><input type="text" id="nickInput" placeholder="Ваш ник..." maxlength="16"><button onclick="saveNick()">Продолжить</button></div>
+<div id="lobbyScreen" class="screen"><div class="lobby-top"><span class="nick-display" id="lobbyNick">Игрок</span><span style="color:#fff">🏆 <span id="lobbyTrophies">0</span></span></div><div style="flex:1;display:flex;align-items:center"><div style="width:150px;height:150px;border-radius:50%;background:rgba(68,136,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid rgba(68,136,255,0.4);font-size:70px" id="selectedBrawler" onclick="openCollection()">🔫</div></div><button class="play-btn" onclick="startBattle()">⚔️ ИГРАТЬ</button></div>
+<div id="collectionScreen" class="screen"><div style="display:flex;justify-content:space-between;margin-bottom:15px"><span onclick="closeCollection()" style="cursor:pointer;padding:8px 16px;background:rgba(255,255,255,0.1);border-radius:8px">← Назад</span><h2>Бойцы</h2><span></span></div><div class="brawlers-grid" id="brawlersGrid"></div></div>
+<div id="gameScreen" class="screen"><div class="countdown-overlay" id="countdownOverlay">3</div>
+<div class="joystick" id="moveJoystick"><div class="js-label">ДВИЖ</div><div class="js-base" id="moveBase"><div class="js-thumb" id="moveThumb"></div></div></div>
 <div class="joystick" id="attackJoystick"><div class="js-label">АТАКА</div><div class="js-base" id="attackBase"><div class="js-thumb" id="attackThumb"></div></div></div>
-<div class="game-over-overlay" id="gameOver"><h2 id="gameOverTitle">Победа!</h2><div id="gameOverScore">🏆 0</div><button onclick="backToLobby()">В лобби</button></div></div>
+<div class="game-over-overlay" id="gameOver"><h2 id="gameOverTitle">Победа!</h2><div id="gameOverScore" style="font-size:1.5rem;color:#ffd93d">🏆 0</div><button onclick="backToLobby()">В лобби</button></div></div>
 
 <script>
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-let playerNick = localStorage.getItem('brawlNick') || '';
-let selectedBrawlerId = localStorage.getItem('selectedBrawler') || 'soldier';
-let trophies = parseInt(localStorage.getItem('trophies') || '0');
-const MAP_SIZE = 128, BLOCK_SIZE = 1.2;
+const isStandalone=window.matchMedia('(display-mode:standalone)').matches||navigator.standalone;
+let playerNick=localStorage.getItem('brawlNick')||'';
+let selBrawler=localStorage.getItem('selectedBrawler')||'soldier';
+let trophies=parseInt(localStorage.getItem('trophies')||'0');
+const MAP_SIZE=128,BLOCK=1.3;
 
-const brawlers = [
-  {id:'soldier',name:'Солдат',icon:'🔫',color:0x4488ff,hp:120,speed:0.18,reload:1.5,damage:25,bulletSpeed:0.8,attackType:'single'},
-  {id:'sniper',name:'Снайпер',icon:'🎯',color:0x00aa44,hp:90,speed:0.14,reload:2.2,damage:45,bulletSpeed:1.2,attackType:'single'},
-  {id:'heavy',name:'Танк',icon:'🛡️',color:0xff8800,hp:220,speed:0.11,reload:1.8,damage:35,bulletSpeed:0.5,attackType:'single'},
-  {id:'assassin',name:'Ассасин',icon:'🗡️',color:0xff00ff,hp:80,speed:0.26,reload:1.0,damage:20,bulletSpeed:0.9,attackType:'single'},
-  {id:'medic',name:'Медик',icon:'💊',color:0xffffff,hp:100,speed:0.16,reload:1.6,damage:18,bulletSpeed:0.7,attackType:'single'},
-  {id:'pyro',name:'Пиромант',icon:'🔥',color:0xff4400,hp:100,speed:0.17,reload:1.3,damage:30,bulletSpeed:0.7,attackType:'single'}
+const brawlers=[
+  {id:'soldier',name:'Солдат',icon:'🔫',color:0x4488ff,hp:1200,speed:0.16,reload:1.4,dmg:280,range:18,bulletSpd:0.9,attack:'rifle'},
+  {id:'sniper',name:'Снайпер',icon:'🎯',color:0x00aa44,hp:900,speed:0.12,reload:2.0,dmg:500,range:28,bulletSpd:1.4,attack:'sniper'},
+  {id:'heavy',name:'Танк',icon:'🛡️',color:0xff8800,hp:2200,speed:0.10,reload:1.8,dmg:350,range:10,bulletSpd:0.5,attack:'shotgun'},
+  {id:'assassin',name:'Ассасин',icon:'🗡️',color:0xff00ff,hp:800,speed:0.24,reload:0.9,dmg:200,range:8,bulletSpd:1.1,attack:'slash'},
+  {id:'medic',name:'Медик',icon:'💊',color:0xffffff,hp:1000,speed:0.14,reload:1.5,dmg:180,range:16,bulletSpd:0.7,attack:'heal'},
+  {id:'pyro',name:'Пиромант',icon:'🔥',color:0xff4400,hp:1000,speed:0.15,reload:1.2,dmg:320,range:14,bulletSpd:0.7,attack:'fire'}
 ];
 
 let defP;
@@ -93,29 +79,27 @@ window.addEventListener('appinstalled',()=>{document.getElementById('installScre
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);if(el)el.classList.add('active')}
 window.saveNick=()=>{const n=document.getElementById('nickInput').value.trim();if(!n)return;playerNick=n;localStorage.setItem('brawlNick',n);showScreen('lobbyScreen');updateLobby()};
-function updateLobby(){document.getElementById('lobbyNick').textContent=playerNick;document.getElementById('lobbyTrophies').textContent='🏆 '+trophies;document.getElementById('selectedBrawler').textContent=brawlers.find(b=>b.id===selectedBrawlerId)?.icon||'🔫'}
+function updateLobby(){document.getElementById('lobbyNick').textContent=playerNick;document.getElementById('lobbyTrophies').textContent=trophies;document.getElementById('selectedBrawler').textContent=brawlers.find(b=>b.id===selBrawler)?.icon||'🔫'}
 window.openCollection=()=>{renderCollection();showScreen('collectionScreen')};
 window.closeCollection=()=>{showScreen('lobbyScreen');updateLobby()};
-function renderCollection(){document.getElementById('brawlersGrid').innerHTML=brawlers.map(b=>`<div class="brawler-card ${b.id===selectedBrawlerId?'selected':''}" onclick="selectBrawler('${b.id}')"><div class="brawler-icon">${b.icon}</div><div class="brawler-name">${b.name}</div><div style="font-size:11px;opacity:0.6">❤️${b.hp} ⚡${b.reload}s</div></div>`).join('')}
-window.selectBrawler=(id)=>{selectedBrawlerId=id;localStorage.setItem('selectedBrawler',id);renderCollection()};
+function renderCollection(){document.getElementById('brawlersGrid').innerHTML=brawlers.map(b=>`<div class="brawler-card ${b.id===selBrawler?'selected':''}" onclick="selectBrawler('${b.id}')"><div style="font-size:55px">${b.icon}</div><div style="font-weight:700">${b.name}</div><div style="font-size:10px;opacity:0.6">❤️${b.hp} ⚡${b.reload}s 🗡️${b.dmg}</div></div>`).join('')}
+window.selectBrawler=(id)=>{selBrawler=id;localStorage.setItem('selectedBrawler',id);renderCollection()};
 
 // ========== ИГРА ==========
-let scene,camera,renderer,player,enemies=[],bullets=[],bushes=[];
-let moveAngle=null,attackAngle=null,attackActive=false;
-let score=0,gameTime=120,gameRunning=false,countdownActive=false,timerInt,gameLoopId;
-let playerHP,maxHP,ammo=3,maxAmmo=3,ammoTimer=0,reloadTimer=0;
-let lastDamageTime=0,lastShotTime=0,regenTimer=0;
-let W,H,brawlerData,trajectoryLine;
+let scene,camera,renderer,player,enemies=[],bullets=[],bushes=[],hpLabels=[];
+let mvAngle=null,atkAngle=null,atkActive=false,atkStartTime=0;
+let score=0,gameTime=120,gameRunning=false,timerInt,gameLoopId;
+let playerHP,maxHP,ammo=3,maxAmmo=3,reloadProgress=0;
+let lastDmgTime=0,lastShotTime=0,regenTimer=0;
+let W,H,brawlerData;
 
 window.startBattle=()=>{
-  brawlerData=brawlers.find(b=>b.id===selectedBrawlerId);
-  playerHP=brawlerData.hp;maxHP=brawlerData.hp;ammo=3;maxAmmo=3;
-  score=0;gameTime=120;gameRunning=false;countdownActive=true;
-  lastDamageTime=0;lastShotTime=0;regenTimer=0;ammoTimer=0;reloadTimer=0;
+  brawlerData=brawlers.find(b=>b.id===selBrawler);
+  playerHP=brawlerData.hp;maxHP=brawlerData.hp;ammo=3;maxAmmo=3;reloadProgress=0;
+  score=0;gameTime=120;gameRunning=false;
+  lastDmgTime=0;lastShotTime=0;regenTimer=0;
   showScreen('gameScreen');
   document.getElementById('gameOver').style.display='none';
-  document.getElementById('scoreDisplay').textContent='0';
-  document.getElementById('timer').textContent='2:00';
   init3D();
   let cd=3;const cdEl=document.getElementById('countdownOverlay');cdEl.style.display='flex';cdEl.textContent=cd;
   const cdInt=setInterval(()=>{cd--;if(cd<=0){clearInterval(cdInt);cdEl.textContent='⚔️';setTimeout(()=>{cdEl.style.display='none';gameRunning=true;if(timerInt)clearInterval(timerInt);timerInt=setInterval(gameTick,1000)},500)}else cdEl.textContent=cd},1000);
@@ -123,76 +107,35 @@ window.startBattle=()=>{
 
 function gameTick(){
   if(!gameRunning)return;
-  gameTime--;document.getElementById('timer').textContent=Math.floor(gameTime/60)+':'+(gameTime%60).toString().padStart(2,'0');
-  if(gameTime<=0)endGame(true);
-  // Реген аммо
-  if(!attackActive){ammoTimer++;const reloadTime=brawlerData.reload*60;if(ammoTimer>=reloadTime){ammoTimer=0;if(ammo<maxAmmo){ammo++}}}
+  gameTime--;if(gameTime<=0)endGame(true);
   // Реген HP
-  if(gameRunning&&playerHP<maxHP&&Date.now()-lastDamageTime>2000&&Date.now()-lastShotTime>2000){regenTimer++;if(regenTimer>=10){regenTimer=0;playerHP=Math.min(maxHP,playerHP+2)}}
-}
-
-// Генерация кустов
-function generateBushes(){
-  bushes=[];
-  for(let i=0;i<60;i++){
-    const bx=(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE;
-    const bz=(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE;
-    const g=new THREE.Group();
-    for(let j=0;j<5;j++){
-      const s=new THREE.Mesh(new THREE.SphereGeometry(1.2+Math.random()*0.5,6,6),new THREE.MeshLambertMaterial({color:0x228B22}));
-      s.position.set((Math.random()-0.5)*3,0.5+Math.random()*1.5,(Math.random()-0.5)*3);
-      g.add(s);
-    }
-    g.position.set(bx,0,bz);
-    scene.add(g);
-    bushes.push({mesh:g,x:bx,z:bz,radius:3});
-  }
-}
-
-function isInBush(x,z){
-  for(const b of bushes){
-    const dx=x-b.x,dz=z-b.z;
-    if(Math.sqrt(dx*dx+dz*dz)<b.radius)return true;
-  }
-  return false;
-}
-
-function getHPColor(hp,maxHp){
-  const pct=hp/maxHp;
-  if(pct>0.6)return '#00ff00';
-  if(pct>0.3)return '#ffaa00';
-  return '#ff0000';
+  if(playerHP<maxHP&&Date.now()-lastDmgTime>2000&&Date.now()-lastShotTime>2000){regenTimer++;if(regenTimer>=10){regenTimer=0;playerHP=Math.min(maxHP,playerHP+15)}}
+  // Перезарядка
+  if(!atkActive&&ammo<maxAmmo){reloadProgress++;const reloadFrames=brawlerData.reload*60;if(reloadProgress>=reloadFrames){reloadProgress=0;ammo++}}
 }
 
 function init3D(){
   W=window.innerWidth;H=window.innerHeight;
   if(renderer){renderer.dispose();document.querySelectorAll('#gameScreen canvas').forEach(c=>c.remove())}
-  enemies=[];bullets=[];
-  scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x87CEEB);
-  scene.fog=new THREE.Fog(0x87CEEB,MAP_SIZE*0.6,MAP_SIZE*1.2);
-  camera=new THREE.PerspectiveCamera(55,W/H,1,500);
-  camera.position.set(0,70,60);camera.lookAt(0,0,0);
+  enemies=[];bullets=[];hpLabels=[];
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x87CEEB);scene.fog=new THREE.Fog(0x87CEEB,MAP_SIZE*0.5,MAP_SIZE);
+  camera=new THREE.PerspectiveCamera(45,W/H,1,600);
+  camera.position.set(0,85,5);camera.lookAt(0,0,20);
   renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(W,H);renderer.shadowMap.enabled=true;
   document.getElementById('gameScreen').appendChild(renderer.domElement);
-  scene.add(new THREE.AmbientLight(0x6688aa,0.7));
-  const sun=new THREE.DirectionalLight(0xffffff,1);sun.position.set(50,60,30);sun.castShadow=true;scene.add(sun);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE*BLOCK_SIZE,MAP_SIZE*BLOCK_SIZE),new THREE.MeshLambertMaterial({color:0x4CAF50}));
+  scene.add(new THREE.AmbientLight(0x8899aa,0.6));
+  const sun=new THREE.DirectionalLight(0xffffff,1.1);sun.position.set(60,80,40);sun.castShadow=true;scene.add(sun);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE*BLOCK,MAP_SIZE*BLOCK),new THREE.MeshLambertMaterial({color:0x5DAE47}));
   ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
   // Препятствия
-  for(let i=0;i<20;i++){
-    const r=new THREE.Mesh(new THREE.DodecahedronGeometry(2+Math.random(),0),new THREE.MeshLambertMaterial({color:0x888888}));
-    r.position.set((Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE,1.5,(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE);
-    r.castShadow=true;scene.add(r);
-  }
-  generateBushes();
-  player=createChar(brawlerData.color,true);
-  player.position.set(0,0,0);
-  // 5 врагов в углах
-  const spawns=[{x:-50,z:-50},{x:50,z:-50},{x:-50,z:50},{x:50,z:50},{x:0,z:-55}];
+  for(let i=0;i<25;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(1.8+Math.random(),0),new THREE.MeshLambertMaterial({color:0x8B7355}));r.position.set((Math.random()-0.5)*(MAP_SIZE-10)*BLOCK,1.5,(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK);r.castShadow=true;scene.add(r)}
+  // Кусты
+  bushes=[];
+  for(let i=0;i<50;i++){const g=new THREE.Group();for(let j=0;j<4;j++){const s=new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*0.5,6,6),new THREE.MeshLambertMaterial({color:0x2D8B2D}));s.position.set((Math.random()-0.5)*3,0.5+Math.random()*1,(Math.random()-0.5)*3);g.add(s)}g.position.set((Math.random()-0.5)*(MAP_SIZE-10)*BLOCK,0,(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK);scene.add(g);bushes.push({mesh:g,radius:2.8})}
+  player=createChar(brawlerData.color,true);player.position.set(0,0,0);
+  const spawns=[{x:-55,z:-55},{x:55,z:-55},{x:-55,z:55},{x:55,z:55},{x:0,z:-60}];
   for(let i=0;i<5;i++)spawnEnemyAt(spawns[i].x,spawns[i].z);
-  setupJoysticks();
-  animate3D();
+  setupJoysticks();animate3D();
 }
 
 function createChar(color,isPlayer=false){
@@ -201,24 +144,48 @@ function createChar(color,isPlayer=false){
   body.position.y=1.5;body.castShadow=true;g.add(body);
   const head=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,8),new THREE.MeshLambertMaterial({color:0xffdbac}));
   head.position.y=3.2;head.castShadow=true;g.add(head);
-  const gun=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.3,1.5,8),new THREE.MeshLambertMaterial({color:0x333333}));
+  const gun=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.3,1.5,8),new THREE.MeshLambertMaterial({color:0x444}));
   gun.position.set(0,1.8,1.2);gun.rotation.x=Math.PI/2;g.add(gun);
-  if(!isPlayer){
-    const bData=brawlers[Math.floor(Math.random()*brawlers.length)];
-    g.userData={brawler:bData,hp:bData.hp,maxHp:bData.hp,alive:true,respawn:0,cd:0,speed:bData.speed,lastDmg:0,regen:0,ammo:3,reloadTimer:0};
-  }
   scene.add(g);return g;
 }
 
 function spawnEnemyAt(x,z){
-  const e=createChar(0xff4444,false);
+  const bd=brawlers[Math.floor(Math.random()*brawlers.length)];
+  const e=createChar(bd.color,false);
   e.position.set(x,0,z);
+  e.userData={brawler:bd,hp:bd.hp,maxHp:bd.hp,alive:true,respawn:0,cd:0,ammo:3,reloadProg:0,lastDmg:0};
   enemies.push(e);
 }
 
+function isInBush(x,z){for(const b of bushes){const dx=x-b.mesh.position.x,dz=z-b.mesh.position.z;if(Math.sqrt(dx*dx+dz*dz)<b.radius)return true}return false}
+
 function setupJoysticks(){
-  createJS('moveJoystick','moveBase','moveThumb',(a,active)=>{moveAngle=a});
-  createJS('attackJoystick','attackBase','attackThumb',(a,active)=>{attackAngle=a;attackActive=active});
+  createJS('moveJoystick','moveBase','moveThumb',(a)=>mvAngle=a);
+  createJS('attackJoystick','attackBase','attackThumb',(a,active)=>{atkAngle=a;atkActive=active;if(active)atkStartTime=Date.now();else if(Date.now()-atkStartTime<200&&a===null)autoAttack()});
+}
+
+function autoAttack(){
+  if(ammo<=0||Date.now()-lastShotTime<brawlerData.reload*1000)return;
+  let closest=null,minDist=Infinity;
+  enemies.forEach(en=>{if(!en.userData.alive)return;const d=player.position.distanceTo(en.position);if(d<minDist){minDist=d;closest=en}});
+  if(closest&&minDist<brawlerData.range*BLOCK){
+    const dx=closest.position.x-player.position.x,dz=closest.position.z-player.position.z;
+    const ang=Math.atan2(dz,dx);
+    shoot(ang);
+  }
+}
+
+function shoot(angle){
+  if(ammo<=0||Date.now()-lastShotTime<brawlerData.reload*1000)return;
+  lastShotTime=Date.now();ammo--;reloadProgress=0;
+  const count=brawlerData.attack==='shotgun'?5:1;
+  for(let i=0;i<count;i++){
+    const a=angle+(count>1?(i-2)*0.15:0);
+    const bl=new THREE.Mesh(new THREE.SphereGeometry(brawlerData.attack==='fire'?0.5:0.3,8,8),new THREE.MeshLambertMaterial({color:0xffd93d,emissive:0xffd93d,emissiveIntensity:0.7}));
+    bl.position.set(player.position.x+Math.cos(a)*2,2,player.position.z+Math.sin(a)*2);
+    bl.userData={vx:Math.cos(a)*brawlerData.bulletSpd,vz:Math.sin(a)*brawlerData.bulletSpd,life:brawlerData.range*2,dmg:brawlerData.dmg,fromPlayer:true,type:brawlerData.attack};
+    scene.add(bl);bullets.push(bl);
+  }
 }
 
 function createJS(cid,bid,tid,cb){
@@ -227,139 +194,44 @@ function createJS(cid,bid,tid,cb){
   c.addEventListener('touchstart',e=>{e.preventDefault();if(tid_===null){tid_=e.changedTouches[0].identifier;upd(e.changedTouches[0],true)}},{passive:false});
   c.addEventListener('touchmove',e=>{e.preventDefault();for(let tc of e.changedTouches)if(tc.identifier===tid_)upd(tc,true)},{passive:false});
   c.addEventListener('touchend',e=>{e.preventDefault();for(let tc of e.changedTouches)if(tc.identifier===tid_){tid_=null;t.style.transform='translate(-50%,-50%)';cb(null,false)}});
-  function upd(tc,active){const r=b.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=tc.clientX-cx,dy=tc.clientY-cy,dist=Math.min(Math.sqrt(dx*dx+dy*dy),45),ang=Math.atan2(dy,dx);t.style.transform=`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px))`;cb(dist>8?ang:null,active&&dist>8)}
+  function upd(tc,active){const r=b.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=tc.clientX-cx,dy=tc.clientY-cy,dist=Math.min(Math.sqrt(dx*dx+dy*dy),40),ang=Math.atan2(dy,dx);t.style.transform=`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px))`;cb(dist>8?ang:null,active&&dist>8)}
 }
 
-// Траектория
-function drawTrajectory(angle){
-  if(!trajectoryLine){
-    const mat=new THREE.LineBasicMaterial({color:0xffd93d,linewidth:1,transparent:true,opacity:0.5});
-    const geo=new THREE.BufferGeometry();
-    trajectoryLine=new THREE.Line(geo,mat);
-    scene.add(trajectoryLine);
-  }
-  const pts=[];
-  let sx=player.position.x,sy=player.position.y+1.5,sz=player.position.z;
-  for(let i=0;i<30;i++){
-    sx+=Math.cos(angle)*0.5;sz+=Math.sin(angle)*0.5;
-    pts.push(new THREE.Vector3(sx,sy,sz));
-  }
-  trajectoryLine.geometry.setFromPoints(pts);
-  trajectoryLine.visible=true;
+// Белая полоса прицеливания
+let aimLine;
+function drawAimLine(angle){
+  if(!aimLine){const g=new THREE.BufferGeometry();const m=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.4});aimLine=new THREE.Line(g,m);scene.add(aimLine)}
+  const pts=[new THREE.Vector3(player.position.x,1.5,player.position.z)];
+  for(let i=1;i<=brawlerData.range*2;i++){pts.push(new THREE.Vector3(player.position.x+Math.cos(angle)*i*0.5,1.5,player.position.z+Math.sin(angle)*i*0.5))}
+  aimLine.geometry.setFromPoints(pts);aimLine.visible=true;
 }
 
-function clearTrajectory(){if(trajectoryLine)trajectoryLine.visible=false}
+function clearAimLine(){if(aimLine)aimLine.visible=false}
 
-function animate3D(){
-  gameLoopId=requestAnimationFrame(animate3D);
-  if(!gameRunning){renderer.render(scene,camera);return}
-  
-  if(moveAngle!==null&&player){
-    player.position.x+=Math.cos(moveAngle)*brawlerData.speed;
-    player.position.z+=Math.sin(moveAngle)*brawlerData.speed;
-    const halfMap=(MAP_SIZE/2-3)*BLOCK_SIZE;
-    player.position.x=Math.max(-halfMap,Math.min(halfMap,player.position.x));
-    player.position.z=Math.max(-halfMap,Math.min(halfMap,player.position.z));
-    player.rotation.y=-moveAngle+Math.PI/2;
-  }
-  camera.position.x+=(player.position.x-camera.position.x)*0.08;
-  camera.position.z=player.position.z+60;
-  camera.lookAt(player.position.x,0,player.position.z);
-  
-  if(attackActive&&attackAngle!==null){
-    drawTrajectory(attackAngle);
-    if(ammo>0&&Date.now()-lastShotTime>brawlerData.reload*1000){
-      lastShotTime=Date.now();ammo--;ammoTimer=0;
-      const bx=player.position.x+Math.cos(attackAngle)*2,bz=player.position.z+Math.sin(attackAngle)*2;
-      const bl=new THREE.Mesh(new THREE.SphereGeometry(0.35,8,8),new THREE.MeshLambertMaterial({color:0xffd93d,emissive:0xffd93d,emissiveIntensity:0.8}));
-      bl.position.set(bx,2,bz);bl.userData={vx:Math.cos(attackAngle)*brawlerData.bulletSpeed,vz:Math.sin(attackAngle)*brawlerData.bulletSpeed,life:100,fromPlayer:true,damage:brawlerData.damage};
-      scene.add(bl);bullets.push(bl);
-    }
-  }else{clearTrajectory()}
-  
-  enemies.forEach(en=>{
-    const ud=en.userData;
-    if(!ud.alive){ud.respawn--;if(ud.respawn<=0){ud.alive=true;ud.hp=ud.maxHp;en.visible=true;const s=Math.random()>0.5?1:-1;en.position.set((Math.random()-0.5)*(MAP_SIZE-20)*BLOCK_SIZE,0,s*((MAP_SIZE/2-5)*BLOCK_SIZE))}return}
-    if(ud.hp<ud.maxHp&&Date.now()-ud.lastDmg>2000){ud.regen++;if(ud.regen>=60){ud.regen=0;ud.hp=Math.min(ud.maxHp,ud.hp+1)}}
-    // Реген аммо врагов
-    ud.reloadTimer++;if(ud.reloadTimer>=ud.brawler.reload*60){ud.reloadTimer=0;if(ud.ammo<3)ud.ammo++}
-    
-    // Ищем ближайшую цель (игрок или другой враг)
-    let target=player,minDist=player.position.distanceTo(en.position);
-    for(const other of enemies){
-      if(other===en||!other.userData.alive)continue;
-      const d=en.position.distanceTo(other.position);
-      if(d<minDist){minDist=d;target=other}
-    }
-    
-    const dx=target.position.x-en.position.x,dz=target.position.z-en.position.z,dist=Math.sqrt(dx*dx+dz*dz);
-    if(dist>5){en.position.x+=dx/dist*ud.speed;en.position.z+=dz/dist*ud.speed}
-    en.lookAt(target.position.x,0,target.position.z);
-    
-    if(dist<35&&ud.cd<=0&&ud.ammo>0){
-      ud.ammo--;ud.cd=40+Math.random()*30;
-      const ang=Math.atan2(dz,dx);
-      const bl=new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6),new THREE.MeshLambertMaterial({color:0xff0000,emissive:0xff0000,emissiveIntensity:0.6}));
-      bl.position.copy(en.position);bl.position.y=2;
-      bl.userData={vx:Math.cos(ang)*ud.brawler.bulletSpeed,vz:Math.sin(ang)*ud.brawler.bulletSpeed,life:80,fromPlayer:false,damage:ud.brawler.damage};
-      scene.add(bl);bullets.push(bl);
-    }
-    if(ud.cd>0)ud.cd--;
-  });
-  
-  // Пули
-  for(let i=bullets.length-1;i>=0;i--){
-    const b=bullets[i];b.position.x+=b.userData.vx;b.position.z+=b.userData.vz;b.userData.life--;
-    if(b.userData.life<=0||Math.abs(b.position.x)>MAP_SIZE/2*BLOCK_SIZE||Math.abs(b.position.z)>MAP_SIZE/2*BLOCK_SIZE){scene.remove(b);bullets.splice(i,1);continue}
-    
-    if(b.userData.fromPlayer){
-      for(const en of enemies){
-        if(!en.userData.alive)continue;
-        const d=en.position.distanceTo(b.position);
-        if(d<3){en.userData.hp-=b.userData.damage;en.userData.lastDmg=Date.now();en.userData.regen=0;scene.remove(b);bullets.splice(i,1);
-          if(en.userData.hp<=0){en.userData.alive=false;en.visible=false;en.userData.respawn=120;score+=10;document.getElementById('scoreDisplay').textContent=score;if(enemies.filter(e=>e.userData.alive).length<5)spawnEnemyAt((Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE,(Math.random()-0.5)*(MAP_SIZE-10)*BLOCK_SIZE)}break}
-      }
-    }else{
-      // Пуля от врага — может попасть в игрока или другого врага
-      if(playerHP>0&&player.position.distanceTo(b.position)<2.5){
-        playerHP-=b.userData.damage;lastDamageTime=Date.now();regenTimer=0;scene.remove(b);bullets.splice(i,1);
-        if(playerHP<=0)endGame(false);continue;
-      }
-      for(const en of enemies){
-        if(!en.userData.alive)continue;
-        const d=en.position.distanceTo(b.position);
-        if(d<3&&en!==b.userData.shooter){en.userData.hp-=b.userData.damage;en.userData.lastDmg=Date.now();scene.remove(b);bullets.splice(i,1);
-          if(en.userData.hp<=0){en.userData.alive=false;en.visible=false;en.userData.respawn=120}break}
-      }
-    }
-  }
-  
-  // Отрисовка HP над персонажами через CSS
-  updateAllHPBars();
-  
-  renderer.render(scene,camera);
-}
-
-// HP бары через HTML
-let hpElements=[];
-function updateAllHPBars(){
-  // Удаляем старые
-  hpElements.forEach(el=>el.remove());hpElements=[];
-  
+// HP и аммо над бойцами
+function updateHPLabels(){
+  hpLabels.forEach(l=>l.remove());hpLabels=[];
   // Игрок
   if(playerHP>0){
-    const worldPos=player.position.clone().project(camera);
-    const sx=(worldPos.x*0.5+0.5)*W,sy=(-worldPos.y*0.5+0.5)*H-70;
-    if(worldPos.z<1){
-      const d=document.createElement('div');
-      d.style.cssText=`position:absolute;left:${sx-40}px;top:${sy}px;color:${getHPColor(playerHP,maxHP)};font-weight:700;font-size:12px;text-shadow:0 0 5px #000;pointer-events:none;z-index:5;text-align:center;width:80px`;
-      d.textContent=`❤️${playerHP}/${maxHP}`;
-      document.getElementById('gameScreen').appendChild(d);hpElements.push(d);
+    const wp=player.position.clone().project(camera);
+    if(wp.z<1){
+      const sx=(wp.x*0.5+0.5)*W,sy=(-wp.y*0.5+0.5)*H-80;
+      // HP бар
+      const hpc=document.createElement('div');hpc.style.cssText=`position:absolute;left:${sx-40}px;top:${sy}px;width:80px;height:6px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;pointer-events:none;z-index:5`;
+      hpc.innerHTML=`<div style="width:${playerHP/maxHP*100}%;height:100%;background:${playerHP/maxHP>0.5?'#00ff00':'#ff0000'};border-radius:3px"></div>`;
+      document.getElementById('gameScreen').appendChild(hpc);hpLabels.push(hpc);
+      // HP число
+      const hpt=document.createElement('div');hpt.style.cssText=`position:absolute;left:${sx-40}px;top:${sy-14}px;color:#fff;font-size:10px;font-weight:700;text-shadow:0 0 4px #000;pointer-events:none;z-index:5;width:80px;text-align:center`;hpt.textContent=Math.ceil(playerHP);
+      document.getElementById('gameScreen').appendChild(hpt);hpLabels.push(hpt);
       // Аммо
-      const ad=document.createElement('div');
-      ad.style.cssText=`position:absolute;left:${sx-30}px;top:${sy+14}px;display:flex;gap:3px;pointer-events:none;z-index:5`;
-      for(let i=0;i<maxAmmo;i++){const c=document.createElement('div');c.style.cssText=`width:10px;height:6px;background:${i<ammo?'#ffd93d':'rgba(255,255,255,0.3)'};border-radius:2px`;ad.appendChild(c)}
-      document.getElementById('gameScreen').appendChild(ad);hpElements.push(ad);
+      const am=document.createElement('div');am.style.cssText=`position:absolute;left:${sx-25}px;top:${sy+8}px;display:flex;gap:4px;pointer-events:none;z-index:5`;
+      for(let i=0;i<maxAmmo;i++){
+        const cell=document.createElement('div');cell.style.cssText=`width:14px;height:14px;border-radius:3px;background:rgba(0,0,0,0.4);overflow:hidden;position:relative`;
+        if(i<ammo){cell.innerHTML=`<div style="position:absolute;bottom:0;left:0;width:100%;height:100%;background:#ffd93d"></div>`}
+        else if(i===ammo&&reloadProgress>0){const fill=reloadProgress/(brawlerData.reload*60)*100;cell.innerHTML=`<div style="position:absolute;bottom:0;left:0;width:100%;height:${fill}%;background:rgba(255,217,61,0.5)"></div>`}
+        am.appendChild(cell);
+      }
+      document.getElementById('gameScreen').appendChild(am);hpLabels.push(am);
     }
   }
   // Враги
@@ -367,36 +239,76 @@ function updateAllHPBars(){
     if(!en.userData.alive||!en.visible)return;
     const pInBush=isInBush(player.position.x,player.position.z);
     const eInBush=isInBush(en.position.x,en.position.z);
-    if(eInBush&&!pInBush){const d=player.position.distanceTo(en.position);if(d>5*BLOCK_SIZE)return}
-    const worldPos=en.position.clone().project(camera);
-    const sx=(worldPos.x*0.5+0.5)*W,sy=(-worldPos.y*0.5+0.5)*H-50;
-    if(worldPos.z<1){
-      const d=document.createElement('div');
-      d.style.cssText=`position:absolute;left:${sx-35}px;top:${sy}px;color:${getHPColor(en.userData.hp,en.userData.maxHp)};font-weight:700;font-size:11px;text-shadow:0 0 5px #000;pointer-events:none;z-index:5;text-align:center;width:70px`;
-      d.textContent=`❤️${Math.ceil(en.userData.hp)}`;
-      document.getElementById('gameScreen').appendChild(d);hpElements.push(d);
+    if(eInBush&&!pInBush&&player.position.distanceTo(en.position)>6*BLOCK)return;
+    const wp=en.position.clone().project(camera);
+    if(wp.z<1){
+      const sx=(wp.x*0.5+0.5)*W,sy=(-wp.y*0.5+0.5)*H-55;
+      const hpc=document.createElement('div');hpc.style.cssText=`position:absolute;left:${sx-30}px;top:${sy}px;width:60px;height:5px;background:rgba(0,0,0,0.5);border-radius:2px;overflow:hidden;pointer-events:none;z-index:5`;
+      const pct=en.userData.hp/en.userData.maxHp;
+      hpc.innerHTML=`<div style="width:${pct*100}%;height:100%;background:${pct>0.5?'#00ff00':pct>0.25?'#ffaa00':'#ff0000'};border-radius:2px"></div>`;
+      document.getElementById('gameScreen').appendChild(hpc);hpLabels.push(hpc);
+      const hpt=document.createElement('div');hpt.style.cssText=`position:absolute;left:${sx-30}px;top:${sy-12}px;color:#fff;font-size:9px;font-weight:700;text-shadow:0 0 4px #000;pointer-events:none;z-index:5;width:60px;text-align:center`;hpt.textContent=Math.ceil(en.userData.hp);
+      document.getElementById('gameScreen').appendChild(hpt);hpLabels.push(hpt);
     }
   });
 }
 
+function animate3D(){
+  gameLoopId=requestAnimationFrame(animate3D);
+  if(!gameRunning){renderer.render(scene,camera);return}
+  
+  if(mvAngle!==null&&player){
+    player.position.x+=Math.cos(mvAngle)*brawlerData.speed;
+    player.position.z+=Math.sin(mvAngle)*brawlerData.speed;
+    const h=(MAP_SIZE/2-3)*BLOCK;
+    player.position.x=Math.max(-h,Math.min(h,player.position.x));
+    player.position.z=Math.max(-h,Math.min(h,player.position.z));
+    player.rotation.y=-mvAngle+Math.PI/2;
+  }
+  camera.position.x+=(player.position.x-camera.position.x)*0.05;
+  camera.position.z=player.position.z+75;
+  camera.lookAt(player.position.x,0,player.position.z+20);
+  
+  if(atkActive&&atkAngle!==null){drawAimLine(atkAngle);shoot(atkAngle)}else clearAimLine();
+  
+  enemies.forEach(en=>{
+    const ud=en.userData;if(!ud.alive){ud.respawn--;if(ud.respawn<=0){ud.alive=true;ud.hp=ud.maxHp;en.visible=true;const s=Math.random()>0.5?1:-1;en.position.set((Math.random()-0.5)*(MAP_SIZE-15)*BLOCK,0,s*(MAP_SIZE/2-8)*BLOCK)}return}
+    if(ud.hp<ud.maxHp&&Date.now()-ud.lastDmg>2000){ud.regenTimer=(ud.regenTimer||0)+1;if(ud.regenTimer>=60){ud.regenTimer=0;ud.hp=Math.min(ud.maxHp,ud.hp+10)}}
+    // Перезарядка врагов
+    ud.reloadProg=(ud.reloadProg||0)+1;const rTime=ud.brawler.reload*60;if(ud.reloadProg>=rTime){ud.reloadProg=0;if(ud.ammo<3)ud.ammo++}
+    // Цель
+    let target=player,minDist=player.position.distanceTo(en.position);
+    enemies.forEach(other=>{if(other===en||!other.userData.alive)return;const d=en.position.distanceTo(other.position);if(d<minDist){minDist=d;target=other}});
+    const dx=target.position.x-en.position.x,dz=target.position.z-en.position.z,dist=Math.sqrt(dx*dx+dz*dz);
+    if(dist>5){en.position.x+=dx/dist*ud.brawler.speed;en.position.z+=dz/dist*ud.brawler.speed}
+    en.lookAt(target.position.x,0,target.position.z);
+    if(dist<ud.brawler.range*BLOCK&&ud.cd<=0&&ud.ammo>0){ud.ammo--;ud.cd=40+Math.random()*30;const a=Math.atan2(dz,dx);const cnt=ud.brawler.attack==='shotgun'?5:1;
+      for(let i=0;i<cnt;i++){const aa=a+(cnt>1?(i-2)*0.2:0);const bl=new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6),new THREE.MeshLambertMaterial({color:0xff4444,emissive:0xff0000,emissiveIntensity:0.5}));bl.position.copy(en.position);bl.position.y=2;bl.userData={vx:Math.cos(aa)*ud.brawler.bulletSpd,vz:Math.sin(aa)*ud.brawler.bulletSpd,life:ud.brawler.range*2,dmg:ud.brawler.dmg,fromPlayer:false,shooter:en};scene.add(bl);bullets.push(bl)}
+    }if(ud.cd>0)ud.cd--;
+  });
+  
+  for(let i=bullets.length-1;i>=0;i--){
+    const b=bullets[i];b.position.x+=b.userData.vx;b.position.z+=b.userData.vz;b.userData.life--;
+    if(b.userData.life<=0||Math.abs(b.position.x)>MAP_SIZE/2*BLOCK){scene.remove(b);bullets.splice(i,1);continue}
+    if(b.userData.fromPlayer){for(const en of enemies){if(!en.userData.alive)continue;if(en.position.distanceTo(b.position)<2.8){en.userData.hp-=b.userData.dmg;en.userData.lastDmg=Date.now();scene.remove(b);bullets.splice(i,1);if(en.userData.hp<=0){en.userData.alive=false;en.visible=false;en.userData.respawn=120;score+=10;if(enemies.filter(e=>e.userData.alive).length<5)spawnEnemyAt((Math.random()-0.5)*(MAP_SIZE-15)*BLOCK,(Math.random()-0.5)*(MAP_SIZE-15)*BLOCK)}break}}}
+    else{if(playerHP>0&&player.position.distanceTo(b.position)<2.5){playerHP-=b.userData.dmg;lastDmgTime=Date.now();regenTimer=0;scene.remove(b);bullets.splice(i,1);if(playerHP<=0)endGame(false);continue}
+      for(const en of enemies){if(!en.userData.alive||en===b.userData.shooter)continue;if(en.position.distanceTo(b.position)<2.8){en.userData.hp-=b.userData.dmg;en.userData.lastDmg=Date.now();scene.remove(b);bullets.splice(i,1);if(en.userData.hp<=0){en.userData.alive=false;en.visible=false;en.userData.respawn=120}break}}}
+  }
+  updateHPLabels();
+  renderer.render(scene,camera);
+}
+
 function endGame(won){
   gameRunning=false;if(timerInt)clearInterval(timerInt);if(gameLoopId)cancelAnimationFrame(gameLoopId);
-  document.getElementById('gameOver').style.display='flex';
-  document.getElementById('gameOverScore').textContent='🏆 '+score;
+  document.getElementById('gameOver').style.display='flex';document.getElementById('gameOverScore').textContent='🏆 '+score;
   document.getElementById('gameOverTitle').textContent=won?'Победа!':'Поражение';
   trophies+=won?score:Math.floor(score/2);localStorage.setItem('trophies',trophies);
 }
 
-window.backToLobby=()=>{
-  if(timerInt)clearInterval(timerInt);if(gameLoopId)cancelAnimationFrame(gameLoopId);
-  if(scene){while(scene.children.length>0)scene.remove(scene.children[0])}
-  enemies=[];bullets=[];hpElements.forEach(e=>e.remove());hpElements=[];
-  document.getElementById('gameOver').style.display='none';showScreen('lobbyScreen');updateLobby();
-};
+window.backToLobby=()=>{if(timerInt)clearInterval(timerInt);if(gameLoopId)cancelAnimationFrame(gameLoopId);if(scene){while(scene.children.length>0)scene.remove(scene.children[0])}enemies=[];bullets=[];hpLabels.forEach(l=>l.remove());document.getElementById('gameOver').style.display='none';showScreen('lobbyScreen');updateLobby()};
 
 window.addEventListener('resize',()=>{if(renderer&&gameRunning){W=window.innerWidth;H=window.innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}});
 
-// Запуск
 if(isStandalone){if(!playerNick)showScreen('nickScreen');else{showScreen('lobbyScreen');updateLobby()}}else{showScreen('installScreen')}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
